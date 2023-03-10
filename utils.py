@@ -3,6 +3,19 @@ import os
 import numpy as np
 import torch 
 
+def getWeights(model):
+    """returns flattend weights from a model
+    
+    parameters: model                   
+    
+    """
+    weights = []
+    for param in model.parameters():
+
+        weights.extend((param.cpu().detach().numpy().flatten()))
+    return weights
+
+
 def calculatePredictions(model ,X_test, X_train , device):
     """
     returns:  train_predictions,test_predictions 
@@ -23,9 +36,6 @@ def calculatePredictions(model ,X_test, X_train , device):
             y_pred_train = model(data)
             train_predictions.append(y_pred_train.argmax().item())
 
-
-
-    #print(train_predictions)
 
     return train_predictions,test_predictions 
 
@@ -58,11 +68,21 @@ def createDirPath(seed , modelName, datasetName, num_epochs, batch_size, lr):
     
     return dirPath
     
-def saveResultsToNPZ(dirPath, featureListALL, training_acc, test_acc, training_loss_epoch, training_loss_batch, test_loss_epoch, test_loss_batch):
+def saveResultsToNPZ(dirPath, featureListALL, featureListALL_0 ,training_acc, test_acc, training_loss_epoch, training_loss_batch, test_loss_epoch, test_loss_batch):
+    featureListALL = torch.tensor(featureListALL, device = 'cpu')
+    featureListALL_0 = torch.tensor(featureListALL_0, device = 'cpu')
+    training_acc = torch.tensor(training_acc, device = 'cpu')
+    test_acc = torch.tensor(test_acc, device = 'cpu')
+    training_loss_epoch = torch.tensor(training_loss_epoch, device = 'cpu')
+    training_loss_batch = torch.tensor(training_loss_batch, device = 'cpu')
+    test_loss_epoch = torch.tensor(test_loss_epoch, device = 'cpu')
+    test_loss_batch = torch.tensor(test_loss_batch, device = 'cpu')
+    
 
     #save data
     with torch.no_grad():
         np.savez(dirPath + 'data.npz', featureListALL = featureListALL , 
+                                         featureListALL_0 = featureListALL_0,
                                          training_acc = training_acc, 
                                          test_acc =test_acc,
                                          training_loss_epoch = training_loss_epoch, 
@@ -72,10 +92,9 @@ def saveResultsToNPZ(dirPath, featureListALL, training_acc, test_acc, training_l
                                          )
 
 def loadData(dirPath):
-
     #load data according to datatime now same as above since same datetimeNow
     data = np.load(dirPath + 'data.npz')
 
-    return data
+    return data    
 
-#featureListALL = data["featureListALL"]
+
