@@ -94,11 +94,11 @@ def plot_Loss_Acc(dirPath,model,modelsDirPath, trainloader,evalloader,testloader
 
         axs[0][1].plot(range(len(trainLoss_iteration)),trainLoss_iteration) 
         axs[0][1].set_xlabel('iteration')
-        axs[0][1].set_ylabel('trainAcc_iteration')
+        axs[0][1].set_ylabel('trainLoss_iteration')
 
         
         axs[1][1].set_xlabel('iterations')
-        axs[1][1].set_ylabel('testLoss_iteration')
+        axs[1][1].set_ylabel('evalLoss_iteration')
         axs[1][1].plot(range(len(evalLoss_iteration)),evalLoss_iteration) # change to loss_per_epoch
 
         axs[2][1].set_xlabel('iterations')

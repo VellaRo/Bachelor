@@ -26,7 +26,7 @@ with seedObject:
 
     #inputFeatures = 4 #
     droplist = []#pi["BloodPressure", "Pregnancies", "Age", "SkinThickness"]
-    num_epochs = 100
+    num_epochs = 2
     batch_size = 4
     test_size = 0.4 # is going to be split again in eval and test
     device = "cuda:0" #if torch.cuda.is_available() else "cpu"
@@ -38,8 +38,8 @@ with seedObject:
     doEval = False
 
     # load data
-    #trainloader ,evalloader, testloader ,X_train ,X_eval, X_test,  y_train ,y_eval, y_test, inputFeatures, outputFeatures, datasetName, featureNames= dataloader.load_kaggle_diabetes_dataset(batch_size=batch_size , droplist= droplist)
-    trainloader ,evalloader, testloader ,X_train ,X_eval, X_test,  y_train ,y_eval, y_test, inputFeatures, outputFeatures, datasetName, featureNames= dataloader.BreastCancerUCI(batch_size= batch_size, droplist=droplist, test_size=test_size)
+    trainloader ,evalloader, testloader ,X_train ,X_eval, X_test,  y_train ,y_eval, y_test, inputFeatures, outputFeatures, datasetName, featureNames= dataloader.load_kaggle_diabetes_dataset(batch_size=batch_size , droplist= droplist)
+    #trainloader ,evalloader, testloader ,X_train ,X_eval, X_test,  y_train ,y_eval, y_test, inputFeatures, outputFeatures, datasetName, featureNames= dataloader.BreastCancerUCI(batch_size= batch_size, droplist=droplist, test_size=test_size)
     #trainloader ,evalloader, testloader ,X_train ,X_eval, X_test,  y_train ,y_eval, y_test, inputFeatures, outputFeatures, datasetName= dataloader.dryBeanUCI(batch_size=batch_size , droplist= droplist)
 
     #model = modelClass.Net(inputFeatures= inputFeatures, out_features=outputFeatures)

@@ -33,7 +33,7 @@ def calcAccLoss(model,modelsDirPath, loader, name , device, loss_function, num_e
     
     #temporary non results list
     temp_Loss_epoch =[]
-    
+    tempLoss_iteration = [] # i will mean this along the batches  
     running_corrects_epoch= 0
     counter = 0
     tempIterationCounter= 0
@@ -53,15 +53,15 @@ def calcAccLoss(model,modelsDirPath, loader, name , device, loss_function, num_e
                 
                 _, preds = torch.max(outputs, 1)
                 running_corrects_iteration += torch.sum(preds == labels.data)
-                Loss_iteration.append(loss_function(outputs, labels).item())
+                tempLoss_iteration.append(loss_function(outputs, labels).item())
             running_corrects_epoch += running_corrects_iteration
-            temp_Loss_epoch.append(Loss_iteration)
+            temp_Loss_epoch.append(Loss_iteration)                      
 
 
             ## per iteration
             Acc= running_corrects_iteration.item() /len(y)
             Acc_iteration.append(Acc) 
-                
+            Loss_iteration.append(np.mean(tempLoss_iteration))
             ## per epoch
             if counter == int(len(modelsDirFiltered)/ num_epochs):
                 Acc = running_corrects_epoch.item() / (tempIterationCounter *len(y))
