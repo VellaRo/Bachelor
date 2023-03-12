@@ -184,62 +184,54 @@ def plot_features(dirPath, inputFeatures, featureListALL, plotName):
 
 def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
     
-    print("SHUFFLE NEEDS TO BE FALSE AT THE MOMENT") #THIS IS WROOOOONG REDO ON PAPER
-    ##
-    ##pro feature
-    ##
+    print("SHUFFLE NEEDS TO BE FALSE AT THE MOMENT") 
 
-    
+    print(np.shape(np.array(featureListAll)))
+    #d1, d2 = np.shape(np.array(featureListAll))
+    #print(type(featureListAll))
+    featureListAll = np.array(featureListAll)
 
+    def reshapeTogradientsPerSample():
 
-    def doItForFeature(index):
-        samplesPerFeature = []
+        def loopthroughFeature(index):
+            samplesPerFeature = []
+            for i in range(len(data)):
 
-        for i in range(len(data)):
- #           print(index)
-        #print(str(i/8)+ "%")
-            tempSamples = []
-            #test = []
-            for j in range(i, num_epochs*len(data),len(data)):
+                tempSamples = []
+                for j in range(i, num_epochs*len(data),len(data)):
                 
-                tempSamples.append(featureListAll[index][j])
-                #test.append(j)
-            #print(test)
-            samplesPerFeature.append(tempSamples)
- #       print(len(samplesPerFeature))
-        return samplesPerFeature
-    gradientsPerSample = []
-    
-    for k in range(len(featureListAll)):
- #       print(k)
+                    tempSamples.append(featureListAll[index][j])
+
+                samplesPerFeature.append(tempSamples)
+            return samplesPerFeature
         
-        gradientsPerSample.append(doItForFeature(k))
-
-       # gradientsPerSample.append(tempSamplesPerFeature)
+        gradientsPerSample = []
+        for k in range(len(featureListAll)):
+            gradientsPerSample.append(loopthroughFeature(k))
+        
+        return gradientsPerSample
     
-   
-    
-    #fig.set_size_inches(10,15)
-    #ig.tight_layout(pad=4.0)
-    #print(len(gradientsPerSample))
-
+    gradientsPerSample = reshapeTogradientsPerSample()
     def plotSubplots(index):
         fig, axs = plt.subplots(nrows=len(featureListAll), ncols=2 )
+        fig1, axs1 = plt.subplots(nrows=len(featureListAll), ncols=2 )
 
         for i in range(len(featureListAll)):#len(featureListAllPerSample)):
-            #for j in range(index,index+2):
-                #print(str(i) +" "+ str(j))
-                axs[i][0].plot(gradientsPerSample[i][index])
-                axs[i][1].plot(gradientsPerSample[i][index+1])
 
+            axs1[i][0].plot(gradientsPerSample[i][index])
+            axs1[i][1].plot(gradientsPerSample[i][index+1])
 
                 #plt.plot(gradientsPerSample[i][j])
                 #pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
     howManySamplesToLookAt = 2
-    #print(howManySamplesToLookAt)
+
     for i in range(0,howManySamplesToLookAt):
         plotSubplots(i)
-        
+        w = plt.waitforbuttonpress()
+
+    
+             
+    """
         w = plt.waitforbuttonpress()
     print(np.shape(gradientsPerSample))
     def calculateSignChanges(begin, end , gradientsPerSample):
@@ -274,7 +266,7 @@ def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
 
 
     return signChangeCounterList
-
+"""
 def plot_cosine_similarity(dirPath, plotName,model, modelsDirPath):
     
     cosine_similarity_toInitial, cosine_similarity_toFinal =  eval.calcConsineSimilarity(model,modelsDirPath)
