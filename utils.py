@@ -96,5 +96,3 @@ def loadData(dirPath):
     data = np.load(dirPath + 'data.npz')
 
     return data    
-
-

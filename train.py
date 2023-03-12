@@ -177,19 +177,21 @@ def train_eval(trainloader,evalloader, testloader, model, num_epochs, device, y_
             grad = calc_grads(outputs, inputs)
 
 
-            grads.append(grad)
+            grads.append(grad) # das hier auch im nachhiein ?
             grads_0.append(grad_0) 
+            
+            #do that after Training
+            #test_loss, test_running_corrects = test_model(model, device, testloader, loss_function)
+            #test_loss_batch.append(test_loss) #test1 test_loss_batch.append(test_loss.cpu())
 
 
         ##test
-        test_loss, test_running_corrects = test_model(model, device, testloader, loss_function)
-        test_loss_batch.append(test_loss) #test1 test_loss_batch.append(test_loss.cpu())
         ##testEnd
 
         training_acc.append(running_corrects.item() /len(y_train))
         #print(len(y_train)/len())
 
-        test_acc.append(test_running_corrects.item() /len(y_test)) 
+        #test_acc.append(test_running_corrects.item() /len(y_test)) 
         grads_epoch.append(grad)
         grads_epoch_0.append(grad_0)
         # takes to much ram# weights_epoch.append(weights)
@@ -197,25 +199,25 @@ def train_eval(trainloader,evalloader, testloader, model, num_epochs, device, y_
 
         #print(len(y_test))
         training_loss_epoch.append(loss) # test1 training_loss_epoch.append(loss.cpu())
-        test_loss_epoch.append(test_loss) # test1 test_loss_epoch.append(test_loss.cpu())
+        #test_loss_epoch.append(test_loss) # test1 test_loss_epoch.append(test_loss.cpu())
 
         print("Epoch: " + str(epoch_counter))
         print("      Training_acc: " + str(running_corrects.item() /len(y_train)))
-        print("      Testing_acc : " + str(test_running_corrects.item() /len(y_test)))
+        #print("      Testing_acc : " + str(test_running_corrects.item() /len(y_test)))
         print("-------------------")
         print()
 
         epoch_counter +=1 
     #print("jo")
     #print(iterationCounter)
-    os.rename(modelsdirPath +"/"+str(0), modelsdirPath +"/initialModel")
+    shutil.copyfile(modelsdirPath +"/"+str(0), modelsdirPath +"/initialModel")
     #model.load_state_dict(torch.load(modelsdirPath +"/0"))
     #weights = utils.getWeights(model)
     #print(weights[255:256])
-    os.rename(modelsdirPath +"/"+str(iterationCounter -1), modelsdirPath +"/finalModel") # rename macht probleme ???
+    shutil.copy(modelsdirPath +"/"+str(iterationCounter -1), modelsdirPath +"/finalModel") # rename macht probleme ???
     #model.load_state_dict(torch.load(modelsdirPath +"/169"))
     #weights = utils.getWeights(model)
     #print(weights[255:256])
     print("NOTE: THESE SAVED MODELS ARE BEEING OVERWRITTEN ON NEXT RUN")
-    return grads,grads_eval, grads_0, grads_epoch, grads_epoch_0, training_loss_batch, training_loss_epoch, training_acc, test_loss_batch, test_loss_epoch, test_acc# weights_batch, weights_epoch, intitial_weights#, final_weights
+    return grads,grads_eval, grads_0, grads_epoch, grads_epoch_0, training_loss_batch, training_loss_epoch, training_acc, test_loss_batch, test_loss_epoch, test_acc, loss_function# weights_batch, weights_epoch, intitial_weights#, final_weights
 
