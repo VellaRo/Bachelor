@@ -6,6 +6,8 @@ import sklearn
 import seaborn as sns
 from torch import no_grad
 import numpy as np
+import eval
+
 def plot_CM(y_train,y_test,  train_predictions, test_predictions, dirPath):
 
     """
@@ -42,7 +44,7 @@ def plot_CM(y_train,y_test,  train_predictions, test_predictions, dirPath):
 
 import torch
 
-def plot_Loss_Acc(dirPath, training_loss_batch, training_loss_epoch, training_acc,test_loss_batch, test_loss_epoch, test_acc):
+def plot_Loss_Acc(dirPath,model,modelsDirPath, trainloader,evalloader,testloader, device, loss_function, num_epochs, y_train, y_eval, y_test):
     """
     returns: None
 
@@ -52,43 +54,86 @@ def plot_Loss_Acc(dirPath, training_loss_batch, training_loss_epoch, training_ac
     saves the plot as pickel( for interactive plot in dataDiscovery)
 
     """
+    trainAcc_epoch, trainAcc_iteration, trainLoss_epoch, trainLoss_iteration = eval.calcAccLoss(model, modelsDirPath, trainloader,"train", device, loss_function, num_epochs, y_train)
+    evalAcc_epoch, evalAcc_iteration, evalLoss_epoch, evalLoss_iteration =     eval.calcAccLoss(model, modelsDirPath, evalloader, "eval" ,device, loss_function, num_epochs, y_eval)
+    testAcc_epoch, testAcc_iteration, testLoss_epoch, testLoss_iteration =     eval.calcAccLoss(model, modelsDirPath, testloader,"test", device, loss_function, num_epochs, y_test)
+
+    #trainLoss_iteration = torch.tensor(trainLoss_iteration, device = 'cpu')
+    #trainLoss_epoch = torch.tensor(trainLoss_epoch, device = 'cpu')
+    #evalLoss_iteration = torch.tensor(evalLoss_iteration, device = 'cpu')
+    #evalLoss_epoch = torch.tensor(evalLoss_epoch, device = 'cpu')
+    #testLoss_iteration = torch.tensor(testLoss_iteration, device = 'cpu')
+    #testLoss_epoch = torch.tensor(testLoss_epoch, device = 'cpu')
+
+    #trainingAcc_iteration = torch.tensor(trainAcc_iteration, device = 'cpu')
+    #trainingAcc_epoch = torch.tensor(trainingAcc_epoch, device = 'cpu')
+    #evalAcc_iteration = torch.tensor(evalLoss_iteration, device = 'cpu')
+    #evalAcc_epoch = torch.tensor(training_loss_epoch, device = 'cpu')
+    #testAcc_iteration = torch.tensor(testLoss_iteration, device = 'cpu')
+    #testAcc_epoch = torch.tensor(test_loss_epoch, device = 'cpu')
     
-    training_loss_batch = torch.tensor(training_loss_batch, device = 'cpu')
-    training_loss_epoch = torch.tensor(training_loss_epoch, device = 'cpu')
-    test_loss_batch = torch.tensor(test_loss_batch, device = 'cpu')
-    test_loss_epoch = torch.tensor(test_loss_epoch, device = 'cpu')
-
-
-    fig, axs = plt.subplots(nrows=3, ncols=2)
-    fig.tight_layout(pad=2.0)
+    
+    fig, axs = plt.subplots(nrows=3, ncols=4)   # train ; epoch / iteration 
+                                                # eval  ; epoch / iteration
+                                                # test  ; epoch / iteration
+    #fig.tight_layout(pad=2.0)
 
     with no_grad():
-        axs[0][0].plot(range(len(training_loss_batch)),training_loss_batch) #change to loss_per_batch
-        axs[0][0].set_xlabel('batch')
-        axs[0][0].set_ylabel('training_loss')
+        axs[0][0].plot(range(len(trainLoss_epoch)),trainLoss_epoch) 
+        axs[0][0].set_xlabel('epoch')
+        axs[0][0].set_ylabel('trainLoss_epoch')
 
 
         axs[1][0].set_xlabel('epochs')
-        axs[1][0].set_ylabel('training_loss_epoch')
-        axs[1][0].plot(range(len(training_loss_epoch)),training_loss_epoch) # change to loss_per_epoch
+        axs[1][0].set_ylabel('evalLoss_epoch')
+        axs[1][0].plot(range(len(evalLoss_epoch)),evalLoss_epoch) 
 
         axs[2][0].set_xlabel('epochs')
-        axs[2][0].set_ylabel('training_acc')
-        axs[2][0].plot(range(len(training_acc)),training_acc)
+        axs[2][0].set_ylabel('testLoss_epoch')
+        axs[2][0].plot(range(len(testLoss_epoch)),testLoss_epoch)
 
-        axs[0][1].plot(range(len(test_loss_batch)),test_loss_batch) #change to loss_per_batch
-        axs[0][1].set_xlabel('batch')
-        axs[0][1].set_ylabel('test_loss')
+        axs[0][1].plot(range(len(trainLoss_iteration)),trainLoss_iteration) 
+        axs[0][1].set_xlabel('iteration')
+        axs[0][1].set_ylabel('trainAcc_iteration')
+
+        
+        axs[1][1].set_xlabel('iterations')
+        axs[1][1].set_ylabel('testLoss_iteration')
+        axs[1][1].plot(range(len(evalLoss_iteration)),evalLoss_iteration) # change to loss_per_epoch
+
+        axs[2][1].set_xlabel('iterations')
+        axs[2][1].set_ylabel('testLoss_iteration')
+        axs[2][1].plot(range(len(testLoss_iteration)),testLoss_iteration)
+
+############# ACC
+        axs[0][2].plot(range(len(trainAcc_epoch)),trainAcc_epoch) 
+        axs[0][2].set_xlabel('epoch')
+        axs[0][2].set_ylabel('trainAcc_epoch')
 
 
-        axs[1][1].set_xlabel('epochs')
-        axs[1][1].set_ylabel('test_loss_epoch')
-        axs[1][1].plot(range(len(test_loss_epoch)),test_loss_epoch) # change to loss_per_epoch
+        axs[1][2].set_xlabel('epoch')
+        axs[1][2].set_ylabel('evalAcc_epoch')
+        axs[1][2].plot(range(len(evalAcc_epoch)),evalAcc_epoch) 
 
-        axs[2][1].set_xlabel('epochs')
-        axs[2][1].set_ylabel('test_acc')
-        axs[2][1].plot(range(len(test_acc)),test_acc)
+        axs[2][2].set_xlabel('epoch')
+        axs[2][2].set_ylabel('testAcc_epoch')
+        axs[2][2].plot(range(len(testAcc_epoch)),testAcc_epoch)
 
+        axs[0][3].plot(range(len(trainAcc_iteration)),trainAcc_iteration) 
+        axs[0][3].set_xlabel('iteration')
+        axs[0][3].set_ylabel('trainAcc_iteration')
+
+
+        axs[1][3].set_xlabel('iterations')
+        axs[1][3].set_ylabel('evalAcc_iteration')
+        axs[1][3].plot(range(len(evalAcc_iteration)),evalAcc_iteration) # change to loss_per_epoch
+
+        axs[2][3].set_xlabel('iterations')
+        axs[2][3].set_ylabel('testAcc_iteration')
+        axs[2][3].plot(range(len(testAcc_iteration)),testAcc_iteration)
+        
+        
+    plt.show()
     fig.savefig(str(dirPath) + "_loss")
     pickle.dump(fig, open(str(dirPath) + '_loss.pickle', 'wb')) # This is for Python 3 - py2 may need `file` instead of `open`
 
@@ -135,22 +180,7 @@ def plot_features(dirPath, inputFeatures, featureListALL, plotName):
 
     return None
 
-import eval
-def plot_cosine_similarity(dirPath, plotName,model, modelsDirPath):
-    
-    cosine_similarity_toInitial, cosine_similarity_toFinal =  eval.calcConsineSimilarity(model,modelsDirPath)
-    fig, axs = plt.subplots(nrows=1, ncols=1)
 
-    #print(cosine_similarity_toFinal)
-    cosine_similarity_toInitial = np.array(cosine_similarity_toInitial).flatten()
-    cosine_similarity_toFinal = np.array(cosine_similarity_toFinal).flatten()
-
-    axs.plot(cosine_similarity_toInitial ) #np.flip # for better plot
-    axs.plot(cosine_similarity_toFinal)
-    pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
-
-    plt.show()
-    return None
 
 def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
     
@@ -232,7 +262,6 @@ def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
                     if biggerThenZero != biggerThenZeroBefore: 
                         signChangeCounter = signChangeCounter +1
                         biggerThenZeroBefore = not(biggerThenZeroBefore)
-                    #tempList.append(signChangeCounter)
                 signChangeCounterListTemp.append(signChangeCounter)
             signChangeCounterList.append(signChangeCounterListTemp)
  
@@ -242,12 +271,94 @@ def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
         begin = i
         end = begin +10
         signChangeCounterList = calculateSignChanges(begin, end, gradientsPerSample)
-        #print(np.average(signChangeCounterList))
-    
+
 
     return signChangeCounterList
-    
 
+def plot_cosine_similarity(dirPath, plotName,model, modelsDirPath):
+    
+    cosine_similarity_toInitial, cosine_similarity_toFinal =  eval.calcConsineSimilarity(model,modelsDirPath)
+    fig, axs = plt.subplots(nrows=1, ncols=1)
+
+    cosine_similarity_toInitial = np.array(cosine_similarity_toInitial).flatten()
+    cosine_similarity_toFinal = np.array(cosine_similarity_toFinal).flatten()
+
+    axs.plot(cosine_similarity_toInitial) 
+    axs.plot(cosine_similarity_toFinal)
+    pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
+
+    plt.show()
+    return None
+
+def plotWeightSignDifferences(dirPath, plotName,model, modelsDirPath):
+    
+    percentageWeightSignDifference=  eval.calcWeightSignDifferences(model,modelsDirPath)
+    fig, axs = plt.subplots(nrows=1, ncols=1)
+
+    axs.plot(percentageWeightSignDifference ) 
+    pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
+
+    plt.show()
+    
+    return None
+
+def plotWeightsMagnitude(dirPath, plotName,model, modelsDirPath):
+
+    weightsMagnitudeList = eval.calcWeightsMagnitude(model,modelsDirPath)
+    fig, axs = plt.subplots(nrows=1, ncols=1)
+
+    axs.plot(weightsMagnitudeList)
+    pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
+
+    plt.show()
+    
+    return None
+
+
+def plotL2Distance(dirPath, plotName,model, modelsDirPath):
+    l2Dist_toInitialList, l2Dist_toFinalList =  eval.calcL2distance(model,modelsDirPath)
+    fig, axs = plt.subplots(nrows=1, ncols=1)
+
+    axs.plot(l2Dist_toInitialList) 
+    axs.plot(l2Dist_toFinalList)
+    pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
+
+    plt.show()
+    return None
+
+def plotWeightTrace(dirPath, plotName,model, modelsDirPath):
+    weightTraceList =  eval.calcWeightTrace(model,modelsDirPath)
+    fig, axs = plt.subplots(nrows=1, ncols=1)
+
+    for i in weightTraceList:
+        axs.plot(i ) 
+
+    pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
+
+    plt.show()
+    return None
+
+def plotGradientMagnitude(dirPath, plotName,featureListALL,perFeature= False):
+
+    if not(perFeature):
+        fig, axs = plt.subplots(nrows=1, ncols=1)
+        averageGradientMagnitude =  eval.calcGradientMagnitude(featureListALL)
+        axs.plot(averageGradientMagnitude) 
+
+    else:
+
+        gradientMagnitudePerFeature =  eval.calcGradientMagnitude(featureListALL, perFeature =perFeature)
+            
+        fig, axs = plt.subplots(nrows=int(len(gradientMagnitudePerFeature)), ncols=1) 
+ 
+        for i, feature in enumerate(gradientMagnitudePerFeature):
+
+                axs[i].plot(feature)
+
+    pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
+
+    plt.show()
+    return None
 
 """
 #TODO:
