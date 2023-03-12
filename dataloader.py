@@ -77,6 +77,7 @@ def preProcessingData(X, y, path= None , batch_size= 4, test_size =0.2 ,droplist
         return normalizeed1
 
     X_train = normalize(X_train, dim=1)
+    X_eval = normalize(X_eval, dim=1)
     X_test = normalize(X_test, dim=1)
     #y_train = normalize(y_train, dim=0)
     #y_test = normalize(y_test, dim=0)
@@ -103,7 +104,7 @@ def preProcessingData(X, y, path= None , batch_size= 4, test_size =0.2 ,droplist
     #testloader = torch.utils.data.DataLoader(testset,shuffle=False, batch_size=batch_size , num_workers=2)
 
 
-    return trainloader ,evalloader, testloader ,X_train ,X_test ,  y_train , y_test
+    return trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test
 #data = pd.read_csv(r"/home/rosario/explainable/Bachelor/Diabetes/Data/diabetes.csv")
 
 def load_kaggle_diabetes_dataset( batch_size= 4, test_size =0.2 ,droplist= []):
@@ -134,9 +135,8 @@ def load_kaggle_diabetes_dataset( batch_size= 4, test_size =0.2 ,droplist= []):
     X , inputFeatures= dropFeatures(droplist=droplist, X=X, inputFeatures=inputFeatures)
     
     y = data["Outcome"]
-    trainloader ,evalloader, testloader ,X_train ,X_test ,  y_train , y_test= preProcessingData(X=X, y=y, path=path ,batch_size=batch_size, test_size=test_size,droplist=droplist)
-    print(len(y_train))
-    return trainloader ,evalloader, testloader ,X_train ,X_test ,  y_train , y_test , inputFeatures, outputFeatures, datasetName, features_names
+    trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test= preProcessingData(X=X, y=y, path=path ,batch_size=batch_size, test_size=test_size,droplist=droplist)
+    return trainloader ,evalloader, testloader ,X_train, X_eval, X_test, y_train, y_eval, y_test , inputFeatures, outputFeatures, datasetName, features_names
 
 
 
@@ -159,9 +159,8 @@ def BreastCancerUCI(batch_size= 4, test_size =0.2 ,droplist= []): # 0.2 tset,siz
     y= data["target"]    
 
     X, inputFeatures = dropFeatures(droplist= droplist, X=X, inputFeatures=inputFeatures)
-    trainloader ,evalloader, testloader ,X_train ,X_test ,  y_train , y_test = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
-    print(y_train)
-    return trainloader ,evalloader, testloader ,X_train ,X_test ,  y_train , y_test , inputFeatures, outputFeatures, datasetName, features_names
+    trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
+    return trainloader ,evalloader, testloader ,X_train, X_eval, X_test, y_train, y_eval, y_test , inputFeatures, outputFeatures, datasetName, features_names
 #DiabetesUCI(batch_size= 4, test_size =0.2 ,droplist= [])
 
 def dryBeanUCI(batch_size= 4, test_size =0.2 ,droplist= []):
@@ -196,6 +195,6 @@ def dryBeanUCI(batch_size= 4, test_size =0.2 ,droplist= []):
     X , inputFeatures= dropFeatures(droplist=droplist, X=X, inputFeatures=inputFeatures)
     y = data["IntClass"]
     y = y[:3349]
-    trainloader ,evalloader, testloader ,X_train ,X_test ,  y_train , y_test = preProcessingData(X=X, y=y, path=path ,batch_size=batch_size, test_size=test_size,droplist=droplist)
+    trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test = preProcessingData(X=X, y=y, path=path ,batch_size=batch_size, test_size=test_size,droplist=droplist)
 
-    return trainloader ,evalloader, testloader ,X_train ,X_test ,  y_train , y_test , inputFeatures, outputFeatures, datasetName
+    return trainloader ,evalloader, testloader ,X_train, X_eval, X_test, y_train, y_eval, y_test , inputFeatures, outputFeatures, datasetName
