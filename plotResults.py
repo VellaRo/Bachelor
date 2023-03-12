@@ -1,5 +1,4 @@
 from matplotlib import pyplot as plt
-#plot the loss function
 import pickle #figx = pickle.load(open('FigureObject.fig.pickle', 'rb')) 
               #figx.show() # Show the figure, edit it, etc.!
 import sklearn
@@ -126,7 +125,7 @@ def plot_Loss_Acc(dirPath,model,modelsDirPath, trainloader,evalloader,testloader
 
         axs[1][3].set_xlabel('iterations')
         axs[1][3].set_ylabel('evalAcc_iteration')
-        axs[1][3].plot(range(len(evalAcc_iteration)),evalAcc_iteration) # change to loss_per_epoch
+        axs[1][3].plot(range(len(evalAcc_iteration)),evalAcc_iteration)
 
         axs[2][3].set_xlabel('iterations')
         axs[2][3].set_ylabel('testAcc_iteration')
@@ -135,7 +134,7 @@ def plot_Loss_Acc(dirPath,model,modelsDirPath, trainloader,evalloader,testloader
         
     plt.show()
     fig.savefig(str(dirPath) + "_loss")
-    pickle.dump(fig, open(str(dirPath) + '_loss.pickle', 'wb')) # This is for Python 3 - py2 may need `file` instead of `open`
+    pickle.dump(fig, open(str(dirPath) + '_loss.pickle', 'wb')) 
 
     return None
 
@@ -173,13 +172,12 @@ def plot_features(dirPath, inputFeatures, featureListALL, plotName):
         axs[i].plot(featureListALL[i])
 
     plt.savefig(str(dirPath) +str(plotName) )
-    pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb')) # This is for Python 3 - py2 may need `file` instead of `open`
+    pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb')) 
 
     plt.tight_layout()  
     plt.show()
 
     return None
-
 
 
 def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
@@ -216,7 +214,7 @@ def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
         fig, axs = plt.subplots(nrows=len(featureListAll), ncols=2 )
         fig1, axs1 = plt.subplots(nrows=len(featureListAll), ncols=2 )
 
-        for i in range(len(featureListAll)):#len(featureListAllPerSample)):
+        for i in range(len(featureListAll)):
 
             axs1[i][0].plot(gradientsPerSample[i][index])
             axs1[i][1].plot(gradientsPerSample[i][index+1])
@@ -227,6 +225,7 @@ def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
 
     for i in range(0,howManySamplesToLookAt):
         plotSubplots(i)
+        print("press a button for the next Sample")
         w = plt.waitforbuttonpress()
 
 def plot_cosine_similarity(dirPath, plotName,model, modelsDirPath):
@@ -316,5 +315,4 @@ def plotGradientMagnitude(dirPath, plotName,featureListALL,perFeature= False):
 
 """
 #TODO:
-# plot the gradients for every image over time 
 """
