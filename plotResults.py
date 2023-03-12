@@ -7,7 +7,7 @@ from torch import no_grad
 import numpy as np
 import eval
 
-def plot_CM(y_train,y_test,  train_predictions, test_predictions, dirPath):
+def plotConfusionMatrix(y_train,y_test,  train_predictions, test_predictions, dirPath):
 
     """
     returns: None
@@ -43,7 +43,7 @@ def plot_CM(y_train,y_test,  train_predictions, test_predictions, dirPath):
 
 import torch
 
-def plot_Loss_Acc(dirPath,model,modelsDirPath, trainloader,evalloader,testloader, device, loss_function, num_epochs, y_train, y_eval, y_test):
+def plotLoss_Acc(dirPath,model,modelsDirPath, trainloader,evalloader,testloader, device, loss_function, num_epochs, y_train, y_eval, y_test):
     """
     returns: None
 
@@ -139,7 +139,7 @@ def plot_Loss_Acc(dirPath,model,modelsDirPath, trainloader,evalloader,testloader
     return None
 
 
-def plot_features(dirPath, inputFeatures, featureListALL, plotName):
+def plotGradientsPerFeature(dirPath, inputFeatures, featureListALL, plotName):
     """
     returns: None
 
@@ -183,10 +183,6 @@ def plot_features(dirPath, inputFeatures, featureListALL, plotName):
 def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
     
     print("SHUFFLE NEEDS TO BE FALSE AT THE MOMENT") 
-
-    print(np.shape(np.array(featureListAll)))
-    #d1, d2 = np.shape(np.array(featureListAll))
-    #print(type(featureListAll))
     featureListAll = np.array(featureListAll)
 
     def reshapeTogradientsPerSample():
@@ -228,7 +224,7 @@ def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
         print("press a button for the next Sample")
         w = plt.waitforbuttonpress()
 
-def plot_cosine_similarity(dirPath, plotName,model, modelsDirPath):
+def plotCosineSimilarity(dirPath, plotName,model, modelsDirPath):
     
     cosine_similarity_toInitial, cosine_similarity_toFinal =  eval.calcConsineSimilarity(model,modelsDirPath)
     fig, axs = plt.subplots(nrows=1, ncols=1)
@@ -255,7 +251,7 @@ def plotWeightSignDifferences(dirPath, plotName,model, modelsDirPath):
     
     return None
 
-def plotWeightsMagnitude(dirPath, plotName,model, modelsDirPath):
+def plotWeightMagnitude(dirPath, plotName,model, modelsDirPath):
 
     weightsMagnitudeList = eval.calcWeightsMagnitude(model,modelsDirPath)
     fig, axs = plt.subplots(nrows=1, ncols=1)

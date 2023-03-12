@@ -3,6 +3,19 @@ import os
 import numpy as np
 import torch 
 
+
+def calc_grads(outputs, inputs):
+
+    _outputs_max_idx = torch.argmax(outputs, dim=1) # indexthat contains maximal value per row (prediction per sample in batch)
+    _outputs = torch.gather(outputs, dim=1, index= _outputs_max_idx.unsqueeze(1)) # gather sammelt outputs aus y entlang der Axe 
+                                                                                         # dim die in index spezifiziert sind, 
+                                                                                         # wobei index einen tensor von shape(batch_size, 1)
+                                                                                         # erwartet (->unsqueeze(1))
+             
+    grad = torch.autograd.grad(torch.unbind(_outputs), inputs)[0]
+
+    return grad
+
 def getWeights(model):
     """returns flattend weights from a model
     
@@ -69,6 +82,17 @@ def createDirPath(seed , modelName, datasetName, num_epochs, batch_size, lr):
     return dirPath
     
 def saveResultsToNPZ(dirPath, featureListALL, featureListALL_0 ,training_acc, test_acc, training_loss_epoch, training_loss_batch, test_loss_epoch, test_loss_batch):
+    # cosine_similarity plot, data
+    # weightsList
+    # weightSignDifference plot, data
+    # weightMagnitude plot, data
+    # L2Distance plot, data
+    # weightTrace plot
+    # gradientMagnitude plot , data
+    # gradientMagnitudePerFeature plot, data
+
+
+
     featureListALL = torch.tensor(featureListALL, device = 'cpu')
     featureListALL_0 = torch.tensor(featureListALL_0, device = 'cpu')
     training_acc = torch.tensor(training_acc, device = 'cpu')

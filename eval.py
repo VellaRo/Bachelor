@@ -7,7 +7,48 @@ import utils
 
 
 from sklearn.metrics.pairwise import cosine_similarity
+"""
 
+calculates gradiends for evaluationSet
+
+DOES NOT WORK need to adapt
+
+TODO: If i need the gradients of evaluationSet 
+
+
+def calculateGrads(evalloader, model, num_epochs, device, y_train,y_test, lr,optimizer,loss_function, grads_eval):
+    # look into a evaluation set how do the gradients change on this set ? for every interation (after every batch do a eval grads  on eval data)
+    for e_inputs, e_labels in evalloader:
+
+                e_inputs = e_inputs.to(device)
+                e_labels = e_labels.to(device)
+
+                e_inputs.requires_grad = True
+
+                optimizer.zero_grad()
+                
+                outputs_eval = model(e_inputs)
+
+                loss = loss_function(outputs_eval, e_labels)
+
+                loss.backward()
+                
+                optimizer.step()
+                optimizer.zero_grad()
+
+                outputs_eval = model(e_inputs)
+
+                _outputs_eval_max_idx = torch.argmax(outputs_eval, dim=1) # indexthat contains maximal value per row (prediction per sample in batch)
+                _outputs_eval = torch.gather(outputs_eval, dim=1, index= _outputs_eval_max_idx.unsqueeze(1)) # gather sammelt outputs aus y entlang der Axe 
+                                                                                         # dim die in index spezifiziert sind, 
+                                                                                         # wobei index einen tensor von shape(batch_size, 1)
+                                                                                         # erwartet (->unsqueeze(1))
+             
+                grad_eval = torch.autograd.grad(torch.unbind(_outputs_eval), e_inputs)[0]
+                grads_eval.append(grad_eval)
+
+    return grads_eval
+"""
 def calcAccLoss(model,modelsDirPath, loader, name , device, loss_function, num_epochs, y):
     """calculate Cosine Similarity according to initial and final weights
 
