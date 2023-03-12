@@ -229,44 +229,6 @@ def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
         plotSubplots(i)
         w = plt.waitforbuttonpress()
 
-    
-             
-    """
-        w = plt.waitforbuttonpress()
-    print(np.shape(gradientsPerSample))
-    def calculateSignChanges(begin, end , gradientsPerSample):
-
-        gradientsPerSample=  np.array(gradientsPerSample)
-        earlyStageList = gradientsPerSample[:,:,begin:end] # features , samples , epochs 
-        print(np.shape(earlyStageList))
-        biggerThenZeroBefore = False 
-        signChangeCounterList =[]
-        for i in range(len(earlyStageList)): # number features 
-            signChangeCounterListTemp= []
-            for j in range(len(earlyStageList[i])): # nuber of samples 
-                signChangeCounter = 0
-                for k in range(len(earlyStageList[i][j])):
-                    if earlyStageList[i][j][k] < 0:#
-                        biggerThenZero = False
-                    else:
-                        biggerThenZero = True
-
-                    if biggerThenZero != biggerThenZeroBefore: 
-                        signChangeCounter = signChangeCounter +1
-                        biggerThenZeroBefore = not(biggerThenZeroBefore)
-                signChangeCounterListTemp.append(signChangeCounter)
-            signChangeCounterList.append(signChangeCounterListTemp)
- 
-        return signChangeCounterList
-    
-    for i in range(0,num_epochs,10):
-        begin = i
-        end = begin +10
-        signChangeCounterList = calculateSignChanges(begin, end, gradientsPerSample)
-
-
-    return signChangeCounterList
-"""
 def plot_cosine_similarity(dirPath, plotName,model, modelsDirPath):
     
     cosine_similarity_toInitial, cosine_similarity_toFinal =  eval.calcConsineSimilarity(model,modelsDirPath)
