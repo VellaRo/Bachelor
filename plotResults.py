@@ -314,28 +314,65 @@ def plotWeightTrace(dirPath, plotName,model, modelsDirPath):
     plt.show()
     return None
 
-def plotGradientMagnitude(dirPath, plotName,featureListALL,perFeature= False):
+def plotGradientMagnitude(dirPath, plotName,separatly=False, perFeature= False):
+
+    data = utils.loadData(dirPath)
+
+    trainAveragedAbsoluteGradientMagnitude =  data["trainAveragedAbsoluteGradientMagnitude"]
+    evalAveragedAbsoluteGradientMagnitude = data["evalAveragedAbsoluteGradientMagnitude"]
+    
+    trainAbsoluteabsoluteGradientMagnitudePerFeature =  data["trainAbsoluteGradientMagnitudePerFeature"]
+    evalAbsoluteabsoluteGradientMagnitudePerFeature = data["evalAbsoluteGradientMagnitudePerFeature"]
 
     if not(perFeature):
-        fig, axs = plt.subplots(nrows=1, ncols=1)
-        averageGradientMagnitude =  eval.calcGradientMagnitude(featureListALL)
-        axs.plot(averageGradientMagnitude) 
+        print("plotting: GM GradientMagnitude averaged over features")
+        figGM, axsGM = plt.subplots(nrows=1, ncols=2)
+        
+        axsGM[0].plot(trainAveragedAbsoluteGradientMagnitude)
+        axsGM[0].set_xlabel('gradientMagnitude')
+        axsGM[0].set_ylabel('iteration')
+        axsGM[0].set_title("TRAIN GradientMagnitude averaged over features")
 
-    else:
+        axsGM[1].plot(evalAveragedAbsoluteGradientMagnitude)
+        axsGM[1].set_xlabel('gradientMagnitude')
+        axsGM[1].set_ylabel('iteration')
+        axsGM[1].set_title("EVAL GradientMagnitude averaged over features")
 
-        gradientMagnitudePerFeature =  eval.calcGradientMagnitude(featureListALL, perFeature =perFeature)
-            
-        fig, axs = plt.subplots(nrows=int(len(gradientMagnitudePerFeature)), ncols=1) 
+        figGM.savefig(str(dirPath) + plotName+ "Averaged")
+        pickle.dump(figGM , open(str(dirPath) + str(plotName)+ "Averaged", 'wb'))
+        
+        """
+        TODO: separtly
+        """
+    else:  
+        #figGM, axsGM = plt.subplots(nrows=int(len(trainAbsoluteabsoluteGradientMagnitudePerFeature)), ncols=1) 
  
-        for i, feature in enumerate(gradientMagnitudePerFeature):
+        if not(separatly):
+            print("plotting: GM GradientMagnitude PerFeature")
+            figGM, axsGM = plt.subplots(nrows=int(len(trainAbsoluteabsoluteGradientMagnitudePerFeature)), ncols=2) 
 
-                axs[i].plot(feature)
+            for i in range(len(trainAbsoluteabsoluteGradientMagnitudePerFeature)):
+                #figGM, axsGM = plt.subplots(nrows=int(len(trainAbsoluteabsoluteGradientMagnitudePerFeature)), ncols=2) 
 
-    pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
+                axsGM[i][0].plot(trainAbsoluteabsoluteGradientMagnitudePerFeature[i])
+                axsGM[i][0].set_xlabel('gradientMagnitude')
+                axsGM[i][0].set_ylabel('iteration')
+                axsGM[i][0].set_title("EVAL GradientMagnitude per features")
 
-    plt.show()
+                axsGM[i][1].plot(evalAbsoluteabsoluteGradientMagnitudePerFeature[i])
+                axsGM[i][1].set_xlabel('gradientMagnitude')
+                axsGM[i][1].set_ylabel('iteration')
+                axsGM[i][1].set_title("TRAIN GradientMagnitude per features")
+
+            figGM.savefig(str(dirPath) + plotName+ "per feature")
+            pickle.dump(figGM, open(str(dirPath) + str(plotName)+ "per feature", 'wb'))
+            """
+            TODO: separtly
+            """
+        #else :
+        #    for i, feature in enumerate(gradientMagnitudePerFeature):
+        #        exec("figGM" +str(i)+", axsGM"+ str(i)+" = plt.subplots(nrows=int(len(gradientMagnitudePerFeature)), ncols=1)") 
+         #       exec("axsGM" +str(i)+".plot(feature)")
+        #        pass
+
     return None
-
-"""
-#TODO:
-"""
