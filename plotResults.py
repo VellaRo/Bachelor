@@ -8,15 +8,25 @@ import numpy as np
 import eval
 import utils
 
+#CLEANED
 def plotConfusionMatrix(dirPath, plotName):
 
     """
-    returns: None
-
     plots the Confusionmatrix for trainingSet and testSet 
 
     saves the plot as png
     saves the plot as pickel( for interactive plot in dataDiscovery)
+
+    parameters:
+        dirPath: where to save the plots
+
+        plotName: how is the plot named (name to save plot ) 
+
+        TODO: separatly if needed
+
+    returns: None
+
+
 
     """
     fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(5,4) )
@@ -27,27 +37,28 @@ def plotConfusionMatrix(dirPath, plotName):
     y_eval = data["y_eval"]
     y_test = data["y_test"]
     testPredictions = data["testPredictionList"]
+    evalPredictions = data["evalPredictionList"]
     trainPredictions = data["trainPredictionList"]
+    
     trainAcc = data["trainAccPerEpochList"]
     evalAcc = data["evalAccPerEpochList"]
     testAcc = data["testAccPerEpochList"]
 
     cmTest = sklearn.metrics.confusion_matrix(y_test,testPredictions)
-    cmEval = sklearn.metrics.confusion_matrix(y_eval,testPredictions)
+    cmEval = sklearn.metrics.confusion_matrix(y_eval,evalPredictions)
     cmTrain = sklearn.metrics.confusion_matrix(y_train,trainPredictions)
-
 
     sns.heatmap(cmTrain, linewidth=0.5,ax=axs[0])
     axs[0].set_xlabel('Actual')
     axs[0].set_ylabel('Predicted')
     axs[0].set_title('Train_Acc: ' + str(trainAcc[-1]))
 
-    sns.heatmap(cmTest, linewidth=0.5 ,ax=axs[1])
+    sns.heatmap(cmEval, linewidth=0.5 ,ax=axs[1])
     axs[1].set_ylabel('Actual')
     axs[1].set_xlabel('Predicted')
     axs[1].set_title('Eval_Acc: ' + str(evalAcc[-1]))
 
-    sns.heatmap(cmTrain, linewidth=0.5,ax=axs[2])
+    sns.heatmap(cmTest, linewidth=0.5,ax=axs[2])
     axs[2].set_xlabel('Actual')
     axs[2].set_ylabel('Predicted')
     axs[2].set_title('Test_Acc: ' + str(testAcc[-1]))
@@ -55,9 +66,9 @@ def plotConfusionMatrix(dirPath, plotName):
 
     fig.savefig(str(dirPath) + plotName)
     pickle.dump(fig, open(str(dirPath) + plotName+'.pickle', 'wb')) 
-    #plt.show()
     return None
 
+#CLEANED
 def plotLoss_Acc(dirPath,plotName, separatly =False):
     """
     
@@ -164,49 +175,81 @@ def plotLoss_Acc(dirPath,plotName, separatly =False):
 
     return None
 
-
-
-def plotGradientsPerFeature(dirPath, inputFeatures, featureListALL, plotName):
+#CLEANED
+def plotGradientsPerFeature(dirPath, plotName ,sepratly=False):
     """
-    returns: None
-
     plots the gradients for each feature  
 
     saves the plot as png
     saves the plot as pickel( for interactive plot in dataDiscovery)
+    
+    parameters:
+        dirPath: where to save the plots
 
+        plotName: how is the plot named (name to save plot ) 
+
+        separatly:
+            False: plot all in one figure
+            True:  plot all in separate figures 
+
+    
+    returns: None
     """
-    fig, axs = plt.subplots(inputFeatures)
+    # Load data
+    data = utils.loadData(dirPath)
+    trainGradientPerFeature = data["trainGradientsPerFeature"]
+    evalGradientPerFeature = data["evalGradientsPerFeature"]
+    inputFeatures = data["inputFeatures"]
+    inputFeatures = inputFeatures.item()
+    tempStacked = [trainGradientPerFeature, evalGradientPerFeature]
 
-    fig.set_size_inches(10,15)
-    fig.tight_layout(pad=2.0)
     #find maximum/minumum 
 
     maxValue= 0
     minValue= 0
     #calculate metrics
-    gradientMean_Features = []
-    for i in range(len(featureListALL)):
-        gradientMean_Features.append(np.array(featureListALL[i]).mean())
+    for i in range(len(trainGradientPerFeature)):
 
-        maxValue = max( maxValue, max( featureListALL[i]))    
-        minValue = min( minValue, min(featureListALL[i]))
-
+        maxValueT = max( maxValue, max(trainGradientPerFeature[i]))    
+        maxValueE = max( maxValue, max(evalGradientPerFeature[i]))
+        minValueT = min( minValue, min(trainGradientPerFeature[i]))
+        minValueE = min( minValue, min(evalGradientPerFeature[i]))
+        maxValue  = max(maxValueT, maxValueE)
+        minValue  = min(minValueT, minValueE)
     #plot for all features
-    for i in range(len(axs)):
-        axs[i].set_ylim(minValue,maxValue)
-        axs[i].set_xlabel("mean:" + str(gradientMean_Features[i]))
-        axs[i].plot(featureListALL[i])
 
-    plt.savefig(str(dirPath) +str(plotName) )
-    pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb')) 
+    if not(sepratly):
+        figGPF, axsGPF = plt.subplots(inputFeatures,2) 
 
-    plt.tight_layout()  
-    plt.show()
+        figGPF.set_size_inches(10,15)
+        figGPF.tight_layout(pad=1.5)
+        for i in range(len(axsGPF)):
+            for j in range(len(tempStacked)):
+                axsGPF[i][j].set_ylim(minValue,maxValue)
+            
+                axsGPF[i][j].set_xlabel("iteration")
+                axsGPF[i][j].set_ylabel("gradients")
+
+                axsGPF[i][j].plot(tempStacked[j][i])
+        
+        plt.savefig(str(dirPath) +str(plotName) )
+        pickle.dump(figGPF, open(str(dirPath) + str(plotName), 'wb')) 
+
+    elif sepratly:
+        for i in range(len(tempStacked)):
+            exec("figGPF" +str(i) +", axsGPF"+str(i)+ "= plt.subplots(inputFeatures)")
+            for j in range(len(tempStacked[i])):
+                exec("axsGPF"+str(i)+"[j]"+ ".set_ylim(minValue,maxValue)")
+                exec("axsGPF"+str(i)+"[j]"+ ".set_xlabel('iteration')")
+                exec("axsGPF"+str(i)+"[j]"+ ".set_ylabel('gradients')")
+                exec("axsGPF"+str(i)+"[j]"+ ".plot(tempStacked[i][j])")
+        
+        exec("figGPF"+str(i)+".savefig(str(dirPath) +str(plotName) +str(i))")
+        exec("pickle.dump(figGPF"+str(i)+", open(str(dirPath) + str(plotName) +str(i), 'wb'))") 
 
     return None
 
-
+# NOT CLEANED YET ALSO NOT FIXED FOR SHUFFELED VALUES
 def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
     
     print("SHUFFLE NEEDS TO BE FALSE AT THE MOMENT") 
@@ -251,56 +294,104 @@ def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
         ("press a button for the next Sample")
         w = plt.waitforbuttonpress()
 
-def plotCosineSimilarity(dirPath, plotName,model, modelsDirPath):
+#CLEANED
+def plotCosineSimilarity(dirPath, plotName, set):
     
-    cosine_similarity_toInitial, cosine_similarity_toFinal =  eval.calcConsineSimilarity(model,modelsDirPath)
+    #cosine_similarity_toInitial, cosine_similarity_toFinal =  eval.calcConsineSimilarity(model,modelsDirPath)
     fig, axs = plt.subplots(nrows=1, ncols=1)
 
-    cosine_similarity_toInitial = np.array(cosine_similarity_toInitial).flatten()
-    cosine_similarity_toFinal = np.array(cosine_similarity_toFinal).flatten()
+    #cosine_similarity_toInitial = np.array(cosine_similarity_toInitial).flatten()
+    #cosine_similarity_toFinal = np.array(cosine_similarity_toFinal).flatten()
+    data = utils.loadData(dirPath)
 
-    axs.plot(cosine_similarity_toInitial) 
-    axs.plot(cosine_similarity_toFinal)
+    if set == "train":
+        cosine_similarity_toInitialList= data["trainCosine_similarity_toInitialList"]    
+        cosine_similarity_toFinalList= data["trainCosine_similarity_toFinalList"]
+    elif set == "eval":
+        cosine_similarity_toInitialList= data["evalCosine_similarity_toInitialList"]    
+        cosine_similarity_toFinalList= data["evalCosine_similarity_toFinalList"]
+    elif set == "test":
+        cosine_similarity_toInitialList= data["testCosine_similarity_toInitialList"]    
+        cosine_similarity_toFinalList= data["testCosine_similarity_toFinalList"]
+
+    axs.plot(range(len(cosine_similarity_toInitialList)),cosine_similarity_toInitialList)
+    axs.plot(range(len(cosine_similarity_toFinalList)),cosine_similarity_toFinalList )
+    fig.savefig(str(dirPath) + str(plotName))
     pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
 
-    plt.show()
     return None
 
-def plotWeightSignDifferences(dirPath, plotName,model, modelsDirPath):
+#CLEANED
+def plotWeightSignDifferences(dirPath, plotName, set):
     
-    percentageWeightSignDifference=  eval.calcWeightSignDifferences(model,modelsDirPath)
+    #percentageWeightSignDifference=  eval.calcWeightSignDifferences(model,modelsDirPath)
+    data = utils.loadData(dirPath)
+    if set == "train":
+        percentageWeightSignDifferences_toInitialList = data["trainPercentageWeightSignDifferences_toInitialList"]
+        percentageWeightSignDifferences_toFinalList = data["trainPercentageWeightSignDifferences_toFinalList"]
+
+    elif set == "eval":
+        percentageWeightSignDifferences_toInitialList = data["evalPercentageWeightSignDifferences_toInitialList"]
+        percentageWeightSignDifferences_toFinalList = data["evalPercentageWeightSignDifferences_toFinalList"]
+
+    elif set == "test":
+        percentageWeightSignDifferences_toInitialList = data["testPercentageWeightSignDifferences_toInitialList"]
+        percentageWeightSignDifferences_toFinalList = data["testPercentageWeightSignDifferences_toFinalList"]
+
+
     fig, axs = plt.subplots(nrows=1, ncols=1)
 
-    axs.plot(percentageWeightSignDifference ) 
+    axs.plot(percentageWeightSignDifferences_toInitialList) 
+    axs.plot(percentageWeightSignDifferences_toFinalList) 
+    
+    fig.savefig(str(dirPath) + str(plotName))    
     pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
-
-    plt.show()
     
     return None
 
-def plotWeightMagnitude(dirPath, plotName,model, modelsDirPath):
+#CLEANED
+def plotWeightMagnitude(dirPath, plotName, set):
 
-    weightsMagnitudeList = eval.calcWeightsMagnitude(model,modelsDirPath)
+    data = utils.loadData(dirPath)
+    if set == "train":
+        absoluteIterationWeightsList = data["trainAbsoluteIterationWeightsList"]
+    elif set == "eval":
+        absoluteIterationWeightsList = data["evalAbsoluteIterationWeightsList"]
+    elif set == "test":
+        absoluteIterationWeightsList = data["testAbsoluteIterationWeightsList"]
+
     fig, axs = plt.subplots(nrows=1, ncols=1)
+    axs.plot(absoluteIterationWeightsList)
 
-    axs.plot(weightsMagnitudeList)
+    fig.savefig(str(dirPath) + str(plotName))    
     pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
-
-    plt.show()
     
     return None
 
+#CLEANED
+def plotL2Distance(dirPath, plotName, set):
 
-def plotL2Distance(dirPath, plotName,model, modelsDirPath):
-    l2Dist_toInitialList, l2Dist_toFinalList =  eval.calcL2distance(model,modelsDirPath)
+    data = utils.loadData(dirPath)
+    if set == "train":
+        l2Dist_toInitialList = data["trainL2Dist_toInitialList"]
+        l2Dist_toFinalList = data["trainL2Dist_toFinalList"]
+    elif set == "eval":
+        l2Dist_toInitialList = data["evalL2Dist_toInitialList"]
+        l2Dist_toFinalList = data["evalL2Dist_toFinalList"]
+    elif set == "test":
+        l2Dist_toInitialList = data["testL2Dist_toInitialList"]
+        l2Dist_toFinalList = data["testL2Dist_toFinalList"]
+    #l2Dist_toInitialList, l2Dist_toFinalList =  eval.calcL2distance(model,modelsDirPath)
     fig, axs = plt.subplots(nrows=1, ncols=1)
 
     axs.plot(l2Dist_toInitialList) 
     axs.plot(l2Dist_toFinalList)
+    
+    fig.savefig(str(dirPath) + str(plotName))    
     pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
 
-    plt.show()
     return None
+
 
 def plotWeightTrace(dirPath, plotName,model, modelsDirPath):
     weightTraceList =  eval.calcWeightTrace(model,modelsDirPath)
@@ -311,11 +402,11 @@ def plotWeightTrace(dirPath, plotName,model, modelsDirPath):
 
     pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
 
-    plt.show()
     return None
 
+#CLEANED
 def plotGradientMagnitude(dirPath, plotName,separatly=False, perFeature= False):
-
+    
     data = utils.loadData(dirPath)
 
     trainAveragedAbsoluteGradientMagnitude =  data["trainAveragedAbsoluteGradientMagnitude"]
