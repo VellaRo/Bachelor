@@ -3,9 +3,16 @@ import os
 import numpy as np
 import torch 
 
-
 def calc_grads(outputs, inputs):
+    """
+    calculates gradients 
 
+    parameters:
+        outputs: model output
+        inputs: input batch 
+
+    returns grad: gradients
+    """
     _outputs_max_idx = torch.argmax(outputs, dim=1) # indexthat contains maximal value per row (prediction per sample in batch)
     _outputs = torch.gather(outputs, dim=1, index= _outputs_max_idx.unsqueeze(1)) # gather sammelt outputs aus y entlang der Axe 
                                                                                          # dim die in index spezifiziert sind, 
@@ -26,13 +33,13 @@ def getWeights(model):
     for param in model.parameters():
 
         weights.extend((param.cpu().detach().numpy().flatten()))
-    return weights
+    return np.array(weights)
 
 
-def calculatePredictions(model ,X_test, X_train , device):
+def calculatePredictions(model ,X, X_train , device):
     """
     returns:  train_predictions,test_predictions 
-    for cm calculation
+    for confusionmatrix calculation
     """
     test_predictions = []
     train_predictions = []
@@ -53,26 +60,52 @@ def calculatePredictions(model ,X_test, X_train , device):
     return train_predictions,test_predictions 
 
 #unpacking feature list in usale dimensions
-def unpackingFeatureList(inputFeatures , grads):
-    featureListALL = []
+def unpackingGradients(inputFeatures , grads):
+    """
+    reshapes gradients to gradients per feature 
+    
+    parameters:
+            inputFeatures: number of input features
+
+            grads: gradientList which needs to be reshaped 
+
+    return: unpacked gradients
+    """
+    unpackedGradients = []
 
     for i in range(inputFeatures):
-        featureListALL.append([])
+        unpackedGradients.append([])
 
     for i in range(len(grads)):
         for j in range(len(grads[i])):
             for k in range(inputFeatures):
-                featureListALL[k].append(grads[i][j][k].item())
-    return featureListALL
+                unpackedGradients[k].append(grads[i][j][k].item())
+    return np.array(unpackedGradients)
 
 def createDirPath(seed , modelName, datasetName, num_epochs, batch_size, lr):
+    """
+    creates a directory path accrding to the parameters selectet for the training process
 
+    seed: seednumber (for reproducability)
+
+    modelName: which model is beeing used
+
+    dataSetName: which dataset is going to be used
+
+    num_epochs: the number of epochs
+
+    batch_size: size of the batch
+
+    lr: learningrate 
+
+    returns dirPath: the path to the directory where the results will be stored (string) 
+    """
     # datetime now to name results
     datetimeNow =str(date.today()) + str(datetime.now().strftime("_%H%M%S"))
+    ####./ missing below !!!!
+    dirPath = '/Results/'+ "seedNum_" + str(seed) + "_" +str(modelName) +"_"+ str(datasetName) +"_"+ 'Num_Epochs_' + str(num_epochs) +'batchSize_'+ str(batch_size)+ '_'+ str(lr)+ '_'+ str(datetimeNow) +"/"
 
-    dirPath = './Results/'+ "seedNum_" + str(seed) + "_" +str(modelName) +"_"+ str(datasetName) +"_"+ 'Num_Epochs_' + str(num_epochs) +'batchSize_'+ str(batch_size)+ '_'+ str(lr)+ '_'+ str(datetimeNow) +"/"
-
-    dirPath = "./test/" + dirPath
+    dirPath = "./NEWtest" + dirPath
 
     isExist = os.path.exists(dirPath)
 
@@ -80,43 +113,38 @@ def createDirPath(seed , modelName, datasetName, num_epochs, batch_size, lr):
         os.makedirs(dirPath)
     
     return dirPath
-    
-def saveResultsToNPZ(dirPath, featureListALL, featureListALL_0 ,training_acc, test_acc, training_loss_epoch, training_loss_batch, test_loss_epoch, test_loss_batch):
-    # cosine_similarity plot, data
-    # weightsList
-    # weightSignDifference plot, data
-    # weightMagnitude plot, data
-    # L2Distance plot, data
-    # weightTrace plot
-    # gradientMagnitude plot , data
-    # gradientMagnitudePerFeature plot, data
 
+def appendToNPZ(NPZPath, name, newData):
+    """
+    appends data to a existing .npz file
 
+    parameters:
+            NPZPath: the path to the existing .npz file
 
-    featureListALL = torch.tensor(featureListALL, device = 'cpu')
-    featureListALL_0 = torch.tensor(featureListALL_0, device = 'cpu')
-    training_acc = torch.tensor(training_acc, device = 'cpu')
-    test_acc = torch.tensor(test_acc, device = 'cpu')
-    training_loss_epoch = torch.tensor(training_loss_epoch, device = 'cpu')
-    training_loss_batch = torch.tensor(training_loss_batch, device = 'cpu')
-    test_loss_epoch = torch.tensor(test_loss_epoch, device = 'cpu')
-    test_loss_batch = torch.tensor(test_loss_batch, device = 'cpu')
-    
+            name: name of the new entry to the .npz file
 
-    #save data
-    with torch.no_grad():
-        np.savez(dirPath + 'data.npz', featureListALL = featureListALL , 
-                                         featureListALL_0 = featureListALL_0,
-                                         training_acc = training_acc, 
-                                         test_acc =test_acc,
-                                         training_loss_epoch = training_loss_epoch, 
-                                         training_loss_batch = training_loss_batch,
-                                         test_loss_epoch =test_loss_epoch, 
-                                         test_loss_batch = test_loss_batch,
-                                         )
+            data: data to save into the .npz file
+
+    returns None
+    """    
+    data = np.load(NPZPath)
+    data = dict(data)
+    data[str(name)] = newData
+
+    np.savez(NPZPath,**data)
+
+    return None
+
 
 def loadData(dirPath):
-    #load data according to datatime now same as above since same datetimeNow
+    """
+    load the data from a .npz file  
+
+    parameters:
+            dirPath: the path to the data(.npz file) to be loaded
+    
+    returns : data(loaded data)            
+    """
     data = np.load(dirPath + 'data.npz')
 
     return data    
