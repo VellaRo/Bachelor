@@ -142,68 +142,62 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
                     outputs = model(inputs)
                     #
                     grads = utils.calc_grads(outputs, inputs)     
-
-                    if name== "train" or name == "eval":       
-                        gradientList.append(grads.cpu())
-                    #elif name == "train":
-                    #    trainSetGradients.append(grads)
-
-
-            ### end calculate grads
+                    gradientList.append(grads.cpu())
             
 
-            #get weights of model at iteration
-            iterationWeights = utils.getWeights(model)
-            ### WEIGHT_SIGNS_DIFFRENCES
-            initialWeightSigns = np.sign(initalWeights)
-            finalWeightSigns =  np.sign(finalWeights)
-           # initialWeightsSigns= initialWeightsSigns.flatten()
-            #finalWeights = finalWeights.flatten()
-            #iterationWeights = iterationWeights.flatten()
+                #get weights of model at iteration
+                #if name=="train":
+                #iterationWeightsF = utils.getWeights(finalModel)
+                #elif name == "eval":    
+                iterationWeights = utils.getWeights(model)
+                
+                #if (iterationWeightsF.all() !=iterationWeights.all()):
+                #    print(str(iterationWeightsF !=iterationWeights))
+                #    print(name)
+                ### WEIGHT_SIGNS_DIFFRENCES
+                initialWeightSigns = np.sign(initalWeights)
+                finalWeightSigns =  np.sign(finalWeights)
 
+                ### COSINE_SIMILARITY
+                cosine_similarity_toInitialList.append(cosine_similarity([initalWeights],[iterationWeights]).item())
+                cosine_similarity_toFinalList.append(cosine_similarity([finalWeights], [iterationWeights]).item())
 
-            ### COSINE_SIMILARITY
-            cosine_similarity_toInitialList.append(cosine_similarity([initalWeights],[iterationWeights]).item())
-            cosine_similarity_toFinalList.append(cosine_similarity([finalWeights], [iterationWeights]).item())
-            
-           #print(cosine_similarity_toInitialList)
-            ### WEIGHT_SIGNS_DIFFRENCES
-            iterationWeightsSigns = np.sign(iterationWeights)
-            
-            differenceCounter_toInitial = 0
-            for i,sign in enumerate(initialWeightSigns):
+                ### WEIGHT_SIGNS_DIFFRENCES
+                iterationWeightsSigns = np.sign(iterationWeights)
 
-                if iterationWeightsSigns[i] != sign:
-                    differenceCounter_toInitial +=1
+                differenceCounter_toInitial = 0
+                for i,sign in enumerate(initialWeightSigns):
 
-            weightSignDifferences_toInitialList.append(differenceCounter_toInitial)
+                    if iterationWeightsSigns[i] != sign:
+                        differenceCounter_toInitial +=1
 
+                weightSignDifferences_toInitialList.append(differenceCounter_toInitial)
 
-            differenceCounter_toFinal = 0
-            for i,sign in enumerate(finalWeightSigns):
+                differenceCounter_toFinal = 0
+                for i,sign in enumerate(finalWeightSigns):
 
-                if iterationWeightsSigns[i] != sign:
-                    differenceCounter_toFinal +=1
-            weightSignDifferences_toFinalList.append(differenceCounter_toFinal)
+                    if iterationWeightsSigns[i] != sign:
+                        differenceCounter_toFinal +=1
+                weightSignDifferences_toFinalList.append(differenceCounter_toFinal)
 
-            ### WEIGHT_MAGNITUDE
-            absoluteIterationWeights = np.average(np.absolute(iterationWeights))
-            absoluteIterationWeightsList.append(absoluteIterationWeights)
+                ### WEIGHT_MAGNITUDE
+                absoluteIterationWeights = np.average(np.absolute(iterationWeights))
+                absoluteIterationWeightsList.append(absoluteIterationWeights)
 
-            ### L2DIST
-            l2Dist_toInitial = np.linalg.norm(initalWeights-iterationWeights)
-            l2Dist_toFinal = np.linalg.norm(finalWeights-iterationWeights)
-        
-            l2Dist_toInitialList.append(l2Dist_toInitial)
-            l2Dist_toFinalList.append(l2Dist_toFinal)
+                ### L2DIST
+                l2Dist_toInitial = np.linalg.norm(initalWeights-iterationWeights)
+                l2Dist_toFinal = np.linalg.norm(finalWeights-iterationWeights)
 
-            ### WEIGHT_TRACE
-            if not(picked):
-                picked = True
-                randomIndicesList = random.sample(range(0, len(iterationWeights)), 10)
+                l2Dist_toInitialList.append(l2Dist_toInitial)
+                l2Dist_toFinalList.append(l2Dist_toFinal)
 
-            for i, indices in enumerate(randomIndicesList):
-                random10WeightsList[i].append(iterationWeights[indices])
+                ### WEIGHT_TRACE
+                if not(picked):
+                    picked = True
+                    randomIndicesList = random.sample(range(0, len(iterationWeights)), 10)
+
+                for i, indices in enumerate(randomIndicesList):
+                    random10WeightsList[i].append(iterationWeights[indices])
 
             ### ACC / LOSS / PREDICTIONS_LIST
             predictionList = []     # from last epoch
@@ -264,19 +258,17 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
         utils.appendToNPZ(dirPath+ "data.npz", name + "LossPerIterationList", lossPerIterationList)
         utils.appendToNPZ(dirPath+ "data.npz", name + "AccPerEpochList", accPerEpochList)
         utils.appendToNPZ(dirPath+ "data.npz", name + "AccPerIterationList", accPerIterationList)
-        utils.appendToNPZ(dirPath+ "data.npz", name + "Cosine_similarity_toInitialList", cosine_similarity_toInitialList) # Default always Per Iteration
-        utils.appendToNPZ(dirPath+ "data.npz", name + "Cosine_similarity_toFinalList", cosine_similarity_toFinalList)
-        utils.appendToNPZ(dirPath+ "data.npz", name + "PercentageWeightSignDifferences_toInitialList", percentageWeightSignDifferences_toInitialList)
-        utils.appendToNPZ(dirPath+ "data.npz", name + "PercentageWeightSignDifferences_toFinalList", percentageWeightSignDifferences_toFinalList)
-        utils.appendToNPZ(dirPath+ "data.npz", name + "AbsoluteIterationWeightsList", absoluteIterationWeightsList) 
-        
-        utils.appendToNPZ(dirPath+ "data.npz", name + "L2Dist_toInitialList", l2Dist_toInitialList)
-        utils.appendToNPZ(dirPath+ "data.npz", name + "L2Dist_toFinalList", l2Dist_toFinalList)
-        utils.appendToNPZ(dirPath+ "data.npz", name + "Random10WeightsList", random10WeightsList)
         utils.appendToNPZ(dirPath+ "data.npz", name + "PredictionList", predictionList) # from last epoch
-        
 
         if name == "train" or name == "eval":
+            utils.appendToNPZ(dirPath+ "data.npz", name + "Cosine_similarity_toInitialList", cosine_similarity_toInitialList) # Default always Per Iteration
+            utils.appendToNPZ(dirPath+ "data.npz", name + "Cosine_similarity_toFinalList", cosine_similarity_toFinalList)
+            utils.appendToNPZ(dirPath+ "data.npz", name + "PercentageWeightSignDifferences_toInitialList", percentageWeightSignDifferences_toInitialList)
+            utils.appendToNPZ(dirPath+ "data.npz", name + "PercentageWeightSignDifferences_toFinalList", percentageWeightSignDifferences_toFinalList)
+            utils.appendToNPZ(dirPath+ "data.npz", name + "AbsoluteIterationWeightsList", absoluteIterationWeightsList) 
+            utils.appendToNPZ(dirPath+ "data.npz", name + "L2Dist_toInitialList", l2Dist_toInitialList)
+            utils.appendToNPZ(dirPath+ "data.npz", name + "L2Dist_toFinalList", l2Dist_toFinalList)
+            utils.appendToNPZ(dirPath+ "data.npz", name + "Random10WeightsList", random10WeightsList)
             utils.appendToNPZ(dirPath+ "data.npz", name + "GradientsPerFeature", unpackedGradiends)
             utils.appendToNPZ(dirPath+ "data.npz", name + "GradientMagnitudePerFeature", gradientMagnitudePerFeature)
             utils.appendToNPZ(dirPath+ "data.npz", name + "AveragedGradientMagnitude", averagedGradientMagnitude)
