@@ -8,11 +8,10 @@ import numpy as np
 import eval
 import utils
 
-#CLEANED
-def plotConfusionMatrix(dirPath, plotName):
+def plotConfusionMatrix(dirPath, plotName, set):
 
     """
-    plots the Confusionmatrix for trainingSet and testSet 
+    plots the Confusionmatrix for trainingSet or testSet  or evalSet
 
     saves the plot as png
     saves the plot as pickel( for interactive plot in dataDiscovery)
@@ -22,47 +21,32 @@ def plotConfusionMatrix(dirPath, plotName):
 
         plotName: how is the plot named (name to save plot ) 
 
-        TODO: separatly if needed
+        set : chose a data set from "train" , "test", "eval
 
     returns: None
-
-
-
     """
-    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(5,4) )
+    fig, axs = plt.subplots(nrows=1, ncols=1, figsize=(4,4) )
 
     data = utils.loadData(dirPath)
-    
-    y_train = data["y_train"]
-    y_eval = data["y_eval"]
-    y_test = data["y_test"]
-    testPredictions = data["testPredictionList"]
-    evalPredictions = data["evalPredictionList"]
-    trainPredictions = data["trainPredictionList"]
-    
-    trainAcc = data["trainAccPerEpochList"]
-    evalAcc = data["evalAccPerEpochList"]
-    testAcc = data["testAccPerEpochList"]
+    if set == "train":
+        y = data["y_train"]
+        predictions = data["trainPredictionList"]
+        acc = data["trainAccPerEpochList"]
+    elif set == "eval":
+        y = data["y_eval"]
+        predictions = data["evalPredictionList"]
+        acc = data["evalAccPerEpochList"]
+    elif set == "test":
+        y = data["y_test"]
+        acc = data["testAccPerEpochList"]
+        predictions = data["testPredictionList"]
 
-    cmTest = sklearn.metrics.confusion_matrix(y_test,testPredictions)
-    cmEval = sklearn.metrics.confusion_matrix(y_eval,evalPredictions)
-    cmTrain = sklearn.metrics.confusion_matrix(y_train,trainPredictions)
+    cm = sklearn.metrics.confusion_matrix(y,predictions)
 
-    sns.heatmap(cmTrain, linewidth=0.5,ax=axs[0])
-    axs[0].set_xlabel('Actual')
-    axs[0].set_ylabel('Predicted')
-    axs[0].set_title('Train_Acc: ' + str(trainAcc[-1]))
-
-    sns.heatmap(cmEval, linewidth=0.5 ,ax=axs[1])
-    axs[1].set_ylabel('Actual')
-    axs[1].set_xlabel('Predicted')
-    axs[1].set_title('Eval_Acc: ' + str(evalAcc[-1]))
-
-    sns.heatmap(cmTest, linewidth=0.5,ax=axs[2])
-    axs[2].set_xlabel('Actual')
-    axs[2].set_ylabel('Predicted')
-    axs[2].set_title('Test_Acc: ' + str(testAcc[-1]))
-
+    sns.heatmap(cm, linewidth=0.5,ax=axs)
+    axs.set_xlabel('Actual')
+    axs.set_ylabel('Predicted')
+    axs.set_title('accuracy: ' + str(acc[-1]))
 
     fig.savefig(str(dirPath) + plotName)
     pickle.dump(fig, open(str(dirPath) + plotName+'.pickle', 'wb')) 
@@ -71,8 +55,8 @@ def plotConfusionMatrix(dirPath, plotName):
 #CLEANED
 def plotLoss_Acc(dirPath,plotName, separatly =False):
     """
-    
     plots the Loss and Accuracy over time(epochs/batches) for trainingSet and testSet 
+
     saves the plot as png
     saves the plot as pickel( for interactive plot)
 
@@ -175,8 +159,8 @@ def plotLoss_Acc(dirPath,plotName, separatly =False):
 
     return None
 
-#CLEANED
-def plotGradientsPerFeature(dirPath, plotName ,sepratly=False):
+#CLEANED # do also as set == ... ?
+def plotGradientsPerFeature(dirPath, plotName , sepratly=False):
     """
     plots the gradients for each feature  
 
@@ -191,7 +175,6 @@ def plotGradientsPerFeature(dirPath, plotName ,sepratly=False):
         separatly:
             False: plot all in one figure
             True:  plot all in separate figures 
-
     
     returns: None
     """
@@ -222,7 +205,7 @@ def plotGradientsPerFeature(dirPath, plotName ,sepratly=False):
         figGPF, axsGPF = plt.subplots(inputFeatures,2) 
 
         figGPF.set_size_inches(10,15)
-        figGPF.tight_layout(pad=1.5)
+        figGPF.tight_layout(pad=2.5)
         for i in range(len(axsGPF)):
             for j in range(len(tempStacked)):
                 axsGPF[i][j].set_ylim(minValue,maxValue)
@@ -250,7 +233,7 @@ def plotGradientsPerFeature(dirPath, plotName ,sepratly=False):
     return None
 
 # NOT CLEANED YET ALSO NOT FIXED FOR SHUFFELED VALUES
-def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
+def plotGradientsPerSample(featureListAll, num_epochs,data):
     
     print("SHUFFLE NEEDS TO BE FALSE AT THE MOMENT") 
     featureListAll = np.array(featureListAll)
@@ -285,8 +268,6 @@ def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
             axs1[i][0].plot(gradientsPerSample[i][index])
             axs1[i][1].plot(gradientsPerSample[i][index+1])
 
-                #plt.plot(gradientsPerSample[i][j])
-                #pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
     howManySamplesToLookAt = 2
 
     for i in range(0,howManySamplesToLookAt):
@@ -296,12 +277,22 @@ def plotGradientsPerSample(featureListAll, num_epochs,data, dirPath, plotName):
 
 #CLEANED
 def plotCosineSimilarity(dirPath, plotName, set):
-    
-    #cosine_similarity_toInitial, cosine_similarity_toFinal =  eval.calcConsineSimilarity(model,modelsDirPath)
-    fig, axs = plt.subplots(nrows=1, ncols=1)
+    """
+    plots the cosine_Similarity for trainingSet or testSet 
 
-    #cosine_similarity_toInitial = np.array(cosine_similarity_toInitial).flatten()
-    #cosine_similarity_toFinal = np.array(cosine_similarity_toFinal).flatten()
+    saves the plot as png
+    saves the plot as pickel( for interactive plot in dataDiscovery)
+
+    parameters:
+        dirPath: where to save the plots
+
+        plotName: how is the plot named (name to save plot ) 
+
+        set : chose a data set from "train" , "test", "eval
+        
+    returns: None
+    """
+    fig, axs = plt.subplots(nrows=1, ncols=1)
     data = utils.loadData(dirPath)
 
     if set == "train":
@@ -311,8 +302,9 @@ def plotCosineSimilarity(dirPath, plotName, set):
         cosine_similarity_toInitialList= data["evalCosine_similarity_toInitialList"]    
         cosine_similarity_toFinalList= data["evalCosine_similarity_toFinalList"]
     elif set == "test":
-        cosine_similarity_toInitialList= data["testCosine_similarity_toInitialList"]    
-        cosine_similarity_toFinalList= data["testCosine_similarity_toFinalList"]
+        print("testSet does only get into consideration for Performance measure to be independet of the explanatory set")
+        return None
+
 
     axs.plot(range(len(cosine_similarity_toInitialList)),cosine_similarity_toInitialList)
     axs.plot(range(len(cosine_similarity_toFinalList)),cosine_similarity_toFinalList )
@@ -323,21 +315,31 @@ def plotCosineSimilarity(dirPath, plotName, set):
 
 #CLEANED
 def plotWeightSignDifferences(dirPath, plotName, set):
-    
-    #percentageWeightSignDifference=  eval.calcWeightSignDifferences(model,modelsDirPath)
+    """
+    plots the percentage of weight diffences compared to the initial and final weights for trainingSet or testSet 
+
+    saves the plot as png
+    saves the plot as pickel( for interactive plot in dataDiscovery)
+
+    parameters:
+        dirPath: where to save the plots
+
+        plotName: how is the plot named (name to save plot ) 
+
+        set : chose a data set from "train" , "test", "eval
+        
+    returns: None
+    """
     data = utils.loadData(dirPath)
     if set == "train":
         percentageWeightSignDifferences_toInitialList = data["trainPercentageWeightSignDifferences_toInitialList"]
         percentageWeightSignDifferences_toFinalList = data["trainPercentageWeightSignDifferences_toFinalList"]
-
     elif set == "eval":
         percentageWeightSignDifferences_toInitialList = data["evalPercentageWeightSignDifferences_toInitialList"]
         percentageWeightSignDifferences_toFinalList = data["evalPercentageWeightSignDifferences_toFinalList"]
-
     elif set == "test":
-        percentageWeightSignDifferences_toInitialList = data["testPercentageWeightSignDifferences_toInitialList"]
-        percentageWeightSignDifferences_toFinalList = data["testPercentageWeightSignDifferences_toFinalList"]
-
+        print("testSet does only get into consideration for Performance measure to be independet of the explanatory set")
+        return None
 
     fig, axs = plt.subplots(nrows=1, ncols=1)
 
@@ -346,11 +348,26 @@ def plotWeightSignDifferences(dirPath, plotName, set):
     
     fig.savefig(str(dirPath) + str(plotName))    
     pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
-    
+
     return None
 
 #CLEANED
 def plotWeightMagnitude(dirPath, plotName, set):
+    """
+    plots the weight magnitude(absolute value of gradients) for trainingSet and testSet 
+
+    saves the plot as png
+    saves the plot as pickel( for interactive plot in dataDiscovery)
+
+    parameters:
+        dirPath: where to save the plots
+
+        plotName: how is the plot named (name to save plot ) 
+
+        set : chose a data set from "train" , "test", "eval
+        
+    returns: None
+    """
 
     data = utils.loadData(dirPath)
     if set == "train":
@@ -358,8 +375,10 @@ def plotWeightMagnitude(dirPath, plotName, set):
     elif set == "eval":
         absoluteIterationWeightsList = data["evalAbsoluteIterationWeightsList"]
     elif set == "test":
-        absoluteIterationWeightsList = data["testAbsoluteIterationWeightsList"]
+        print("testSet does only get into consideration for Performance measure to be independet of the explanatory set")        
 
+        return None
+    
     fig, axs = plt.subplots(nrows=1, ncols=1)
     axs.plot(absoluteIterationWeightsList)
 
@@ -370,7 +389,21 @@ def plotWeightMagnitude(dirPath, plotName, set):
 
 #CLEANED
 def plotL2Distance(dirPath, plotName, set):
+    """
+    plots the L2 distance for trainingSet and testSet 
 
+    saves the plot as png
+    saves the plot as pickel( for interactive plot in dataDiscovery)
+
+    parameters:
+        dirPath: where to save the plots
+
+        plotName: how is the plot named (name to save plot ) 
+
+        set : chose a data set from "train" , "test", "eval
+        
+    returns: None
+    """
     data = utils.loadData(dirPath)
     if set == "train":
         l2Dist_toInitialList = data["trainL2Dist_toInitialList"]
@@ -379,9 +412,9 @@ def plotL2Distance(dirPath, plotName, set):
         l2Dist_toInitialList = data["evalL2Dist_toInitialList"]
         l2Dist_toFinalList = data["evalL2Dist_toFinalList"]
     elif set == "test":
-        l2Dist_toInitialList = data["testL2Dist_toInitialList"]
-        l2Dist_toFinalList = data["testL2Dist_toFinalList"]
-    #l2Dist_toInitialList, l2Dist_toFinalList =  eval.calcL2distance(model,modelsDirPath)
+        print("testSet does only get into consideration for Performance measure to be independet of the explanatory set")
+        return None
+
     fig, axs = plt.subplots(nrows=1, ncols=1)
 
     axs.plot(l2Dist_toInitialList) 
@@ -392,78 +425,100 @@ def plotL2Distance(dirPath, plotName, set):
 
     return None
 
+#CLEANED
+def plotWeightTrace(dirPath, plotName, set):
+    """
+    plots the weight trace for 10Random weights for trainingSet and testSet 
 
-def plotWeightTrace(dirPath, plotName,model, modelsDirPath):
-    weightTraceList =  eval.calcWeightTrace(model,modelsDirPath)
+    saves the plot as png
+    saves the plot as pickel( for interactive plot in dataDiscovery)
+
+    parameters:
+        dirPath: where to save the plots
+
+        plotName: how is the plot named (name to save plot ) 
+
+        set : chose a data set from "train" , "test", "eval
+        
+    returns: None
+    """
+    data = utils.loadData(dirPath)
+    if set == "train":
+        random10WeightsList = data["trainRandom10WeightsList"]
+    elif set == "eval":
+        random10WeightsList = data["evalRandom10WeightsList"]
+    elif set == "test":
+        print("testSet does only get into consideration for Performance measure to be independet of the explanatory set")
+        return None
+        
     fig, axs = plt.subplots(nrows=1, ncols=1)
 
-    for i in weightTraceList:
+    for i in random10WeightsList:
         axs.plot(i ) 
 
+    fig.savefig(str(dirPath) + str(plotName))
     pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
 
     return None
 
-#CLEANED
-def plotGradientMagnitude(dirPath, plotName,separatly=False, perFeature= False):
-    
+#CLEANED # also do with set ...? 
+def plotGradientMagnitude(dirPath, plotName, set, perFeature):
+    """
+    plots the cosine_Similarity for trainingSet and testSet 
+
+    saves the plot as png
+    saves the plot as pickel( for interactive plot in dataDiscovery)
+
+    parameters:
+        dirPath: where to save the plots
+
+        plotName: how is the plot named (name to save plot ) 
+
+        set : chose a data set from "train" , "test", "eval
+        
+        perFeature : 
+                    True: plots for each feature separatly
+                    False : averages across the features
+    returns: None
+    """
     data = utils.loadData(dirPath)
 
-    trainAveragedAbsoluteGradientMagnitude =  data["trainAveragedAbsoluteGradientMagnitude"]
-    evalAveragedAbsoluteGradientMagnitude = data["evalAveragedAbsoluteGradientMagnitude"]
-    
-    trainAbsoluteabsoluteGradientMagnitudePerFeature =  data["trainAbsoluteGradientMagnitudePerFeature"]
-    evalAbsoluteabsoluteGradientMagnitudePerFeature = data["evalAbsoluteGradientMagnitudePerFeature"]
+    if set == "train":
+        averagedAbsoluteGradientMagnitude =  data["trainAveragedGradientMagnitude"]
+        absoluteabsoluteGradientMagnitudePerFeature =  data["trainGradientMagnitudePerFeature"]
 
+    elif set == "eval": 
+        averagedAbsoluteGradientMagnitude = data["evalAveragedGradientMagnitude"]
+        absoluteabsoluteGradientMagnitudePerFeature = data["evalGradientMagnitudePerFeature"]
+    elif set == "test":
+        print("testSet does only get into consideration for Performance measure to be independet of the explanatory set")
+        return None
+    
     if not(perFeature):
         print("plotting: GM GradientMagnitude averaged over features")
-        figGM, axsGM = plt.subplots(nrows=1, ncols=2)
-        
-        axsGM[0].plot(trainAveragedAbsoluteGradientMagnitude)
-        axsGM[0].set_xlabel('gradientMagnitude')
-        axsGM[0].set_ylabel('iteration')
-        axsGM[0].set_title("TRAIN GradientMagnitude averaged over features")
+        figGM, axsGM = plt.subplots(nrows=1, ncols=1)
 
-        axsGM[1].plot(evalAveragedAbsoluteGradientMagnitude)
-        axsGM[1].set_xlabel('gradientMagnitude')
-        axsGM[1].set_ylabel('iteration')
-        axsGM[1].set_title("EVAL GradientMagnitude averaged over features")
+        axsGM.plot(averagedAbsoluteGradientMagnitude)
+        axsGM.set_xlabel('gradientMagnitude')
+        axsGM.set_ylabel('iteration')
+        axsGM.set_title("GradientMagnitude averaged over features")
 
         figGM.savefig(str(dirPath) + plotName+ "Averaged")
         pickle.dump(figGM , open(str(dirPath) + str(plotName)+ "Averaged", 'wb'))
-        
-        """
-        TODO: separtly
-        """
+
     else:  
-        #figGM, axsGM = plt.subplots(nrows=int(len(trainAbsoluteabsoluteGradientMagnitudePerFeature)), ncols=1) 
  
-        if not(separatly):
-            print("plotting: GM GradientMagnitude PerFeature")
-            figGM, axsGM = plt.subplots(nrows=int(len(trainAbsoluteabsoluteGradientMagnitudePerFeature)), ncols=2) 
+        print("plotting: GM GradientMagnitude PerFeature")
+        figGM, axsGM = plt.subplots(nrows=int(len(absoluteabsoluteGradientMagnitudePerFeature)), ncols=1)
 
-            for i in range(len(trainAbsoluteabsoluteGradientMagnitudePerFeature)):
-                #figGM, axsGM = plt.subplots(nrows=int(len(trainAbsoluteabsoluteGradientMagnitudePerFeature)), ncols=2) 
-
-                axsGM[i][0].plot(trainAbsoluteabsoluteGradientMagnitudePerFeature[i])
-                axsGM[i][0].set_xlabel('gradientMagnitude')
-                axsGM[i][0].set_ylabel('iteration')
-                axsGM[i][0].set_title("EVAL GradientMagnitude per features")
-
-                axsGM[i][1].plot(evalAbsoluteabsoluteGradientMagnitudePerFeature[i])
-                axsGM[i][1].set_xlabel('gradientMagnitude')
-                axsGM[i][1].set_ylabel('iteration')
-                axsGM[i][1].set_title("TRAIN GradientMagnitude per features")
-
-            figGM.savefig(str(dirPath) + plotName+ "per feature")
-            pickle.dump(figGM, open(str(dirPath) + str(plotName)+ "per feature", 'wb'))
-            """
-            TODO: separtly
-            """
-        #else :
-        #    for i, feature in enumerate(gradientMagnitudePerFeature):
-        #        exec("figGM" +str(i)+", axsGM"+ str(i)+" = plt.subplots(nrows=int(len(gradientMagnitudePerFeature)), ncols=1)") 
-         #       exec("axsGM" +str(i)+".plot(feature)")
-        #        pass
+        for i in range(len(absoluteabsoluteGradientMagnitudePerFeature)):
+        
+            axsGM[i].plot(absoluteabsoluteGradientMagnitudePerFeature[i])
+            axsGM[i].set_xlabel('gradientMagnitude')
+            axsGM[i].set_ylabel('iteration')
+            axsGM[i].set_title("GradientMagnitude per features")
+        
+        figGM.savefig(str(dirPath) + plotName+ "GradientMagnitude per feature")
+        pickle.dump(figGM, open(str(dirPath) + str(plotName)+ "per feature", 'wb'))
 
     return None
