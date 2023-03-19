@@ -140,14 +140,14 @@ def load_kaggle_diabetes_dataset( batch_size= 4, test_size =0.2 ,droplist= []):
     features_names =  data.columns[:-1]
 
     X = data.drop("Outcome" , axis = 1) #independent Feature
-    print("MINIMAL DATALOADER WITH 100 datapoints")
-    X = X[:100]
+    #print("MINIMAL DATALOADER WITH 100 datapoints")
+    #X = X[:100]
 
     ### droping all features that i dont want in my Dataloader
     X , inputFeatures= dropFeatures(droplist=droplist, X=X, inputFeatures=inputFeatures)
     
     y = data["Outcome"]
-    y = y[:100]
+    #y = y[:100]
 
     trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test= preProcessingData(X=X, y=y, path=path ,batch_size=batch_size, test_size=test_size,droplist=droplist)
     return trainloader ,evalloader, testloader ,X_train, X_eval, X_test, y_train, y_eval, y_test , inputFeatures, outputFeatures, datasetName, features_names
