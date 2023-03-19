@@ -1,12 +1,12 @@
 import torch
-import torch.nn as nn
-import numpy as np
-
-import sklearn 
-import utils
 
 
-def train(trainloader, model, num_epochs, device, y_train, lr):
+#import torch.nn as nn
+#import numpy as np
+#import utils
+
+
+def train(trainloader, model, num_epochs, device, y_train,loss_function, optimizer):
     """returns 
     grads = [] 
     grads0 = []
@@ -14,23 +14,23 @@ def train(trainloader, model, num_epochs, device, y_train, lr):
     training_acc = []
     """
     # Backward Propergation - loss and optimizer
-    loss_function = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(),lr=lr)
+    loss_function =loss_function
+    optimizer = optimizer
     #optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     # after loss.backwards
-    grads = [] 
-    grads_epoch = []
+    #grads = [] 
+    #grads_epoch = []
 
     ### before loss.backwawrds
-    grads_0 = []
-    grads_epoch_0 = []
+    #grads_0 = []
+    #grads_epoch_0 = []
 
     ### grads with evaluations set for each batch in trainingloop
-    grads_eval =[]
+    #grads_eval =[]
 
     training_loss_epoch = []
-    training_acc = []
+    #training_acc = []
 
     # save model
     import os
@@ -54,12 +54,13 @@ def train(trainloader, model, num_epochs, device, y_train, lr):
             model.to(device)
             model.train()
 
-            outputs = model(inputs)
-            softmax = nn.Softmax(dim=1) # for normalised gradients between -1,1
-            outputs = softmax(outputs)
-            grad_0 = utils.calc_grads(outputs, inputs)
+            #outputs = model(inputs)
+            #softmax = nn.Softmax(dim=1) # for normalised gradients between -1,1
+            #outputs = softmax(outputs)
+            #grad_0 = utils.calc_grads(outputs, inputs)
             
             optimizer.zero_grad()
+            
             outputs = model(inputs)
             loss = loss_function(outputs, labels)
             _, preds = torch.max(outputs, 1)
@@ -71,21 +72,21 @@ def train(trainloader, model, num_epochs, device, y_train, lr):
             iterationCounter += 1
             optimizer.step()
     
-            optimizer.zero_grad()
+            #optimizer.zero_grad()
         
-            outputs = model(inputs)
-            softmax = nn.Softmax(dim=1) # for normalised gradients between -1,1
-            outputs = softmax(outputs)
-            grad = utils.calc_grads(outputs, inputs)
+            #outputs = model(inputs)
+            #softmax = nn.Softmax(dim=1) # for normalised gradients between -1,1
+            #outputs = softmax(outputs)
+            #grad = utils.calc_grads(outputs, inputs)
             
             #after every Batch
-            grads.append(grad) # das hier auch im nachhiein ?
-            grads_0.append(grad_0) 
+            #grads.append(grad) # das hier auch im nachhiein ?
+            #grads_0.append(grad_0) 
 
         #after every Epoch
-        training_acc.append(running_corrects.item() /len(y_train))
-        grads_epoch.append(grad)
-        grads_epoch_0.append(grad_0)
+        #training_acc.append(running_corrects.item() /len(y_train))
+        #grads_epoch.append(grad)
+        #grads_epoch_0.append(grad_0)
         training_loss_epoch.append(loss) 
   
         print("Epoch: " + str(epoch_counter))
@@ -100,5 +101,5 @@ def train(trainloader, model, num_epochs, device, y_train, lr):
     shutil.copy(modelsdirPath +"/"+str(iterationCounter -1), modelsdirPath +"/finalModel") # rename macht probleme ???
 
     print("NOTE: THESE SAVED MODELS ARE BEEING OVERWRITTEN ON NEXT RUN")
-    return grads,grads_eval, grads_0, grads_epoch, grads_epoch_0, training_loss_epoch, training_acc, loss_function# weights_batch, weights_epoch, intitial_weights#, final_weights
+    return# grads,grads_eval, grads_0, grads_epoch, grads_epoch_0, training_loss_epoch, training_acc# weights_batch, weights_epoch, intitial_weights#, final_weights
 
