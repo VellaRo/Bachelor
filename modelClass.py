@@ -2,6 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 # for even small changes cread a new model  
+
 class BinaryClassification0HL16N(nn.Module):
     def __init__(self, inputFeatures=8, outputFeatures=2):
         super(BinaryClassification0HL16N, self).__init__()
@@ -24,7 +25,7 @@ class BinaryClassification0HL16N(nn.Module):
     
 class BinaryClassification1HL16N(nn.Module):
     def __init__(self, inputFeatures=8, outputFeatures=2):
-        super(BinaryClassification0HL16N, self).__init__()
+        super(BinaryClassification1HL16N, self).__init__()
         # HL hidden layer #N neruons per layer
         self.modelName = "BinaryClassification1HL16N"
 

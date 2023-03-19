@@ -9,6 +9,7 @@ import torch
 def train(trainloader, model, num_epochs, device, y_train,loss_function, optimizer):
     """
     trains model and plots the progess together with the last calculated loss per epoch
+    
     returns None 
 
     """

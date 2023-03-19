@@ -11,6 +11,3 @@ class TorchRandomSeed(object):
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         torch.set_rng_state(self.prev_random_state)
-
-
-#grads = torch.autograd.grad(torch.unbind(_y), x)[0]

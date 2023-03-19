@@ -63,6 +63,8 @@ def preProcessingData(X, y, batch_size= 4, test_size =0.2 ,droplist= []): #, pat
     returns trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test
 
     """
+    inputFeatures= 0
+
     # split into train , eval test
     X_train, X_rem, y_train, y_rem = train_test_split(X,y, test_size =test_size,random_state=1)
 
@@ -79,8 +81,6 @@ def preProcessingData(X, y, batch_size= 4, test_size =0.2 ,droplist= []): #, pat
     X , inputFeatures= dropFeatures(droplist=droplist, X=X, inputFeatures=inputFeatures)
 
     def normalize(inputToNormalize, dim):
-        from sklearn import preprocessing
-
        #normalize 
 
         mean = torch.mean(inputToNormalize, dim =dim ,keepdim= True)
@@ -149,7 +149,7 @@ def load_kaggle_diabetes_dataset( batch_size= 4, test_size =0.2 ,droplist= []):
     y = data["Outcome"]
     #y = y[:100]
 
-    trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test= preProcessingData(X=X, y=y, path=path ,batch_size=batch_size, test_size=test_size,droplist=droplist)
+    trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test= preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
     return trainloader ,evalloader, testloader ,X_train, X_eval, X_test, y_train, y_eval, y_test , inputFeatures, outputFeatures, datasetName, features_names
 
 
@@ -211,6 +211,6 @@ def dryBeanUCI(batch_size= 4, test_size =0.2 ,droplist= []):
     X , inputFeatures= dropFeatures(droplist=droplist, X=X, inputFeatures=inputFeatures)
     y = data["IntClass"]
     y = y[:3349]
-    trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test = preProcessingData(X=X, y=y, path=path ,batch_size=batch_size, test_size=test_size,droplist=droplist)
+    trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
 
     return trainloader ,evalloader, testloader ,X_train, X_eval, X_test, y_train, y_eval, y_test , inputFeatures, outputFeatures, datasetName

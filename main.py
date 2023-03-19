@@ -1,10 +1,11 @@
-import TorchRandomSeed#Sebastian Class
-
+import torch
+from torch import nn
+import TorchRandomSeed
+from matplotlib import pyplot as plt
 
 seed =0
-seedObject = TorchRandomSeed.TorchRandomSeed(seed=1) # was mache ich falsch ?
+seedObject = TorchRandomSeed.TorchRandomSeed(seed=1) 
 
-#my classes
 import dataloader
 import modelClass
 import train
@@ -14,15 +15,14 @@ import eval
 
 with seedObject:
 
-    #inputFeatures = 4 #
     droplist = []#["BloodPressure", "Pregnancies", "Age", "SkinThickness"]
     num_epochs = 2
     batch_size = 4
     test_size = 0.4 # is going to be split again in eval and test
     device = "cuda:0" #if torch.cuda.is_available() else "cpu"
     modelsDirPath = "./Models"
-    print(device)
-    #device = "cpu"
+
+    print("calculating on: " +str(device))
     lr =0.1 # 0.001 slowed learningrate
 
     # load data
@@ -31,31 +31,62 @@ with seedObject:
     #trainloader ,evalloader, testloader ,X_train ,X_eval, X_test,  y_train ,y_eval, y_test, inputFeatures, outputFeatures, datasetName= dataloader.dryBeanUCI(batch_size=batch_size , droplist= droplist)
 
     #model = modelClass.Net(inputFeatures= inputFeatures, out_features=outputFeatures)
-    model= modelClass.BinaryClassification(inputFeatures= inputFeatures, outputFeatures= outputFeatures)
+    model= modelClass.BinaryClassification0HL16N(inputFeatures= inputFeatures, outputFeatures= outputFeatures)
     modelName = model.modelName
-    grads,grads_eval, grads_0, grads_epoch, grads_epoch_0, training_loss_epoch, training_acc, loss_function = train.train(trainloader, model, num_epochs, device, y_train, lr)
+    
+    # Backward Propergation - loss and optimizer
+    loss_function = nn.CrossEntropyLoss()
+    optimizer = torch.optim.SGD(model.parameters(),lr=lr)
+    train.train(trainloader, model, num_epochs, device, y_train,loss_function, optimizer)
 
-    train_predictions,test_predictions = utils.calculatePredictions(model ,X_test, X_train , device)
-    featureListALL = utils.unpackingFeatureList(inputFeatures , grads)
-    if eval:
-        featureListALL_eval = utils.unpackingFeatureList(inputFeatures , grads_eval)
-
-    featureListALL_0 = utils.unpackingFeatureList(inputFeatures , grads_0)
-    featureListALL_epoch = utils.unpackingFeatureList(inputFeatures , grads_epoch)
-    featureListALL_0_epoch = utils.unpackingFeatureList(inputFeatures , grads_epoch_0)
     dirPath = utils.createDirPath(seed , modelName, datasetName, num_epochs, batch_size, lr)
-    print("REPAIR AND UPDATE SAVERESULTS TO NPZ")
-    #utils.saveResultsToNPZ(dirPath, featureListALL,featureListALL_0, training_acc, training_loss_epoch)
 
-    print("ploting...")
-    plotResults.plotCosineSimilarity(dirPath, "cosine_simialarity",model, modelsDirPath)
-    plotResults.plotWeightSignDifferences(dirPath, "percentageWeightsSignDifference",model, modelsDirPath)
-    plotResults.plotWeightMagnitude(dirPath, "averageWeightsMagnitude",model, modelsDirPath)
-    plotResults.plotL2Distance(dirPath, "L2Distance",model, modelsDirPath)
-    plotResults.plotWeightTrace(dirPath, "weightTrace",model, modelsDirPath)
-    plotResults.plotGradientsPerFeature(dirPath, inputFeatures, featureListALL, plotName = "fetureListALL")
-    plotResults.plotGradientMagnitude(dirPath, "averageGradientMagnitude",featureListALL, perFeature=False)
-    plotResults.plotGradientMagnitude(dirPath, "GradientMagnitudePerFeature",featureListALL, perFeature=True)
-    plotResults.plotLoss_Acc(dirPath,model,modelsDirPath, trainloader,evalloader,testloader, device, loss_function, num_epochs, y_train, y_eval, y_test)
-    plotResults.plotConfusionMatrix(y_train,y_test,  train_predictions, test_predictions, dirPath)
-    plotResults.plotGradientsPerSample(featureListALL, num_epochs, X_train, dirPath, "featureListALLPerSample")
+    print("evaluating ...")
+    loaderList = [trainloader,evalloader,testloader]
+    nameList = ["train","eval", "test"]
+    yList = [y_train, y_eval,y_test]
+    eval.doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_function, num_epochs, nameList, yList, inputFeatures)
+
+    print("plotting...")
+    plotResults.plotCosineSimilarity(dirPath, "cosine_simialarity", set="train")
+    plotResults.plotCosineSimilarity(dirPath, "cosine_simialarity", set="eval")
+    plotResults.plotCosineSimilarity(dirPath, "cosine_simialarity", set="test")
+
+    plotResults.plotWeightSignDifferences(dirPath, "percentageWeightsSignDifference1" , "train")
+    plotResults.plotWeightSignDifferences(dirPath, "percentageWeightsSignDifference2" , "eval")
+    plotResults.plotWeightSignDifferences(dirPath, "percentageWeightsSignDifference3" , "test")
+    
+    plotResults.plotWeightMagnitude(dirPath, "weightsMagnitude1","train")
+    plotResults.plotWeightMagnitude(dirPath, "weightsMagnitude2","eval")
+    plotResults.plotWeightMagnitude(dirPath, "weightsMagnitude3","test")
+    
+    plotResults.plotL2Distance(dirPath, "L2Distance1","train")
+    plotResults.plotL2Distance(dirPath, "L2Distance2","eval")
+    plotResults.plotL2Distance(dirPath, "L2Distance3","test")
+    
+    plotResults.plotWeightTrace(dirPath, "weightTrace1","train")
+    plotResults.plotWeightTrace(dirPath, "weightTrace2","eval")
+    plotResults.plotWeightTrace(dirPath, "weightTrace3","test")    
+    
+    plotResults.plotGradientsPerFeature(dirPath,"gradientsPerFeature1" ,False)
+    plotResults.plotGradientsPerFeature(dirPath,"gradientsPerFeature2" ,True )
+
+    plotResults.plotGradientMagnitude(dirPath, "averageGradientMagnitude1","train", perFeature=False)
+    plotResults.plotGradientMagnitude(dirPath, "averageGradientMagnitude2","eval", perFeature=False)
+    plotResults.plotGradientMagnitude(dirPath, "averageGradientMagnitude3","test", perFeature=False)
+
+    plotResults.plotGradientMagnitude(dirPath, "GradientMagnitudePerFeature1","train", perFeature=True)
+    plotResults.plotGradientMagnitude(dirPath, "GradientMagnitudePerFeature2","eval", perFeature=True)
+    plotResults.plotGradientMagnitude(dirPath, "GradientMagnitudePerFeature3","test", perFeature=True)
+   
+    plotResults.plotLoss_Acc(dirPath,"loss_acc1", False)
+    plotResults.plotLoss_Acc(dirPath,"loss_acc2",True)
+
+    plotResults.plotConfusionMatrix(dirPath, "confusionMatrix1", set="train")
+    plotResults.plotConfusionMatrix(dirPath, "confusionMatrix2", set="eval")
+    plotResults.plotConfusionMatrix(dirPath, "confusionMatrix3", set="test")
+
+    plt.show()
+
+    print(dirPath)
+
