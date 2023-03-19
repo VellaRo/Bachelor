@@ -1,15 +1,14 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-class BinaryClassification(nn.Module):
+# for even small changes cread a new model  
+class BinaryClassification0HL16N(nn.Module):
     def __init__(self, inputFeatures=8, outputFeatures=2):
-        super(BinaryClassification, self).__init__()
-        
-        self.modelName = "BinaryClassification"
+        super(BinaryClassification0HL16N, self).__init__()
+        # HL hidden layer #N neruons per layer
+        self.modelName = "BinaryClassification0HL16N"
 
-        # Number of input features is 8.
         self.layer_1 = nn.Linear(inputFeatures, 16 ) #64
-        #self.layer_2 = nn.Linear(16, 16) #64,64 
         self.layer_out = nn.Linear(16, outputFeatures) #64
         
         self.relu = nn.ReLU()
@@ -17,14 +16,35 @@ class BinaryClassification(nn.Module):
         
     def forward(self, inputs):
         x = self.relu(self.layer_1(inputs))
-        x# = self.relu(self.layer_2(x))
+        #x = self.relu(self.layer_2(x))
+        #x = self.dropout(x)
+        x = self.layer_out(x)
+        
+        return x
+    
+class BinaryClassification1HL16N(nn.Module):
+    def __init__(self, inputFeatures=8, outputFeatures=2):
+        super(BinaryClassification0HL16N, self).__init__()
+        # HL hidden layer #N neruons per layer
+        self.modelName = "BinaryClassification1HL16N"
+
+        self.layer_1 = nn.Linear(inputFeatures, 16 ) #64
+        self.layer_2 = nn.Linear(16, 16) #64,64 
+        self.layer_out = nn.Linear(16, outputFeatures) #64
+        
+        self.relu = nn.ReLU()
+        #self.dropout = nn.Dropout(p=0.1) # 0.1
+        
+    def forward(self, inputs):
+        x = self.relu(self.layer_1(inputs))
+        x = self.relu(self.layer_2(x))
         #x = self.dropout(x)
         x = self.layer_out(x)
         
         return x
 
-
-        return modelName
+"""
+only use small layer size to observe more easily
 
 class Net(nn.Module):
     def __init__(self, inputFeatures=8,hidden1=512, hidden2=512, hidden3=512,hidden4=512,out_features=2):
@@ -45,4 +65,5 @@ class Net(nn.Module):
         x = F.relu(self.f_connected4(x))
         x = self.out(x)
         return x
+"""
 
