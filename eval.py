@@ -611,6 +611,7 @@ def calcWeightTrace(model, modelsDirPath):
 
         #random10WeightsList.append(weightsPerIndices)
    
+   
         #get weights of model at iteration
     return random10WeightsList
 
