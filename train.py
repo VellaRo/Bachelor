@@ -7,11 +7,10 @@ import torch
 
 
 def train(trainloader, model, num_epochs, device, y_train,loss_function, optimizer):
-    """returns 
-    grads = [] 
-    grads0 = []
-    training_loss_epoch = []
-    training_acc = []
+    """
+    trains model and plots the progess together with the last calculated loss per epoch
+    returns None 
+
     """
     # Backward Propergation - loss and optimizer
     loss_function =loss_function
