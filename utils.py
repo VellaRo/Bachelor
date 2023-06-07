@@ -2,6 +2,7 @@ from datetime import date , datetime
 import os
 import numpy as np
 import torch 
+from torch.nn.functional import softmax
 
 def calc_grads(outputs, inputs):
     """
@@ -22,6 +23,39 @@ def calc_grads(outputs, inputs):
     grad = torch.autograd.grad(torch.unbind(_outputs), inputs)[0]
 
     return grad
+
+def smooth_grad(input, n_samples, stdev_spread ,model):   
+                #input_embedded = model.embed_input(input)
+                if input.is_cuda:
+                    input = input.cpu()
+
+                # Convert the tensor to a NumPy array
+                input_np = input.detach().numpy()
+
+                stdev = stdev_spread * (torch.max(input) - torch.min(input))
+
+                total_gradients = torch.zeros_like(input.data,device="cuda:0")
+                #print((total_gradients.device))
+                for i in range(n_samples):
+
+                    # Create a batch of inputs with added Gaussian noise
+                    noisy_inputs = input + np.random.normal(0, stdev, input_np.shape).astype(np.float32)
+                    noisy_inputs = noisy_inputs.to("cuda:0")
+                    #print(noisy_inputs.device)
+                    noisy_inputs.requires_grad = True
+                    #print(type(noisy_inputs))
+                    #print(noisy_inputs.dtype)
+                    out = model(noisy_inputs)
+                    out = softmax(out, dim=1)
+                    #CHECK FOR WHICH DIMENSION IS CORRECT
+                    grad = calc_grads(out, noisy_inputs)
+                    
+                    total_gradients +=grad 
+                    #summed_total_gradients =  torch.sum(total_gradients, dim=-1)
+                # Average the summed  up gradients
+                avg_gradients = total_gradients / n_samples
+
+                return avg_gradients.cpu().detach().numpy()
 
 def getWeights(model):
     """returns flattend weights from a model
@@ -82,6 +116,25 @@ def unpackingGradients(inputFeatures , grads):
                 unpackedGradients[k].append(grads[i][j][k].item())
     return np.array(unpackedGradients)
 
+def flatten_gradients(grads):
+    print("test")
+    # get number of input features
+    inputFeatures = grads.shape[0]
+    
+    # initialize unpackedGradients list
+    unpackedGradients = [[] for _ in range(inputFeatures)]
+    
+    # flatten gradients and append to unpackedGradients list
+    for i in range(len(grads)):
+        print("k")
+        for j in range(len(grads[i])):
+            grad = grads[i][j]
+            unpacked = np.array(grad)
+            unpackedGradients = np.concatenate((unpackedGradients, unpacked), axis=1)
+    
+    return np.array(unpackedGradients)
+
+
 def createDirPath(seed , modelName, datasetName, num_epochs, batch_size, lr):
     """
     creates a directory path accrding to the parameters selectet for the training process
@@ -127,11 +180,11 @@ def appendToNPZ(NPZPath, name, newData):
 
     returns None
     """    
-    data = np.load(NPZPath)
+    data = np.load(NPZPath, allow_pickle=True)
     data = dict(data)
     data[str(name)] = newData
 
-    np.savez(NPZPath,**data)
+    np.savez(NPZPath,**data )
 
     return None
 
@@ -145,6 +198,6 @@ def loadData(dirPath):
     
     returns : data(loaded data)            
     """
-    data = np.load(dirPath + 'data.npz')
-
+    data = np.load(dirPath + 'data.npz' , allow_pickle=True)
+    #data = np.load(pathToNPZ, allow_pickle=True)
     return data    
