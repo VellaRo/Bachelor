@@ -21,7 +21,7 @@ def loadOHE_Rules(iterationNumber):
 
 #only for binary 
                   #X_test
-def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, grads):
+def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, grads, debug=False):
 
     """
     explainationGrads should have shape of [epochs * iterationsPerEpoch , testDatasetSize, featuresize ]
@@ -43,9 +43,11 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
     shap_threshold = 0.001
     num_cores = cpu_count()
     p = Pool(num_cores)
-
-    print("this saves to a dummy folder which is beeing replaced")
-    output_directory = './DEBUG/OHEresults/'
+    if debug:
+        print("this saves to a dummy folder which is beeing replaced")
+        output_directory = './DEBUG/OHEresults/'
+    else:
+        output_directory = './OHEresults/'
     output_base_filename = 'ohe@Iteration'
     iterationCounter = 0
 
