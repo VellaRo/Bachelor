@@ -78,7 +78,7 @@ class BinaryClassification2HL64N(nn.Module):
         dataset = torch.utils.data.TensorDataset(input_data)
 
         # Initialize a DataLoader
-        data_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False)
+        data_loader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=False)
 
         # Move the model to the appropriate device
         self.to(device)
