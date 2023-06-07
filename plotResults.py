@@ -81,10 +81,10 @@ def plotLoss_Acc(dirPath,plotName, separatly =False):
     trainLossPerEpochList =    data["trainLossPerEpochList"]
     trainLossPerIterationList =data["trainLossPerIterationList"]
 
-    evalAccPerEpochList =     data["evalAccPerEpochList"]
-    evalAccPerIterationList = data["evalAccPerIterationList"]
-    evalLossPerEpochList =    data["evalLossPerEpochList"]
-    evalLossPerIterationList =data["evalLossPerIterationList"]
+    #evalAccPerEpochList =     data["evalAccPerEpochList"]
+    #evalAccPerIterationList = data["evalAccPerIterationList"]
+    #evalLossPerEpochList =    data["evalLossPerEpochList"]
+    #evalLossPerIterationList =data["evalLossPerIterationList"]
 
     testAccPerEpochList =     data["testAccPerEpochList"]
     testAccPerIterationList = data["testAccPerIterationList"]
@@ -92,9 +92,10 @@ def plotLoss_Acc(dirPath,plotName, separatly =False):
     testLossPerIterationList =data["testLossPerIterationList"]
 
 
-    stackedInputs = [[trainAccPerEpochList ,trainAccPerIterationList, trainLossPerEpochList,trainLossPerIterationList],
-                     [evalAccPerEpochList ,evalAccPerIterationList, evalLossPerEpochList,evalLossPerIterationList],
-                     [testAccPerEpochList ,testAccPerIterationList, testLossPerEpochList,testLossPerIterationList],]
+    stackedInputs = [[trainAccPerEpochList ,trainAccPerIterationList, trainLossPerEpochList,trainLossPerIterationList], 
+                                      [testAccPerEpochList ,testAccPerIterationList, testLossPerEpochList,testLossPerIterationList],]
+    #                 [evalAccPerEpochList ,evalAccPerIterationList, evalLossPerEpochList,evalLossPerIterationList],
+   
     if not(separatly):
 
         print("plotting LA: Loss_accuracy")
@@ -342,7 +343,6 @@ def plotWeightSignDifferences(dirPath, plotName, set):
     elif set == "test":
         percentageWeightSignDifferences_toInitialList = data["testPercentageWeightSignDifferences_toInitialList"]
         percentageWeightSignDifferences_toFinalList = data["testPercentageWeightSignDifferences_toFinalList"]
-        print("testSet does only get into consideration for Performance measure to be independet of the explanatory set")
 
 
     fig, axs = plt.subplots(nrows=1, ncols=1)
@@ -380,7 +380,6 @@ def plotWeightMagnitude(dirPath, plotName, set):
         absoluteIterationWeightsList = data["evalAbsoluteIterationWeightsList"]
     elif set == "test":
         absoluteIterationWeightsList = data["testAbsoluteIterationWeightsList"]
-        #print("testSet does only get into consideration for Performance measure to be independet of the explanatory set")        
 
 
     

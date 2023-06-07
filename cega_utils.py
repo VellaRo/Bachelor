@@ -19,6 +19,26 @@ def loadOHE_Rules(iterationNumber):
 
     return ohe_df
 
+#def jaccard_similarity(set1, set2):
+#
+#    intersection = len(set1.intersection(set2))
+#    union = len(set1.union(set2))
+#    similarity = intersection / union
+#
+#    return similarity
+
+def jaccard_similarity(list1, list2):
+    set1 = set(tuple(element) for element in list1)
+    set2 = set(tuple(element) for element in list2)
+    
+    intersection = len(set1 & set2)
+    union = len(set1 | set2)
+    
+    similarity = intersection / union if union != 0 else 0
+    
+    return similarity
+
+
 #only for binary 
                   #X_test
 def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, grads, debug=False):
@@ -299,7 +319,6 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
     def extractRules_df(rules_DF):
 
         rulesList =rules_DF["itemset"].to_list()
-        print(rulesList)
         rulesList = [set(frozenset) for frozenset in rulesList]
 
         labelList_rules = rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
@@ -319,8 +338,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
                 matches = re.findall(pattern, item)
       
                 if matches:
-                    #print("matches")
-                    #print(matches[0])
+
                     lower_bound, feature, upper_bound = matches[0]
                     set_filtered.append((lower_bound, feature[1:-2], upper_bound))
             rules_list.append(set_filtered)
@@ -328,14 +346,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         return rules_list, labelList_rules
 
     def applyRulesOnData(X,predictions, rules, labelList_rules, featureDict):
-        #print("X")
-        #print(X)
-        #print("rulse")
-        #print(rules)
-        #print("lableslist")
-        #print(labelList_rules)
-        #print("feature")
-        #print(featureDict)
+
         """
         X: List
         predictions: List
@@ -413,12 +424,10 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
             try:
                 rulePrecisionList.append(len(predictionList_transposed) / tempCorrectClassified)
             except ZeroDivisionError:
-                #print("ZeroDivisionError")
                 rulePrecisionList.append(0)
             try:
                 ruleSupportList.append(len(predictionList_transposed)/ (tempCorrectClassified + tempFalseClassified))
             except ZeroDivisionError:
-                #print("ZeroDivisionError")
                 rulePrecisionList.append(0)
 
 
@@ -429,9 +438,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
 
     rules_list, labelList_rules =  extractRules_df(rules_DF)
     predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
-    #print(predictionComparisonList)
     rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
-    #print(rulePrecisionList)
     coverageList = globalCoverage(predictionComparisonList)
     rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
     numberOfGeneratedRules = (len(rules_list))
@@ -459,11 +466,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
     #utils.appendToNPZ(pathToNPZ, "rulePrecisionList", rulePrecisionList)
 
 
-    # save to pickle k (not tested)
-    # check if works 
-    # do it in a for loop for multiple global rulesSets
-    #jaccard similarity
+
     # think does it work with NLP no problems ?? / maybe just run on other pipeline results  
     #   + if not fix for NLP 
-    #print(predictionList)
     
