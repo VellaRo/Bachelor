@@ -285,7 +285,7 @@ def getCharasteristicRules(pos_rules, pos_label, neg_rules,neg_label ):
     return  chr_rules
 
 
-def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dirPath ):
+def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirPath , debug = False):
     """
     
     featureDict example: featureDict= {'Pregnancies':0, 'Glucose':1, 'BloodPressure':2, 'SkinThickness':3, 'Insulin':4,
@@ -416,32 +416,34 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dirPath
 
 
     rules_list, labelList_rules =  extractRules_df(rules_DF)
+    predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
 
     rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
-    predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
     coverageList = globalCoverage(predictionComparisonList)
     rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
     numberOfGeneratedRules = (len(rules_list))
 
-    # Get the current date and time
-    now = datetime.now()
+    return rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,
 
-    # Format the date and time as a string
-    date_time_string = now.strftime("%Y-%m-%d %H:%M:%S")
-
-    
-
-    pathToNPZ =  dirPath + f"/rulesdata_{date_time_string}.npz"
-    np.savez(pathToNPZ ,rules_list = rules_list) 
-    utils.appendToNPZ(pathToNPZ, "labelList_rules", labelList_rules)
-    utils.appendToNPZ(pathToNPZ, "rulePrecisionList", rulePrecisionList)
-    utils.appendToNPZ(pathToNPZ, "predictionComparisonList", predictionComparisonList)
-    utils.appendToNPZ(pathToNPZ, "rulesComplexityList", rulesComplexityList)
-    utils.appendToNPZ(pathToNPZ, "coverageList", coverageList)
-    utils.appendToNPZ(pathToNPZ, "rulePrecisionList", rulePrecisionList)
-    utils.appendToNPZ(pathToNPZ, "ruleSupportList", ruleSupportList)
-    utils.appendToNPZ(pathToNPZ, "numberOfGeneratedRules", numberOfGeneratedRules)
-    utils.appendToNPZ(pathToNPZ, "rulePrecisionList", rulePrecisionList)
+    ## Get the current date and time
+    #now = datetime.now()
+#
+    ## Format the date and time as a string
+    #date_time_string = now.strftime("%Y-%m-%d %H:%M:%S")
+#
+    #
+#
+    #pathToNPZ =  dirPath + f"/rulesdata_{date_time_string}.npz"
+    #np.savez(pathToNPZ ,rules_list = rules_list) 
+    #utils.appendToNPZ(pathToNPZ, "labelList_rules", labelList_rules)
+    #utils.appendToNPZ(pathToNPZ, "rulePrecisionList", rulePrecisionList)
+    #utils.appendToNPZ(pathToNPZ, "predictionComparisonList", predictionComparisonList)
+    #utils.appendToNPZ(pathToNPZ, "rulesComplexityList", rulesComplexityList)
+    #utils.appendToNPZ(pathToNPZ, "coverageList", coverageList)
+    #utils.appendToNPZ(pathToNPZ, "rulePrecisionList", rulePrecisionList)
+    #utils.appendToNPZ(pathToNPZ, "ruleSupportList", ruleSupportList)
+    #utils.appendToNPZ(pathToNPZ, "numberOfGeneratedRules", numberOfGeneratedRules)
+    #utils.appendToNPZ(pathToNPZ, "rulePrecisionList", rulePrecisionList)
 
 
     # save to pickle k (not tested)
