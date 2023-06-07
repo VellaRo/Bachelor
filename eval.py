@@ -37,7 +37,7 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
     #utils.appendToNPZ(dirPath + 'data.npz',"y_eval", yList[1])
     #utils.appendToNPZ(dirPath + 'data.npz',"y_test", yList[2])
     #utils.appendToNPZ(dirPath + 'data.npz',"y_test", yList[0])
-    utils.appendToNPZ(dataPath + 'Trainingresults.npz',"inputFeatures", inputFeatures)
+    utils.appendToNPZ(dataPath + 'data.npz',"inputFeatures", inputFeatures)
 
     initialModel = model
     #initialModel.load_state_dict(torch.load(modelsDirPath + "/" +str(0)))
@@ -282,31 +282,31 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
             gradientMagnitudePerFeature_iteration = np.absolute(unpackedGradiends_iteration)
         
         # save all to NPZ
-        utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "LossPerEpochList", lossPerEpochList)
-        utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "LossPerIterationList", lossPerIterationList)
-        utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "AccPerEpochList", accPerEpochList)
-        utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "AccPerIterationList", accPerIterationList)
-        utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "PredictionList", predictionList) # from last epoch
+        utils.appendToNPZ(dataPath+ "data.npz", name + "LossPerEpochList", lossPerEpochList)
+        utils.appendToNPZ(dataPath+ "data.npz", name + "LossPerIterationList", lossPerIterationList)
+        utils.appendToNPZ(dataPath+ "data.npz", name + "AccPerEpochList", accPerEpochList)
+        utils.appendToNPZ(dataPath+ "data.npz", name + "AccPerIterationList", accPerIterationList)
+        utils.appendToNPZ(dataPath+ "data.npz", name + "PredictionList", predictionList) # from last epoch
 
         if True:#name == "train" or name == "eval":
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "Cosine_similarity_toInitialList", cosine_similarity_toInitialList) # Default always Per Iteration
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "Cosine_similarity_toFinalList", cosine_similarity_toFinalList)
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "PercentageWeightSignDifferences_toInitialList", percentageWeightSignDifferences_toInitialList)
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "PercentageWeightSignDifferences_toFinalList", percentageWeightSignDifferences_toFinalList)
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "AbsoluteIterationWeightsList", absoluteIterationWeightsList) 
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "L2Dist_toInitialList", l2Dist_toInitialList)
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "L2Dist_toFinalList", l2Dist_toFinalList)
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "Random10WeightsList", random10WeightsList)
+            utils.appendToNPZ(dataPath+ "data.npz", name + "Cosine_similarity_toInitialList", cosine_similarity_toInitialList) # Default always Per Iteration
+            utils.appendToNPZ(dataPath+ "data.npz", name + "Cosine_similarity_toFinalList", cosine_similarity_toFinalList)
+            utils.appendToNPZ(dataPath+ "data.npz", name + "PercentageWeightSignDifferences_toInitialList", percentageWeightSignDifferences_toInitialList)
+            utils.appendToNPZ(dataPath+ "data.npz", name + "PercentageWeightSignDifferences_toFinalList", percentageWeightSignDifferences_toFinalList)
+            utils.appendToNPZ(dataPath+ "data.npz", name + "AbsoluteIterationWeightsList", absoluteIterationWeightsList) 
+            utils.appendToNPZ(dataPath+ "data.npz", name + "L2Dist_toInitialList", l2Dist_toInitialList)
+            utils.appendToNPZ(dataPath+ "data.npz", name + "L2Dist_toFinalList", l2Dist_toFinalList)
+            utils.appendToNPZ(dataPath+ "data.npz", name + "Random10WeightsList", random10WeightsList)
 
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "GradientsPerSamplePerFeature", gradientList) # for every trainingEpoch we calc the grads on testDataset
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "GradientsPerFeature", unpackedGradiends)
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "GradientMagnitudePerFeature", gradientMagnitudePerFeature)
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "AveragedGradientMagnitude", averagedGradientMagnitude)
+            utils.appendToNPZ(dataPath+ "data.npz", name + "GradientsPerSamplePerFeature", gradientList) # for every trainingEpoch we calc the grads on testDataset
+            utils.appendToNPZ(dataPath+ "data.npz", name + "GradientsPerFeature", unpackedGradiends)
+            utils.appendToNPZ(dataPath+ "data.npz", name + "GradientMagnitudePerFeature", gradientMagnitudePerFeature)
+            utils.appendToNPZ(dataPath+ "data.npz", name + "AveragedGradientMagnitude", averagedGradientMagnitude)
             
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "GradientsPerSamplePerFeature_iteration", gradientList_iteration) # for every trainingIteration we calc the grads on testDataset
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "GradientsPerFeature_iteration", unpackedGradiends_iteration)
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "GradientMagnitudePerFeature_iteration", gradientMagnitudePerFeature_iteration)
-            utils.appendToNPZ(dataPath+ "Trainingresults.npz", name + "AveragedGradientMagnitude_iteration", averagedGradientMagnitude_iteration)
+            utils.appendToNPZ(dataPath+ "data.npz", name + "GradientsPerSamplePerFeature_iteration", gradientList_iteration) # for every trainingIteration we calc the grads on testDataset
+            utils.appendToNPZ(dataPath+ "data.npz", name + "GradientsPerFeature_iteration", unpackedGradiends_iteration)
+            utils.appendToNPZ(dataPath+ "data.npz", name + "GradientMagnitudePerFeature_iteration", gradientMagnitudePerFeature_iteration)
+            utils.appendToNPZ(dataPath+ "data.npz", name + "AveragedGradientMagnitude_iteration", averagedGradientMagnitude_iteration)
 
        
     return None # just save to npz
