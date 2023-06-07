@@ -189,7 +189,7 @@ def appendToNPZ(NPZPath, name, newData):
     return None
 
 
-def loadData(dirPath):
+def loadData(pathToNPZ):
     """
     load the data from a .npz file  
 
@@ -198,6 +198,6 @@ def loadData(dirPath):
     
     returns : data(loaded data)            
     """
-    data = np.load(dirPath + 'data.npz' , allow_pickle=True)
-    #data = np.load(pathToNPZ, allow_pickle=True)
+    #data = np.load(dirPath + 'data.npz' , allow_pickle=True)
+    data = np.load(pathToNPZ, allow_pickle=True)
     return data    

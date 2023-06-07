@@ -71,33 +71,23 @@ class BinaryClassification2HL64N(nn.Module):
     def predict(self,input_list):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # Use GPU if available
 
-        # Convert input list to a PyTorch tensor
         input_data = torch.tensor(input_list)
-
-        # Create a TensorDataset from the input data
         dataset = torch.utils.data.TensorDataset(input_data)
 
-        # Initialize a DataLoader
         data_loader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=False)
 
-        # Move the model to the appropriate device
         self.to(device)
-        self.eval()  # Set the model to evaluation mode
- 
-        # Make predictions and get predicted classes
+        self.eval()  
         predictions= []
         with torch.no_grad():
             for batch in data_loader:
-                input_batch = batch[0].to(device)  # Extract the input data from the batch
+                input_batch = batch[0].to(device) 
 
-                # Forward pass and get predictions
                 batch_predictions = self(input_batch)
-
-                # Get predicted classes by selecting the class with the highest probability
-                _, batch_predicted_classes = torch.max(batch_predictions, dim=1)
+                _, batch_predictions = torch.max(batch_predictions, dim=1)
 
                 # Append batch predicted classes to the list
-                predictions.extend(batch_predicted_classes.cpu().tolist())
+                predictions.extend(batch_predictions.cpu().tolist())
 
     
         return predictions

@@ -29,7 +29,7 @@ def plotConfusionMatrix(dirPath, plotName, set):
     """
     fig, axs = plt.subplots(nrows=1, ncols=1, figsize=(4,4) )
 
-    data = utils.loadData(dirPath)
+    data = utils.loadData(dirPath +"data.npz")
     if set == "train":
         y = data["y_train"]
         predictions = data["trainPredictionList"]
@@ -75,7 +75,7 @@ def plotLoss_Acc(dirPath,plotName, separatly =False):
     returns: None
 
     """
-    data = utils.loadData(dirPath)
+    data = utils.loadData(dirPath +"data.npz")
     trainAccPerEpochList =     data["trainAccPerEpochList"]
     trainAccPerIterationList = data["trainAccPerIterationList"]
     trainLossPerEpochList =    data["trainLossPerEpochList"]
@@ -181,7 +181,7 @@ def plotGradientsPerFeature(dirPath, plotName , sepratly=False):
     returns: None
     """
     # Load data
-    data = utils.loadData(dirPath)
+    data = utils.loadData(dirPath +"data.npz")
     trainGradientPerFeature = data["trainGradientsPerFeature"]
     evalGradientPerFeature = data["evalGradientsPerFeature"]
     inputFeatures = data["inputFeatures"]
@@ -295,7 +295,7 @@ def plotCosineSimilarity(dirPath, plotName, set):
     returns: None
     """
     fig, axs = plt.subplots(nrows=1, ncols=1)
-    data = utils.loadData(dirPath)
+    data = utils.loadData(dirPath +"data.npz")
 
     if set == "train":
         cosine_similarity_toInitialList= data["trainCosine_similarity_toInitialList"]    
@@ -332,7 +332,7 @@ def plotWeightSignDifferences(dirPath, plotName, set):
         
     returns: None
     """
-    data = utils.loadData(dirPath)
+    data = utils.loadData(dirPath +"data.npz")    
     if set == "train":
         percentageWeightSignDifferences_toInitialList = data["trainPercentageWeightSignDifferences_toInitialList"]
         percentageWeightSignDifferences_toFinalList = data["trainPercentageWeightSignDifferences_toFinalList"]
@@ -373,7 +373,7 @@ def plotWeightMagnitude(dirPath, plotName, set):
     returns: None
     """
 
-    data = utils.loadData(dirPath)
+    data = utils.loadData(dirPath +"data.npz")
     if set == "train":
         absoluteIterationWeightsList = data["trainAbsoluteIterationWeightsList"]
     elif set == "eval":
@@ -409,7 +409,7 @@ def plotL2Distance(dirPath, plotName, set):
         
     returns: None
     """
-    data = utils.loadData(dirPath)
+    data = utils.loadData(dirPath +"data.npz")
     if set == "train":
         l2Dist_toInitialList = data["trainL2Dist_toInitialList"]
         l2Dist_toFinalList = data["trainL2Dist_toFinalList"]
@@ -448,7 +448,7 @@ def plotWeightTrace(dirPath, plotName, set):
         
     returns: None
     """
-    data = utils.loadData(dirPath)
+    data = utils.loadData(dirPath +"data.npz")
     if set == "train":
         random10WeightsList = data["trainRandom10WeightsList"]
     elif set == "eval":
@@ -488,7 +488,7 @@ def plotGradientMagnitude(dirPath, plotName, set, perFeature):
                     False : averages across the features
     returns: None
     """
-    data = utils.loadData(dirPath)
+    data = utils.loadData(dirPath +"data.npz")
 
     if set == "train":
         averagedAbsoluteGradientMagnitude =  data["trainAveragedGradientMagnitude"]

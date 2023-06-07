@@ -37,12 +37,18 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
 
     itemset = set()
     encoded_vals = []
-    #summed_values = {}
-    #num_features = data.shape[1]
+    summed_values = {}
+    num_features = data.shape[1]
 
     shap_threshold = 0.001
     num_cores = cpu_count()
+    
+    if len(intervals_dict) == 0:
+        compute_intervals(intervals_dict, data_df, 5)
+    
     p = Pool(num_cores)
+
+
     if debug:
         print("this saves to a dummy folder which is beeing replaced")
         output_directory = './DEBUG/OHEresults/'
@@ -68,6 +74,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
                 right = interval.right
                 name = f'{left}<{feature}<={right}'
                 itemset.add(name)
+
         else:
             itemset.add(feature)
 
@@ -81,16 +88,10 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
             pos_queue.put(pos_label)
             neg_queue.put(neg_label)
             exp = gradsPerIteration[indx]#[item[indx] for item in sample] #normalize featureListALL ?
-            #print("exp")
-            #print(np.shape(exp))
-            #print(exp)
+
 
             instance_features = data_df.iloc[[indx]].to_dict(orient='records')[0]
             feature_vals = [instance_features[name] for name in featureNames] #put here grads# feature values ?? 
-
-            # GRADS AS LOCAL EXPLAINATION #
-            # 
-            #print("eh")
 
             zipped = zip(exp, feature_vals,
                          featureNames, [shap_threshold]*len(featureNames))
@@ -101,8 +102,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
             append_to_encoded_vals(neg_queue, itemset, encoded_vals)
 
             ohe_df = pd.DataFrame(encoded_vals)
-            #print(ohe_df)
-            #exit()
+
         return ohe_df #ohe_dfList.append(ohe_df)
     
     for i in tqdm (range(len(grads))):
@@ -123,17 +123,15 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
 
 def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add  to def input ?
                                             # 10/ len(pred)
-    freq_items = apriori(ohe_df, min_support=(1/testDataLength), use_colnames=True, max_len=3)
-    #print(len(freq_items))
-    #print(freq_items)
-    all_rules = association_rules(freq_items, metric="confidence", min_threshold=0.02, support_only=False) # 0.7 support_only=False
-    #print(len(all_rules))
-    #print(all_rules)                                                   # 10/ len(pred)
-    freq_items = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(1/testDataLength), use_colnames=True, max_len=10) # max len 3
-    pos_rules = association_rules(freq_items, metric="confidence", min_threshold=0.02, support_only=False) # 0.6 support_only=False
+    freq_items = apriori(ohe_df, min_support=(10/testDataLength), use_colnames=True, max_len=3)
+
+    all_rules = association_rules(freq_items, metric="confidence", min_threshold=0.7, support_only=False) # 0.7 support_only=False
+                                        # 10/ len(pred)
+    freq_items = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(10/testDataLength), use_colnames=True, max_len=10) # max len 3
+    pos_rules = association_rules(freq_items, metric="confidence", min_threshold=0.6, support_only=False) # 0.6 support_only=False
                                                                         # 10/ len(pred)
-    freq_items = apriori(ohe_df.loc[ohe_df[neg_label] == 1], min_support=(1/testDataLength), use_colnames=True, max_len=10) # max len 3 
-    neg_rules = association_rules(freq_items, metric="confidence", min_threshold=0.02, support_only=False) # 0.6 support_only=False
+    freq_items = apriori(ohe_df.loc[ohe_df[neg_label] == 1], min_support=(10/testDataLength), use_colnames=True, max_len=10) # max len 3 
+    neg_rules = association_rules(freq_items, metric="confidence", min_threshold=0.6, support_only=False) # 0.6 support_only=False
 
     return all_rules, pos_rules , neg_rules
 
@@ -284,7 +282,7 @@ def getCharasteristicRules(pos_rules, pos_label, neg_rules,neg_label ):
     chr_rules
     return  chr_rules
 
-
+                                                            #TODO: predictions to predictionsList over iteration
 def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirPath , debug = False):
     """
     
@@ -294,19 +292,22 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
     """
     X_List = []
     y_List = [] 
-    #print(testData[1])
     for inputs, lables in dataloader:
         X_List.extend(inputs)
         y_List.extend(lables)
     
     def extractRules_df(rules_DF):
+
         rulesList =rules_DF["itemset"].to_list()
+        print(rulesList)
         rulesList = [set(frozenset) for frozenset in rulesList]
 
         labelList_rules = rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
         labelList_rules = [set(frozenset).pop() for frozenset in labelList_rules]
 
         # Regular expression pattern
+        #pattern = r"([+-]?\d+\.\d+)(<\w+<=)([+-]?\d+\.\d+)"
+
         pattern = r"([+-]?\d+\.\d+)(<\w+<=)([+-]?\d+\.\d+)"
 
 
@@ -316,7 +317,10 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
             set_filtered = []
             for item in set_item:
                 matches = re.findall(pattern, item)
+      
                 if matches:
+                    #print("matches")
+                    #print(matches[0])
                     lower_bound, feature, upper_bound = matches[0]
                     set_filtered.append((lower_bound, feature[1:-2], upper_bound))
             rules_list.append(set_filtered)
@@ -324,6 +328,14 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         return rules_list, labelList_rules
 
     def applyRulesOnData(X,predictions, rules, labelList_rules, featureDict):
+        #print("X")
+        #print(X)
+        #print("rulse")
+        #print(rules)
+        #print("lableslist")
+        #print(labelList_rules)
+        #print("feature")
+        #print(featureDict)
         """
         X: List
         predictions: List
@@ -417,8 +429,9 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
 
     rules_list, labelList_rules =  extractRules_df(rules_DF)
     predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
-
+    #print(predictionComparisonList)
     rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
+    #print(rulePrecisionList)
     coverageList = globalCoverage(predictionComparisonList)
     rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
     numberOfGeneratedRules = (len(rules_list))
