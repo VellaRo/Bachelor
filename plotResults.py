@@ -304,8 +304,8 @@ def plotCosineSimilarity(dirPath, plotName, set):
         cosine_similarity_toInitialList= data["evalCosine_similarity_toInitialList"]    
         cosine_similarity_toFinalList= data["evalCosine_similarity_toFinalList"]
     elif set == "test":
-        print("testSet does only get into consideration for Performance measure to be independet of the explanatory set")
-        return None
+        cosine_similarity_toInitialList= data["testCosine_similarity_toInitialList"]    
+        cosine_similarity_toFinalList= data["testCosine_similarity_toFinalList"]
 
 
     axs.plot(range(len(cosine_similarity_toInitialList)),cosine_similarity_toInitialList)
@@ -340,8 +340,10 @@ def plotWeightSignDifferences(dirPath, plotName, set):
         percentageWeightSignDifferences_toInitialList = data["evalPercentageWeightSignDifferences_toInitialList"]
         percentageWeightSignDifferences_toFinalList = data["evalPercentageWeightSignDifferences_toFinalList"]
     elif set == "test":
+        percentageWeightSignDifferences_toInitialList = data["testPercentageWeightSignDifferences_toInitialList"]
+        percentageWeightSignDifferences_toFinalList = data["testPercentageWeightSignDifferences_toFinalList"]
         print("testSet does only get into consideration for Performance measure to be independet of the explanatory set")
-        return None
+
 
     fig, axs = plt.subplots(nrows=1, ncols=1)
 
@@ -377,9 +379,10 @@ def plotWeightMagnitude(dirPath, plotName, set):
     elif set == "eval":
         absoluteIterationWeightsList = data["evalAbsoluteIterationWeightsList"]
     elif set == "test":
-        print("testSet does only get into consideration for Performance measure to be independet of the explanatory set")        
+        absoluteIterationWeightsList = data["testAbsoluteIterationWeightsList"]
+        #print("testSet does only get into consideration for Performance measure to be independet of the explanatory set")        
 
-        return None
+
     
     fig, axs = plt.subplots(nrows=1, ncols=1)
     axs.plot(absoluteIterationWeightsList)
@@ -414,8 +417,9 @@ def plotL2Distance(dirPath, plotName, set):
         l2Dist_toInitialList = data["evalL2Dist_toInitialList"]
         l2Dist_toFinalList = data["evalL2Dist_toFinalList"]
     elif set == "test":
-        print("testSet does only get into consideration for Performance measure to be independet of the explanatory set")
-        return None
+        l2Dist_toInitialList = data["testL2Dist_toInitialList"]
+        l2Dist_toFinalList = data["testL2Dist_toFinalList"]
+
 
     fig, axs = plt.subplots(nrows=1, ncols=1)
 
@@ -450,8 +454,9 @@ def plotWeightTrace(dirPath, plotName, set):
     elif set == "eval":
         random10WeightsList = data["evalRandom10WeightsList"]
     elif set == "test":
-        print("testSet does only get into consideration for Performance measure to be independet of the explanatory set")
-        return None
+        random10WeightsList = data["testRandom10WeightsList"]
+
+
         
     fig, axs = plt.subplots(nrows=1, ncols=1)
 
@@ -493,8 +498,9 @@ def plotGradientMagnitude(dirPath, plotName, set, perFeature):
         averagedAbsoluteGradientMagnitude = data["evalAveragedGradientMagnitude"]
         absoluteabsoluteGradientMagnitudePerFeature = data["evalGradientMagnitudePerFeature"]
     elif set == "test":
-        print("testSet does only get into consideration for Performance measure to be independet of the explanatory set")
-        return None
+        averagedAbsoluteGradientMagnitude = data["testAveragedGradientMagnitude"]
+        absoluteabsoluteGradientMagnitudePerFeature = data["testGradientMagnitudePerFeature"]
+
     
     if not(perFeature):
         print("plotting: GM GradientMagnitude averaged over features")
