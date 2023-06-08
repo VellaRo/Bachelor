@@ -423,6 +423,7 @@ def plotL2Distance(dirPath, plotName, set):
     fig, axs = plt.subplots(nrows=1, ncols=1)
 
     axs.plot(l2Dist_toInitialList) 
+    axs.set
     axs.plot(l2Dist_toFinalList)
     
     fig.savefig(str(dirPath) + str(plotName))    
@@ -460,7 +461,10 @@ def plotWeightTrace(dirPath, plotName, set):
     fig, axs = plt.subplots(nrows=1, ncols=1)
 
     for i in random10WeightsList:
-        axs.plot(i ) 
+        axs.plot(i)
+        axs.set_title("weightTrace of 10 Random weights")
+        axs.set_xlabel("iteration")
+        axs.set_ylabel("weightValue") 
 
     fig.savefig(str(dirPath) + str(plotName))
     pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
@@ -506,8 +510,8 @@ def plotGradientMagnitude(dirPath, plotName, set, perFeature):
         figGM, axsGM = plt.subplots(nrows=1, ncols=1)
 
         axsGM.plot(averagedAbsoluteGradientMagnitude)
-        axsGM.set_xlabel('gradientMagnitude')
-        axsGM.set_ylabel('iteration')
+        axsGM.set_xlabel('iteration')
+        axsGM.set_ylabel('gradientMagnitude')
         axsGM.set_title("GradientMagnitude averaged over features")
 
         figGM.savefig(str(dirPath) + plotName+ "Averaged")
@@ -517,15 +521,15 @@ def plotGradientMagnitude(dirPath, plotName, set, perFeature):
  
         print("plotting: GM GradientMagnitude PerFeature")
         figGM, axsGM = plt.subplots(nrows=int(len(absoluteabsoluteGradientMagnitudePerFeature)), ncols=1)
-
+        plt.title("GradientMagnitude per features")
+        plt.xlabel('iteration') # asxGM
+        plt.ylabel('gradientMagnitude')
         for i in range(len(absoluteabsoluteGradientMagnitudePerFeature)):
         
             axsGM[i].plot(absoluteabsoluteGradientMagnitudePerFeature[i])
-            axsGM[i].set_xlabel('gradientMagnitude')
-            axsGM[i].set_ylabel('iteration')
-            axsGM[i].set_title("GradientMagnitude per features")
+
         
-        figGM.savefig(str(dirPath) + plotName+ "GradientMagnitude per feature")
-        pickle.dump(figGM, open(str(dirPath) + str(plotName)+ "per feature", 'wb'))
+        figGM.savefig(str(dirPath) + plotName)
+        pickle.dump(figGM, open(str(dirPath) + str(plotName), 'wb'))
 
     return None
