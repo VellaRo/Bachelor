@@ -12,7 +12,7 @@ seedObject = TorchRandomSeed.TorchRandomSeed(seed=1)
 
 with seedObject:
     droplist = []#["BloodPressure", "Pregnancies", "Age", "SkinThickness"]
-    num_epochs =2
+    num_epochs =300
     batch_size = 32
     test_size = 0.2 # is going to be split again in eval and test
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
