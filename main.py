@@ -6,7 +6,7 @@ import TorchRandomSeed
 import modelClass
 import dataloader
 from torch.utils.data import SubsetRandomSampler
-
+import os
 seed =1
 seedObject = TorchRandomSeed.TorchRandomSeed(seed=1) 
 
@@ -52,14 +52,14 @@ with seedObject:
     #train.train(trainloader,random_indices_train, testloader,random_indices_test, model, num_epochs, device, y_train, y_test, loss_function, optimizer)
     #print(dirPath)
 
-    import eval
+    import evalModel
     import plotResults
     from matplotlib import pyplot as plt
     print("evaluating ...")
     loaderList = [testloader]
     nameList = ["test"]
     yList = [y_test]
-    eval.doALLeval(model, modelsDirPath, dirPath, loaderList, device,optimizer, loss_function, num_epochs, nameList, yList, inputFeatures, random_indices_test)
+    evalModel.doALLeval(model, modelsDirPath, dirPath, loaderList, device,optimizer, loss_function, num_epochs, nameList, yList, inputFeatures, random_indices_test)
     print("rootPath:")
     print(dirPath)
     #print(modelsDirPath)
@@ -136,12 +136,26 @@ pickle.dump(figAcc, open(dataPath + "testAccuracyPerIteration", 'wb'))
 #plt.show()
 
 import cega_utils
+import re 
+####
 
 #data 
-trainedModelPrediction_Test = model.predict(X_test.to("cuda:0"))
+# filter out any special models
+r = re.compile("^[0-9]*$")
+modelsDirFiltered = list(filter(r.match, os.listdir(modelsDirPath))) # remove any special models
+    
+trainedModelPrediction_Test_overIterations = []
+
+for modelNumber,filename in enumerate(np.sort(list(eval(i) for i in modelsDirFiltered))): #(os.listdir(modelsDirPath)))): # iterations time 
+    model.load_state_dict(torch.load(modelsDirPath + "/" +str(filename)))
+    model.eval()
+    tempTrainedModelPrediction_Test = model.predict(X_test.to("cuda:0"))
+    trainedModelPrediction_Test_overIterations.append(tempTrainedModelPrediction_Test)
+#print(np.shape(trainedModelPrediction_Test))
+####
                                     # data   
 #print(trainedModelPrediction_Test)
-cega_utils.calculateAndSaveOHE_Rules(X_test, featureNames,trainedModelPrediction_Test, data["testGradientsPerSamplePerFeature_iteration"], debug= False) #OHEresults
+cega_utils.calculateAndSaveOHE_Rules(X_test, featureNames,trainedModelPrediction_Test_overIterations[-1], data["testGradientsPerSamplePerFeature_iteration"], debug= False) #OHEresults
 
 
 import warnings
@@ -195,7 +209,7 @@ for i in tqdm(range(len(os.listdir("./OHEresults/")))):
     resultName = "discriminative_rules"
     #resultName = "charachteristic_rules"
     #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath)
-    rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, featureDict, testloader, trainedModelPrediction_Test)
+    rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, featureDict, testloader, trainedModelPrediction_Test_overIterations[i])
     #resultName = "charachteristic_rules"
     #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,  = numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(charachteristic_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath, debug=True )
     discriminative_rules_overIterations.append(discriminative_rules)
@@ -256,7 +270,7 @@ def calculate_mean_of_lists(list_of_lists):
             means.append(0)  # or any other value to indicate the empty sublist
     return means
 
-import pickle5 as pickle
+#import pickle5 as pickle
 
 #plot
 pathToDiscriminative_rules = "./rulesResults/discriminative_rules/"

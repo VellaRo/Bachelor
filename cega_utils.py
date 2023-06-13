@@ -128,10 +128,11 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
     for i in tqdm (range(len(grads))):
 
         gradsPerIteration  = grads[i]
+        #trainedModelPrediction_TestPerIteration = trainedModelPrediction_Test[i]
         output_filename = f'{output_directory}{output_base_filename}_{iterationCounter}.pkl'
         try:
             with open(output_filename, 'xb') as f:
-                ohe_df = CEGA(gradsPerIteration)
+                ohe_df = CEGA(gradsPerIteration)#,trainedModelPrediction_TestPerIteration)
                 pickle.dump(ohe_df, f)
                 iterationCounter += 1
         except FileExistsError:
