@@ -12,9 +12,9 @@ seedObject = TorchRandomSeed.TorchRandomSeed(seed=1)
 
 with seedObject:
     droplist = []#["BloodPressure", "Pregnancies", "Age", "SkinThickness"]
-    num_epochs =3
+    num_epochs =1
     batch_size = 32
-    test_size = 0.2 # is going to be split again in eval and test
+    test_size = 0.02 #0.2 # is going to be split again in eval and test
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     #dirPath = "/home/rosario/explainable/Bachelor/"# root
     #dirPath= "/home/rosario/explainable/test/Bachelor/"
@@ -254,7 +254,7 @@ def calculate_mean_of_lists(list_of_lists):
             means.append(0)  # or any other value to indicate the empty sublist
     return means
 
-import pickle
+import pickle5 as pickle
 
 #plot
 pathToDiscriminative_rules = "/home/rosario/explainable/test/Bachelor/rulesResults/discriminative_rules/"
