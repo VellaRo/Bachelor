@@ -152,7 +152,7 @@ def load_kaggle_diabetes_dataset( batch_size= 4, test_size =0.2 ,droplist= []):
     returns trainloader , testloader ,X_train ,X_test ,  y_train , y_test, inputFeatures according to specifications
     """
         
-    path = "/home/rosario/explainable/Bachelor/Diabetes/Data/diabetes.csv"
+    path = "./Diabetes/Data/diabetes.csv"
     
 
     datasetName ="KaggleDiabetesALL"
@@ -216,7 +216,7 @@ def dryBeanUCI(batch_size= 4, test_size =0.2 ,droplist= []):
     droplist: (list of strings) a list of string of features to drop ( not consider for training/testing) 
     
     """
-    path = "/home/rosario/explainable/Bachelor/Diabetes/Data/DryBeanDataset/Dry_Bean_Dataset.csv"
+    path = "./Diabetes/Data/DryBeanDataset/Dry_Bean_Dataset.csv"
     
     datasetName = "dryBeanUCI"
     inputFeatures = 16
