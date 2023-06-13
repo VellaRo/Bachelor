@@ -281,7 +281,7 @@ data = utils.loadData(mostRecentResultPaths_discriminative)
 #predictionComparisonList_overIterations
 #rulesComplexityList_overIterations                  )
 
-pathToRulesResults = "./Bachelor/rulesResults/"
+pathToRulesResults = "./rulesResults/"
 
 #plt.show()
 fig1, axs1 = plt.subplots(nrows=1, ncols=1)
