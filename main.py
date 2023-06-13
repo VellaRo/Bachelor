@@ -50,7 +50,7 @@ with seedObject:
     grads =  train.train(trainloader,random_indices_train, testloader,random_indices_test, model, num_epochs, device, y_train, y_test, loss_function, optimizer)
  
     #train.train(trainloader,random_indices_train, testloader,random_indices_test, model, num_epochs, device, y_train, y_test, loss_function, optimizer)
-    print(dirPath)
+    #print(dirPath)
 
     import eval
     import plotResults
@@ -60,8 +60,9 @@ with seedObject:
     nameList = ["test"]
     yList = [y_test]
     eval.doALLeval(model, modelsDirPath, dirPath, loaderList, device,optimizer, loss_function, num_epochs, nameList, yList, inputFeatures, random_indices_test)
+    print("rootPath:")
     print(dirPath)
-    print(modelsDirPath)
+    #print(modelsDirPath)
     ##
     dataPath= dirPath+ "Trainingresults/"
 print("plotting...")
@@ -220,7 +221,8 @@ if debug:
     pathToNPZ =  dirPath + f"DEBUG.npz"
 else:    
     pathToNPZ =  dirPath +"rulesResults/" f"{resultName}/_{date_time_string}.npz"
-print(pathToNPZ)
+#
+#print(pathToNPZ)
 np.savez(pathToNPZ ,rules_list_overIterations = rules_list_overIterations) 
 utils.appendToNPZ(pathToNPZ, "labelList_rules_overIterations", labelList_rules_overIterations)
 utils.appendToNPZ(pathToNPZ, "rulePrecisionList_overIterations", rulePrecisionList_overIterations)
@@ -234,8 +236,8 @@ utils.appendToNPZ(pathToNPZ, "jaccardSimilarity_overIterations", jaccardSimilari
 #utils.appendToNPZ(rules_data)
     #charachteristic_rules
 x = utils.loadData(pathToNPZ)
-for i in x:
-    print(i)
+#for i in x:
+    #print(i)
 
 #x["rulePrecisionList_overIterations"]
 
@@ -262,12 +264,12 @@ pathToCharachteristic_rules = "./rulesResults/charachteristic_rules"
 resultPaths_dicriminative_rules = os.listdir(pathToDiscriminative_rules)
 resultPaths_charachteristic_rules = os.listdir(pathToCharachteristic_rules)
 
-print(resultPaths_dicriminative_rules)
+#print(resultPaths_dicriminative_rules)
 resultPaths_dicriminative_rules= np.sort(resultPaths_dicriminative_rules)
-print(resultPaths_dicriminative_rules[-1])
+#print(resultPaths_dicriminative_rules[-1])
 
 mostRecentResultPaths_discriminative = pathToDiscriminative_rules + (resultPaths_dicriminative_rules[-1])
-print(mostRecentResultPaths_discriminative)
+#print(mostRecentResultPaths_discriminative)
 
 #/home/rosario/explainable/test/Bachelor/rulesResults/discriminative_rules/_2023-06-07 12:18:40.npz
 
@@ -279,7 +281,7 @@ data = utils.loadData(mostRecentResultPaths_discriminative)
 #predictionComparisonList_overIterations
 #rulesComplexityList_overIterations                  )
 
-pathToRulesResults = "/home/rosario/explainable/test/Bachelor/rulesResults/"
+pathToRulesResults = "./Bachelor/rulesResults/"
 
 #plt.show()
 fig1, axs1 = plt.subplots(nrows=1, ncols=1)
