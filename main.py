@@ -257,8 +257,8 @@ def calculate_mean_of_lists(list_of_lists):
 import pickle5 as pickle
 
 #plot
-pathToDiscriminative_rules = "/home/rosario/explainable/test/Bachelor/rulesResults/discriminative_rules/"
-pathToCharachteristic_rules = "/home/rosario/explainable/test/Bachelor/rulesResults/charachteristic_rules"
+pathToDiscriminative_rules = "./rulesResults/discriminative_rules/"
+pathToCharachteristic_rules = "./rulesResults/charachteristic_rules"
 resultPaths_dicriminative_rules = os.listdir(pathToDiscriminative_rules)
 resultPaths_charachteristic_rules = os.listdir(pathToCharachteristic_rules)
 
