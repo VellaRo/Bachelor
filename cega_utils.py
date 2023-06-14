@@ -429,14 +429,18 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         for i in predictionList_transposed:
             tempCorrectClassified = list(i).count(1)
             tempFalseClassified =   list(i).count(0)
+            
+
             #tempNotAplicable =     list(i).count(0) 
 
             try:
-                rulePrecisionList.append(len(predictionList_transposed) / tempCorrectClassified)
+                print(len(predictionList_transposed[i]))
+                rulePrecisionList.append(tempCorrectClassified/ len(predictionList_transposed[i]) )
+                
             except ZeroDivisionError:
                 rulePrecisionList.append(0)
             try:
-                ruleSupportList.append(len(predictionList_transposed)/ (tempCorrectClassified + tempFalseClassified))
+                ruleSupportList.append((tempCorrectClassified + tempFalseClassified)/len(predictionList_transposed[i]) )
             except ZeroDivisionError:
                 rulePrecisionList.append(0)
 
