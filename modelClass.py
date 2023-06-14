@@ -92,6 +92,112 @@ class BinaryClassification2HL64N(nn.Module):
     
         return predictions
 
+class BinaryClassification4HL64N(nn.Module):
+    def __init__(self, inputFeatures=8, outputFeatures=2):
+        super(BinaryClassification4HL64N, self).__init__()
+        # HL hidden layer #N neruons per layer
+        self.modelName = "BinaryClassification1HL16N"
+
+        self.layer_1 = nn.Linear(inputFeatures, 64 ) #64
+        self.layer_2 = nn.Linear(64,64) #64,64 
+        self.layer_3 = nn.Linear(64,64) #64,64
+        self.layer_4 = nn.Linear(64,64) #64,64 
+        self.layer_5 = nn.Linear(64,64) #64,64
+        self.layer_out = nn.Linear(64, outputFeatures) #64
+        
+        self.relu = nn.ReLU()
+        #self.dropout = nn.Dropout(p=0.1) # 0.1
+        
+    def forward(self, inputs):
+        x = self.relu(self.layer_1(inputs))
+        x = self.relu(self.layer_2(x))
+        x = self.relu(self.layer_3(x))
+        x = self.relu(self.layer_4(x))
+        x = self.relu(self.layer_5(x))
+        #x = self.dropout(x)
+        x = self.layer_out(x)
+        
+        return x
+    
+    def predict(self,input_list):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # Use GPU if available
+
+        input_data = torch.tensor(input_list)
+        dataset = torch.utils.data.TensorDataset(input_data)
+
+        data_loader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=False)
+
+        self.to(device)
+        self.eval()  
+        predictions= []
+        with torch.no_grad():
+            for batch in data_loader:
+                input_batch = batch[0].to(device) 
+
+                batch_predictions = self(input_batch)
+                _, batch_predictions = torch.max(batch_predictions, dim=1)
+
+                # Append batch predicted classes to the list
+                predictions.extend(batch_predictions.cpu().tolist())
+
+    
+        return predictions
+
+
+
+
+class DEBUGMODEL(nn.Module):
+    def __init__(self, inputFeatures=8, outputFeatures=2):
+        super(DEBUGMODEL, self).__init__()
+        # HL hidden layer #N neruons per layer
+        self.modelName = "BinaryClassification1HL16N"
+
+        self.layer_1 = nn.Linear(inputFeatures, 8 ) #64
+        self.layer_2 = nn.Linear(8, 32 ) #64
+        self.layer_3 = nn.Linear(32, 32 ) #64
+        self.layer_4 = nn.Linear(32, 8 ) #64
+
+        self.layer_out = nn.Linear(8, outputFeatures) #64
+        
+        self.relu = nn.ReLU()
+        #self.dropout = nn.Dropout(p=0.1) # 0.1
+        
+    def forward(self, inputs):
+        x = self.relu(self.layer_1(inputs))
+        x = self.relu(self.layer_2(inputs))
+        x = self.relu(self.layer_3(inputs))
+        x = self.relu(self.layer_4(inputs))
+
+
+
+        #x = self.dropout(x)
+        x = self.layer_out(x)
+        
+        return x
+    
+    def predict(self,input_list):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # Use GPU if available
+
+        input_data = torch.tensor(input_list)
+        dataset = torch.utils.data.TensorDataset(input_data)
+
+        data_loader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=False)
+
+        self.to(device)
+        self.eval()  
+        predictions= []
+        with torch.no_grad():
+            for batch in data_loader:
+                input_batch = batch[0].to(device) 
+
+                batch_predictions = self(input_batch)
+                _, batch_predictions = torch.max(batch_predictions, dim=1)
+
+                # Append batch predicted classes to the list
+                predictions.extend(batch_predictions.cpu().tolist())
+
+    
+        return predictions
 
 """
 only use small layer size to observe more easily

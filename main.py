@@ -12,9 +12,9 @@ seedObject = TorchRandomSeed.TorchRandomSeed(seed=1)
 
 with seedObject:
     droplist = []#["BloodPressure", "Pregnancies", "Age", "SkinThickness"]
-    num_epochs =1
+    num_epochs = 3
     batch_size = 32
-    test_size = 0.02 #0.2 # is going to be split again in eval and test
+    test_size = 0.2 #0.2 # is going to be split again in eval and test
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     #dirPath = "/home/rosario/explainable/Bachelor/"# root
     #dirPath= "/home/rosario/explainable/test/Bachelor/"
@@ -149,7 +149,7 @@ trainedModelPrediction_Test_overIterations = []
 for modelNumber,filename in enumerate(np.sort(list(eval(i) for i in modelsDirFiltered))): #(os.listdir(modelsDirPath)))): # iterations time 
     model.load_state_dict(torch.load(modelsDirPath + "/" +str(filename)))
     model.eval()
-    tempTrainedModelPrediction_Test = model.predict(X_test.to("cuda:0"))
+    tempTrainedModelPrediction_Test = model.predict(X_test.to(device))
     trainedModelPrediction_Test_overIterations.append(tempTrainedModelPrediction_Test)
 #print(np.shape(trainedModelPrediction_Test))
 ####
@@ -202,23 +202,35 @@ tempRules_list = None
 from tqdm import tqdm
 for i in tqdm(range(len(os.listdir("./OHEresults/")))):
     ohe_df = cega_utils.loadOHE_Rules(i)
-    all_rules, pos_rules , neg_rules =  cega_utils.runApriori(ohe_df,len(X_test), pos_label ,neg_label)
-    discriminative_rules = cega_utils.getDiscriminativeRules(all_rules, pos_label, neg_label )
-    charachteristic_rules = cega_utils.getCharasteristicRules(pos_rules, pos_label, neg_rules,neg_label )
-    
-    resultName = "discriminative_rules"
+    try:
+        all_rules, pos_rules , neg_rules =  cega_utils.runApriori(ohe_df,len(X_test), pos_label ,neg_label)
+        discriminative_rules = cega_utils.getDiscriminativeRules(all_rules, pos_label, neg_label )
+        charachteristic_rules = cega_utils.getCharasteristicRules(pos_rules, pos_label, neg_rules,neg_label )
+
+
+        resultName = "discriminative_rules"
     #resultName = "charachteristic_rules"
     #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath)
-    rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, featureDict, testloader, trainedModelPrediction_Test_overIterations[i])
+        rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, featureDict, testloader, trainedModelPrediction_Test_overIterations[i])
     #resultName = "charachteristic_rules"
     #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,  = numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(charachteristic_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath, debug=True )
-    discriminative_rules_overIterations.append(discriminative_rules)
-    charachteristic_rules_overIterations.append(charachteristic_rules) 
+        discriminative_rules_overIterations.append(discriminative_rules)
+        charachteristic_rules_overIterations.append(charachteristic_rules) 
     #
     #print(rules_list)
+    except:
+        print("rules df empty")
+        rules_list = []
+        labelList_rules = []
+        rulePrecisionList =[]
+        predictionComparisonList = []
+        rulesComplexityList = []
+        coverageList = []
+        ruleSupportList = []
+        numberOfGeneratedRules = []
+        
     rules_list_overIterations.append(rules_list)
     labelList_rules_overIterations.append(labelList_rules)
-    
     rulePrecisionList_overIterations.append(rulePrecisionList)
     #print(rulePrecisionList_overIterations)
     predictionComparisonList_overIterations.append(predictionComparisonList)

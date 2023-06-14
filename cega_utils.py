@@ -9,7 +9,8 @@ from mlxtend.frequent_patterns import apriori, association_rules
 import re
 import utils
 from datetime import datetime
-
+##
+import time
 def loadOHE_Rules(iterationNumber):
     """
     """
@@ -46,8 +47,6 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
     """
     explainationGrads should have shape of [epochs * iterationsPerEpoch , testDatasetSize, featuresize ]
 
-
-    ute: sonntag 25.jun  not this -> ( 23:13),  20:12 (essen?), 22:55  
 
     """
     data_df = pd.DataFrame(data, columns=featureNames)
@@ -105,6 +104,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
     def CEGA(gradsPerIteration): 
         ### for every model iteration the gradients of whole test_dataset is calculated
         for indx in range(len(trainedModelPrediction_Test)): #  len test dataset
+            
             pos_queue.put(pos_label)
             neg_queue.put(neg_label)
             exp = gradsPerIteration[indx]#[item[indx] for item in sample] #normalize featureListALL ?
@@ -138,6 +138,15 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         except FileExistsError:
             # If the file already exists, increment the counter and try again
             iterationCounter += 1
+            pickle.dump(ohe_df, f)
+            print("exception")
+        encoded_vals = []
+
+
+
+        #gradsPerIteration  = grads[i]
+
+
     # TAKES ~30 sec for 154 samples  
 
 
