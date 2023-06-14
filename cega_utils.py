@@ -434,7 +434,6 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
             #tempNotAplicable =     list(i).count(0) 
 
             try:
-                print(len(predictionList_transposed[i]))
                 rulePrecisionList.append(tempCorrectClassified/ len(predictionList_transposed[i]) )
                 
             except ZeroDivisionError:
@@ -484,3 +483,46 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
     # think does it work with NLP no problems ?? / maybe just run on other pipeline results  
     #   + if not fix for NLP 
     
+
+def trackRulesList(rules_list_overIterations):
+    """
+        rules list   -> 
+        [[1 1 1 0 0]
+      ^ [1 0 0 1 0]
+      | [0 1 1 0 1]]
+    iterations
+
+    """
+    unique_items = set(item for sublist in rules_list_overIterations for item in sublist)
+
+    item_to_index = {item: index for index, item in enumerate(unique_items)}
+
+    num_items = len(unique_items)
+
+    one_hot_matrix = []
+
+    for sublist in rules_list_overIterations:
+        sublist_encoded = [0] * num_items
+    
+        for tup in sublist:
+            item, _ = tup
+        
+            index = item_to_index[item]
+            sublist_encoded[index] = 1
+    
+        one_hot_matrix.append(sublist_encoded)
+    one_hot_matrix = np.array(one_hot_matrix)
+
+    print(one_hot_matrix)
+
+###TODO:
+#for two: overlay jaccardsimilarity and testing accuracy  
+
+#for 3 : need to asses "positive influence" *** 
+
+#for 3a: go back to set without the "stable" rule 
+#and compare results with the last set without the rule
+#with the ruleset with the rules"
+#    *** ==> Net correct calssified : from changed predictions (now correct classified - wrong classified)
+#
+#fidelity / AUC check cega and glocalX paper
