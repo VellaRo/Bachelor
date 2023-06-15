@@ -71,7 +71,8 @@ class BinaryClassification2HL64N(nn.Module):
     def predict(self,input_list):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # Use GPU if available
 
-        input_data = torch.tensor(input_list)
+        #input_data = torch.tensor(input_list) 
+        input_data = input_list.clone().detach() 
         dataset = torch.utils.data.TensorDataset(input_data)
 
         data_loader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=False)
