@@ -175,9 +175,9 @@ def load_kaggle_diabetes_dataset( batch_size= 4, test_size =0.2 ,droplist= []):
     y = data["Outcome"]
     #y = y[:100]
 
-    #trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test= preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
+    trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test= preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
     #return trainloader ,evalloader, testloader ,X_train, X_eval, X_test, y_train, y_eval, y_test , inputFeatures, outputFeatures, datasetName   trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test= preProcessingData(X=X, y=y,batch_size=batch_size, features_names
-    trainloader , testloader ,X_train , X_test ,  y_train, y_test ,random_indices_train, random_indices_test, = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
+    #trainloader , testloader ,X_train , X_test ,  y_train, y_test ,random_indices_train, random_indices_test, = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
     return trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, features_names
 
 
@@ -197,14 +197,23 @@ def BreastCancerUCI(batch_size= 4, test_size =0.2 ,droplist= []): # 0.2 tset,siz
     inputFeatures = 30
     outputFeatures =2
     data = data.frame
-
+    #print(type(data))
     X = data.drop('target', axis = 1) 
-    X = dropFeatures(droplist=droplist, X=X, inputFeatures=input)
-    y= data["target"]    
+    #print("joo")
+    #print(type(X))
+   # X = dropFeatures(droplist, X, inputFeatures=inputFeatures)
+    #print("joo")
+    #print(type(X))
+
+    #X = X.values
+    
+    y= data["target"]#.values    
+    print(np.shape(y))
+    print(np.shape(X))
 
     X, inputFeatures = dropFeatures(droplist= droplist, X=X, inputFeatures=inputFeatures)
-    trainloader, testloader ,X_train , X_test ,  y_train, y_test = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
-    return trainloader , testloader ,X_train, X_test, y_train, y_test , inputFeatures, outputFeatures, datasetName, features_names
+    trainloader , testloader ,X_train , X_test ,  y_train, y_test , random_indices_train, random_indices_test = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
+    return  trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, features_names
 
 def dryBeanUCI(batch_size= 4, test_size =0.2 ,droplist= []):
     """
