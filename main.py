@@ -12,7 +12,8 @@ seedObject = TorchRandomSeed.TorchRandomSeed(seed=1)
 
 with seedObject:
     droplist = []#["BloodPressure", "Pregnancies", "Age", "SkinThickness"]
-    num_epochs = 200
+
+    num_epochs = 2
     batch_size = 32
     test_size = 0.2 #0.2 # is going to be split again in eval and test
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -225,10 +226,10 @@ for i in tqdm(range(len(os.listdir("./OHEresults/")))):
         rulePrecisionList =[]
         predictionComparisonList = []
         rulesComplexityList = []
-        coverageList = []
+        coverageList = 0
         ruleSupportList = []
-        numberOfGeneratedRules = []
-
+        numberOfGeneratedRules = 0
+        
     rules_list_overIterations.append(rules_list)
     labelList_rules_overIterations.append(labelList_rules)
     rulePrecisionList_overIterations.append(rulePrecisionList)
