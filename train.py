@@ -141,10 +141,9 @@ def train(trainloader,random_indices_train, testloader,random_indices_test, mode
 
             #put here for every iteration
 
-        #grads.append(gradAtitearation) 
+        #grads.append(gradAtitearation)     
 
-
-        training_loss_epoch.append(loss) 
+        training_loss_epoch.append(loss.detach()) 
   
         print("Epoch: " + str(epoch_counter))
         print("      Training_acc: " + str(running_corrects.item() /len(y_train)))
