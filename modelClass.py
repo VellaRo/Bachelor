@@ -88,7 +88,7 @@ class BinaryClassification2HL64N(nn.Module):
                 _, batch_predictions = torch.max(batch_predictions, dim=1)
 
                 # Append batch predicted classes to the list
-                predictions.extend(batch_predictions.cpu().tolist())
+                predictions.extend(batch_predictions.detach().cpu().tolist())
 
     
         return predictions
