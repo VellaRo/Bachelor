@@ -13,7 +13,7 @@ seedObject = TorchRandomSeed.TorchRandomSeed(seed=1)
 with seedObject:
     droplist = []#["BloodPressure", "Pregnancies", "Age", "SkinThickness"]
 
-    num_epochs = 2
+    num_epochs = 100
     batch_size = 32
     test_size = 0.2 #0.2 # is going to be split again in eval and test
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -28,7 +28,7 @@ with seedObject:
 
     # load data
   
-    #trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, featureNames= dataloader.load_kaggle_diabetes_dataset(batch_size=batch_size , droplist= droplist)
+    #trainloader ,random_indices_train, testloader, random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, featureNames= dataloader.load_kaggle_diabetes_dataset(batch_size=batch_size , droplist= droplist)
     trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, featureNames= dataloader.BreastCancerUCI(batch_size= batch_size, droplist=droplist, test_size=test_size)
     #trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, featureNames= dataloader.dryBeanUCI(batch_size=batch_size , droplist= droplist)
     
@@ -178,7 +178,6 @@ featureDict= {'Pregnancies':0, 'Glucose':1, 'BloodPressure':2, 'SkinThickness':3
 
 # Get the current date and time
 now = datetime.now()
-
 # Format the date and time as a string without leading zeros
 #date_time_string = now.strftime("%Y-%-m-%-d %-H:%-M:%-S")
 
@@ -202,17 +201,39 @@ jaccardSimilarity_overIterations = []
 tempRules_list = None
 from tqdm import tqdm
 for i in tqdm(range(len(os.listdir("./OHEresults/")))):
+    #import torch
+    #import gc
+    #for obj in gc.get_objects():
+    #    try:
+    #        if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
+    #            print(type(obj), obj.size())
+    #    except:
+    #        pass
+            
+    import psutil
+    
+    #print("begin")
+    #print(psutil.virtual_memory())
     ohe_df = cega_utils.loadOHE_Rules(i)
-    try:
-        all_rules, pos_rules , neg_rules =  cega_utils.runApriori(ohe_df,len(X_test), pos_label ,neg_label)
-        discriminative_rules = cega_utils.getDiscriminativeRules(all_rules, pos_label, neg_label )
-        charachteristic_rules = cega_utils.getCharasteristicRules(pos_rules, pos_label, neg_rules,neg_label )
+    
+    #print("before  apriori after load")
+    #print(psutil.virtual_memory())
+    
+    all_rules, pos_rules , neg_rules =  cega_utils.runApriori(ohe_df,len(X_test), pos_label ,neg_label)
+    #print("after  apriori before get RULES")
+    #print(psutil.virtual_memory())
+    discriminative_rules = cega_utils.getDiscriminativeRules(all_rules, pos_label, neg_label )
+    charachteristic_rules = cega_utils.getCharasteristicRules(pos_rules, pos_label, neg_rules,neg_label )
 
-
-        resultName = "discriminative_rules"
+    #print("before calc metrics after get rules")
+    #print(psutil.virtual_memory())
+    resultName = "discriminative_rules"
     #resultName = "charachteristic_rules"
     #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath)
+    try:    
         rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, featureDict, testloader, trainedModelPrediction_Test_overIterations[i])
+        #print("after calc metrics")
+        #print(psutil.virtual_memory())
     #resultName = "charachteristic_rules"
     #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,  = numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(charachteristic_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath, debug=True )
         discriminative_rules_overIterations.append(discriminative_rules)
@@ -241,7 +262,8 @@ for i in tqdm(range(len(os.listdir("./OHEresults/")))):
     numberOfGeneratedRules_overIterations.append(numberOfGeneratedRules)
 
     if tempRules_list is not None:
-        jaccardSimilarity_overIterations.append(cega_utils.jaccard_similarity(rules_list , tempRules_list))
+        print("not Jaccard")
+        jaccardSimilarity_overIterations.append(cega_utils.dice_similarity(rules_list , tempRules_list))
     tempRules_list = rules_list
 
 if debug:
