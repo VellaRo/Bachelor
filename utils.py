@@ -27,7 +27,7 @@ def calc_grads(outputs, inputs):
 def smooth_grad(input, n_samples, stdev_spread ,model):   
                 #input_embedded = model.embed_input(input)
                 if input.is_cuda:
-                    input = input.cpu()
+                    input = input.detach().cpu()
 
                 # Convert the tensor to a NumPy array
                 input_np = input.detach().numpy()
@@ -49,7 +49,7 @@ def smooth_grad(input, n_samples, stdev_spread ,model):
                     out = softmax(out, dim=1)
                     #CHECK FOR WHICH DIMENSION IS CORRECT
                     grad = calc_grads(out, noisy_inputs)
-                    
+                    grad = grad.detach()
                     total_gradients +=grad 
                     #summed_total_gradients =  torch.sum(total_gradients, dim=-1)
                 # Average the summed  up gradients
@@ -75,6 +75,10 @@ def calculatePredictions(model ,X, X_train , device):
     returns:  train_predictions,test_predictions 
     for confusionmatrix calculation
     """
+    ## UNUSED
+##
+####
+    ###
     test_predictions = []
     train_predictions = []
 
@@ -84,6 +88,7 @@ def calculatePredictions(model ,X, X_train , device):
     with torch.no_grad():
         for i,data in enumerate(X_test):
             y_pred = model(data)
+            print(type(y_pred))
             test_predictions.append(y_pred.argmax().item())
 
         for i,data in enumerate(X_train):
@@ -117,7 +122,9 @@ def unpackingGradients(inputFeatures , grads):
     return np.array(unpackedGradients)
 
 def flatten_gradients(grads):
-    print("test")
+    #UNUSED ???
+    ##
+    ###
     # get number of input features
     inputFeatures = grads.shape[0]
     
@@ -126,7 +133,6 @@ def flatten_gradients(grads):
     
     # flatten gradients and append to unpackedGradients list
     for i in range(len(grads)):
-        print("k")
         for j in range(len(grads[i])):
             grad = grads[i][j]
             unpacked = np.array(grad)
