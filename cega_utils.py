@@ -39,6 +39,25 @@ def jaccard_similarity(list1, list2):
     
     return similarity
 
+from sklearn.metrics.pairwise import cosine_similarity
+
+def cosine_similarity(list1, list2):
+    list1 = np.array(list1)
+    list2 = np.array(list2)
+    list1 = list1.reshape(1, -1)  # Reshape to a row vector
+    list2 = list2.reshape(1, -1)  # Reshape to a row vector
+    similarity = cosine_similarity(list1, list2)[0][0]
+    return similarity
+
+def dice_similarity(list1, list2):
+
+    intersection = len( set(tuple(element) for element in list1).intersection( set(tuple(element) for element in list1)))
+    try:
+        dice = (2.0 * intersection) / (len(list1) + len(list2))
+    except:
+        dice = 0
+    return dice
+
 
 #only for binary 
                   #X_test
@@ -149,25 +168,21 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
 
     # TAKES ~30 sec for 154 samples  
 
-
-
 def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add  to def input ?
                                             # 10/ len(pred)
-    freq_items = apriori(ohe_df, min_support=(10/testDataLength), use_colnames=True, max_len=3)
+    freq_items = apriori(ohe_df, min_support=(10/testDataLength), use_colnames=True, max_len=3, low_memory=True)
 
-    all_rules = association_rules(freq_items, metric="confidence", min_threshold=0.7, support_only=False) # 0.7 support_only=False
+    all_rules = association_rules(freq_items, metric="confidence", min_threshold=0.1 ,support_only=False) # 0.7 support_only=False
                                         # 10/ len(pred)
-    freq_items = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(10/testDataLength), use_colnames=True, max_len=10) # max len 3
-    pos_rules = association_rules(freq_items, metric="confidence", min_threshold=0.6, support_only=False) # 0.6 support_only=False
+    freq_items = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(10/testDataLength), use_colnames=True, max_len=3 , low_memory=True) # max len 3
+    pos_rules = association_rules(freq_items, metric="confidence", min_threshold=0.1, support_only=False) # 0.6 support_only=False
                                                                         # 10/ len(pred)
-    freq_items = apriori(ohe_df.loc[ohe_df[neg_label] == 1], min_support=(10/testDataLength), use_colnames=True, max_len=10) # max len 3 
-    neg_rules = association_rules(freq_items, metric="confidence", min_threshold=0.6, support_only=False) # 0.6 support_only=False
+    freq_items = apriori(ohe_df.loc[ohe_df[neg_label] == 1], min_support=(10/testDataLength), use_colnames=True, max_len=3, low_memory=True) # max len 3 
+    neg_rules = association_rules(freq_items, metric="confidence", min_threshold=0.1 , support_only=False) # 0.6 support_only=False
 
-    return all_rules, pos_rules , neg_rules
-
-
-
-
+    #np.savez("./test.npz",all_rules , )
+    #utils.appendToNPZ("./test.npz")
+    return all_rules, pos_rules , neg_rules # pickle this ?
 
 def getDiscriminativeRules(all_rules, pos_label, neg_label ):
 
@@ -323,14 +338,14 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
     X_List = []
     y_List = [] 
     for inputs, lables in dataloader:
-        X_List.extend(inputs)
-        y_List.extend(lables)
+        X_List.extend(inputs.detach())
+        y_List.extend(lables.detach())
     
     def extractRules_df(rules_DF):
-
+        
         rulesList =rules_DF["itemset"].to_list()
         rulesList = [set(frozenset) for frozenset in rulesList]
-
+        
         labelList_rules = rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
         labelList_rules = [set(frozenset).pop() for frozenset in labelList_rules]
 
@@ -352,11 +367,11 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
                     lower_bound, feature, upper_bound = matches[0]
                     set_filtered.append((lower_bound, feature[1:-2], upper_bound))
             rules_list.append(set_filtered)
-
+        
+        #print(len(rules_list))
         return rules_list, labelList_rules
 
     def applyRulesOnData(X,predictions, rules, labelList_rules, featureDict):
-
         """
         X: List
         predictions: List
@@ -396,7 +411,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
                         tempPredictionList.append(0)
 
             predictionComparisonList.append(tempPredictionList)
-        return predictionComparisonList, rulesComplexityList
+            return predictionComparisonList, rulesComplexityList
 
     #predictionList, rulesComplexityList = applyRulesOnData(X_List ,predictions, labelList_rules,  featureDict)
     #predictionList
@@ -449,7 +464,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
     
 
 
-    rules_list, labelList_rules =  extractRules_df(rules_DF)
+    rules_list, labelList_rules = extractRules_df(rules_DF)
     predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
     rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
     coverageList = globalCoverage(predictionComparisonList)
