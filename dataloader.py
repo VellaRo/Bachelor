@@ -175,7 +175,7 @@ def load_kaggle_diabetes_dataset( batch_size= 4, test_size =0.2 ,droplist= []):
     y = data["Outcome"]
     #y = y[:100]
 
-    trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test= preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
+    trainloader , testloader ,X_train , X_test ,  y_train, y_test , random_indices_train, random_indices_test= preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
     #return trainloader ,evalloader, testloader ,X_train, X_eval, X_test, y_train, y_eval, y_test , inputFeatures, outputFeatures, datasetName   trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test= preProcessingData(X=X, y=y,batch_size=batch_size, features_names
     #trainloader , testloader ,X_train , X_test ,  y_train, y_test ,random_indices_train, random_indices_test, = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
     return trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, features_names
