@@ -4,7 +4,7 @@ import re
 import numpy as np
 import utils
 import random
-
+from tqdm import tqdm
 
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -57,7 +57,6 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
     
 
     for name,loader,y in zip(nameList,loaderList,yList) :
-  
 #### ACC LOSS ------------------------
         accPerEpochList = [] 
         accPerIterationList = [] # everyBatch 
@@ -120,7 +119,9 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
         #counterTest = 0
 
         # load and loop through all model Iterations
-        for modelNumber,filename in enumerate(np.sort(list(eval(i) for i in modelsDirFiltered))): #(os.listdir(modelsDirPath)))): # iterations time 
+        for modelNumber,filename in tqdm(enumerate(np.sort(list(eval(i) for i in modelsDirFiltered)))): #(os.listdir(modelsDirPath)))): # iterations time 
+            print("Jp?")
+
             model.load_state_dict(torch.load(modelsDirPath + "/" +str(filename)))
             model.eval()
 
