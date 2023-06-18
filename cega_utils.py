@@ -11,6 +11,7 @@ import utils
 from datetime import datetime
 ##
 import time
+
 def loadOHE_Rules(iterationNumber):
     """
     """
@@ -39,15 +40,17 @@ def jaccard_similarity(list1, list2):
     
     return similarity
 
-from sklearn.metrics.pairwise import cosine_similarity
+#from sklearn.metrics.pairwise import cosine_similarity
 
 def cosine_similarity(list1, list2):
-    list1 = np.array(list1)
-    list2 = np.array(list2)
-    list1 = list1.reshape(1, -1)  # Reshape to a row vector
-    list2 = list2.reshape(1, -1)  # Reshape to a row vector
-    similarity = cosine_similarity(list1, list2)[0][0]
-    return similarity
+    try:
+        set1 = set(tuple(element) for element in list1)
+        set2 = set(tuple(element) for element in list2)
+        intersection = set1.intersection(set2)
+        similarity = len(intersection) / (len(set1) * len(set2)) ** 0.5
+        return similarity
+    except ZeroDivisionError:
+        return 0.0
 
 def dice_similarity(list1, list2):
 
@@ -58,10 +61,52 @@ def dice_similarity(list1, list2):
         dice = 0
     return dice
 
+def overlap_coefficient(list1, list2):
+    set1 = set(tuple(element) for element in list1)
+    set2 = set(tuple(element) for element in list2)
+    intersection = set1.intersection(set2)
+    try:
+
+        return len(intersection) / min(len(set1), len(set2))
+    except:
+        return 0
+
+def tversky_index(list1, list2, alpha=0.5, beta=0.5):
+    set1 = set(tuple(element) for element in list1)
+    set2 = set(tuple(element) for element in list2)
+    intersection = set1.intersection(set2)
+    numerator = len(intersection)
+    denominator = (alpha * len(set1)) + (beta * len(set2)) + ((1 - alpha - beta) * len(intersection))
+    return numerator / denominator
+
+
+
+def categoricalToOHE(data):
+
+    # drop target
+    
+    
+    oldFeatureNames = data.columns
+    newFeatureNames = []
+    
+    for column in data.columns:
+        tempUniqueInColumn = data[column].unique()
+        tempUniqueInColumn = [str(column)+ str(item)  for item in tempUniqueInColumn]
+        newFeatureNames.extend(tempUniqueInColumn)
+    
+    OHE = np.zeros((len(data[column]), len(newFeatureNames)))
+    OHE_DF =  pd.DataFrame(OHE, columns=newFeatureNames)
+    # fill OHE_DF
+    for c, column in enumerate(oldFeatureNames):
+        for i,item in enumerate(data[column]):
+            if str(item) ==  newFeatureNames[c][len(oldFeatureNames[c]):]:
+                OHE_DF.iloc[i,c] = 1
+
+    return OHE_DF, newFeatureNames
 
 #only for binary 
                   #X_test
-def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, grads, debug=False):
+def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, grads, datasetType ,debug=False):
 
     """
     explainationGrads should have shape of [epochs * iterationsPerEpoch , testDatasetSize, featuresize ]
@@ -103,17 +148,23 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         shutil.rmtree(output_directory)
         os.makedirs(output_directory)
 
-    for feature in data_df.columns.to_list(): # for NLP this must be the whole vocab 
-        if feature in intervals_dict:
-            intervals = intervals_dict[feature]
-            for interval in intervals:
-                if interval != interval: continue
-                left = interval.left
-                right = interval.right
-                name = f'{left}<{feature}<={right}'
-                itemset.add(name)
+    if datasetType == "numerical":
 
-        else:
+        for feature in data_df.columns.to_list(): # for NLP this must be the whole vocab 
+            if feature in intervals_dict:
+                intervals = intervals_dict[feature]
+                for interval in intervals:
+                    if interval != interval: continue
+                    left = interval.left
+                    right = interval.right
+                    name = f'{left}<{feature}<={right}'
+                    itemset.add(name)
+
+            else:
+                itemset.add(feature)
+    else: 
+        data_df, featureNames = categoricalToOHE(data_df)
+        for feature in data_df.columns.to_list():
             itemset.add(feature)
 
     itemset.add(pos_label)
@@ -172,13 +223,13 @@ def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add 
                                             # 10/ len(pred)
     freq_items = apriori(ohe_df, min_support=(10/testDataLength), use_colnames=True, max_len=3, low_memory=True)
 
-    all_rules = association_rules(freq_items, metric="confidence", min_threshold=0.1 ,support_only=False) # 0.7 support_only=False
+    all_rules = association_rules(freq_items, metric="confidence", min_threshold=0.0 ,support_only=False) # 0.7 support_only=False
                                         # 10/ len(pred)
     freq_items = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(10/testDataLength), use_colnames=True, max_len=3 , low_memory=True) # max len 3
-    pos_rules = association_rules(freq_items, metric="confidence", min_threshold=0.1, support_only=False) # 0.6 support_only=False
+    pos_rules = association_rules(freq_items, metric="confidence", min_threshold=0.0, support_only=False) # 0.6 support_only=False
                                                                         # 10/ len(pred)
     freq_items = apriori(ohe_df.loc[ohe_df[neg_label] == 1], min_support=(10/testDataLength), use_colnames=True, max_len=3, low_memory=True) # max len 3 
-    neg_rules = association_rules(freq_items, metric="confidence", min_threshold=0.1 , support_only=False) # 0.6 support_only=False
+    neg_rules = association_rules(freq_items, metric="confidence", min_threshold=0.0 , support_only=False) # 0.6 support_only=False
 
     #np.savez("./test.npz",all_rules , )
     #utils.appendToNPZ("./test.npz")
@@ -342,7 +393,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         y_List.extend(lables.detach())
     
     def extractRules_df(rules_DF):
-        
+        #print(rules_DF)
         rulesList =rules_DF["itemset"].to_list()
         rulesList = [set(frozenset) for frozenset in rulesList]
         
@@ -352,7 +403,8 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         # Regular expression pattern
         #pattern = r"([+-]?\d+\.\d+)(<\w+<=)([+-]?\d+\.\d+)"
 
-        pattern = r"([+-]?\d+\.\d+)(<\w+<=)([+-]?\d+\.\d+)"
+        #pattern = r"([+-]?\d+\.\d+)(<\w+<=)([+-]?\d+\.\d+)"
+        pattern = r"([+-]?\d+\.\d+)(<\w+(\s*\w*)*<=)([+-]?\d+\.\d+)"
 
 
         # Filter out upper bound, lower bound, and category for each set
@@ -361,13 +413,11 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
             set_filtered = []
             for item in set_item:
                 matches = re.findall(pattern, item)
-      
                 if matches:
 
-                    lower_bound, feature, upper_bound = matches[0]
+                    lower_bound, feature,_, upper_bound, = matches[0]
                     set_filtered.append((lower_bound, feature[1:-2], upper_bound))
             rules_list.append(set_filtered)
-        
         #print(len(rules_list))
         return rules_list, labelList_rules
 
@@ -434,23 +484,21 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
     #globalCoverage = globalCoverage(predictionList)
 
     def rulePrecisionAndSupport(predictionComparisonList): 
-
         # recision of an applicable rule on test instances(precision)
         # AND how many instances does a rule cover (Support)
 
         predictionList_transposed =  np.array(predictionComparisonList).transpose()
         rulePrecisionList = [] 
         ruleSupportList = [] 
+
         for i in predictionList_transposed:
             tempCorrectClassified = list(i).count(1)
             tempFalseClassified =   list(i).count(0)
             
 
             #tempNotAplicable =     list(i).count(0) 
-
             try:
                 rulePrecisionList.append(tempCorrectClassified/ len(predictionList_transposed[i]) )
-                
             except ZeroDivisionError:
                 rulePrecisionList.append(0)
             try:
@@ -465,10 +513,12 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
 
 
     rules_list, labelList_rules = extractRules_df(rules_DF)
+
     predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
+    
     rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
     coverageList = globalCoverage(predictionComparisonList)
-    rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
+    #rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
     numberOfGeneratedRules = (len(rules_list))
 
     return rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,
