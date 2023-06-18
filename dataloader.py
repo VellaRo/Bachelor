@@ -9,6 +9,8 @@ from sklearn.model_selection import StratifiedKFold
 from torch.utils.data import SubsetRandomSampler
 from torch.utils.data import Sampler
 import random
+from sklearn.preprocessing import LabelEncoder
+
 class StratifiedBatchSampler:
     """
        Stratified batch sampling
@@ -36,23 +38,23 @@ class StratifiedBatchSampler:
         return len(self.y)
     
 
-def dropFeatures(droplist, X, inputFeatures):
-    """
-    drops features which are part of the dataSet but we dont want to considerate into training
+#def dropFeatures(droplist, X, inputFeatures):
+#    """
+#    drops features which are part of the dataSet but we dont want to considerate into training
+#
+#    parameters:
+#            droplist: a list of features(strings of the featureNames) these features will be droped from the dataSet
+#
+#            X: data
+#
+#            inputFeatures: number of input features  
+#    """
+#    for i in droplist:
+#        inputFeatures -= 1
+#        X = X.drop([i], axis=1)
+#    return X, inputFeatures
 
-    parameters:
-            droplist: a list of features(strings of the featureNames) these features will be droped from the dataSet
-
-            X: data
-
-            inputFeatures: number of input features  
-    """
-    for i in droplist:
-        inputFeatures -= 1
-        X = X.drop([i], axis=1)
-    return X, inputFeatures
-
-def preProcessingData(X, y, batch_size= 4, test_size =0.2 ,droplist= []): #, path= None 
+def preProcessingData(X, y, batch_size= 4, test_size =0.2 ,datasetType="numerical"): #, path= None 
     """
     splits , normalizes, uses Stratisfied sample( to distribute all label categories even in small batch size like 4)
     
@@ -64,7 +66,7 @@ def preProcessingData(X, y, batch_size= 4, test_size =0.2 ,droplist= []): #, pat
             droplist: list of features(stings) to drop
 
     returns trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test
-
+numerical
     """
     inputFeatures= 0
 
@@ -80,7 +82,7 @@ def preProcessingData(X, y, batch_size= 4, test_size =0.2 ,droplist= []): #, pat
     y_train=torch.LongTensor(y_train.values)
     #y_eval=torch.LongTensor(y_eval.values)
     y_test=torch.LongTensor(y_test.values)
-    X , inputFeatures= dropFeatures(droplist=droplist, X=X, inputFeatures=inputFeatures)
+    #X , inputFeatures= dropFeatures(droplist=droplist, X=X, inputFeatures=inputFeatures)
 
     def normalize(inputToNormalize, dim):
        #normalize 
@@ -92,7 +94,9 @@ def preProcessingData(X, y, batch_size= 4, test_size =0.2 ,droplist= []): #, pat
         normalizeed1 = (inputToNormalize - mean) / torch.sqrt(variance+ eps)
  
         return normalizeed1
-
+    
+    
+ 
     X_train = normalize(X_train, dim=1)
     #X_eval = normalize(X_eval, dim=1)
     X_test = normalize(X_test, dim=1)
@@ -141,7 +145,7 @@ def preProcessingData(X, y, batch_size= 4, test_size =0.2 ,droplist= []): #, pat
 
 
 # DATASETS
-def load_kaggle_diabetes_dataset( batch_size= 4, test_size =0.2 ,droplist= []):
+def load_kaggle_diabetes_dataset( batch_size= 4, test_size =0.2):
     """
 
     path: (string) path to the dataset(.csv)
@@ -170,18 +174,18 @@ def load_kaggle_diabetes_dataset( batch_size= 4, test_size =0.2 ,droplist= []):
     #X = X[:100]
 
     ### droping all features that i dont want in my Dataloader
-    X , inputFeatures= dropFeatures(droplist=droplist, X=X, inputFeatures=inputFeatures)
+    X , inputFeatures= dropFeatures( X=X, inputFeatures=inputFeatures)
     
     y = data["Outcome"]
     #y = y[:100]
 
-    trainloader , testloader ,X_train , X_test ,  y_train, y_test , random_indices_train, random_indices_test= preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
+    trainloader , testloader ,X_train , X_test ,  y_train, y_test , random_indices_train, random_indices_test= preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size)
     #return trainloader ,evalloader, testloader ,X_train, X_eval, X_test, y_train, y_eval, y_test , inputFeatures, outputFeatures, datasetName   trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test= preProcessingData(X=X, y=y,batch_size=batch_size, features_names
     #trainloader , testloader ,X_train , X_test ,  y_train, y_test ,random_indices_train, random_indices_test, = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
     return trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, features_names
 
 
-def BreastCancerUCI(batch_size= 4, test_size =0.2 ,droplist= []): # 0.2 tset,size  0.2 macght probleme ???ß
+def BreastCancerUCI(batch_size= 4, test_size =0.2 ): # 0.2 tset,size  0.2 macght probleme ???ß
     """
     path: (string) path to the dataset(.csv)
     batch_size: (int) 
@@ -211,11 +215,11 @@ def BreastCancerUCI(batch_size= 4, test_size =0.2 ,droplist= []): # 0.2 tset,siz
     print(np.shape(y))
     print(np.shape(X))
 
-    X, inputFeatures = dropFeatures(droplist= droplist, X=X, inputFeatures=inputFeatures)
-    trainloader , testloader ,X_train , X_test ,  y_train, y_test , random_indices_train, random_indices_test = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
+    #X, inputFeatures = dropFeatures( X=X, inputFeatures=inputFeatures)
+    trainloader , testloader ,X_train , X_test ,  y_train, y_test , random_indices_train, random_indices_test = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size)
     return  trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, features_names
 
-def dryBeanUCI(batch_size= 4, test_size =0.2 ,droplist= []):
+def dryBeanUCI(batch_size= 4, test_size =0.2 ):
     """
     returns trainloader , testloader ,X_train ,X_test ,  y_train , y_test, inputFeatures according to specifications
 
@@ -244,9 +248,38 @@ def dryBeanUCI(batch_size= 4, test_size =0.2 ,droplist= []):
     
     ### droping all features that i dont want in my Dataloader
 
-    X , inputFeatures= dropFeatures(droplist=droplist, X=X, inputFeatures=inputFeatures)
+    X , inputFeatures= dropFeatures( X=X, inputFeatures=inputFeatures)
     y = data["IntClass"]
     y = y[:3349]
-    trainloader , testloader ,X_train , X_test ,  y_train, y_test = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
+    trainloader , testloader ,X_train , X_test ,  y_train, y_test , random_indices_train, random_indices_test = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size)
 
     return trainloader , testloader ,X_train, X_test, y_train, y_test , inputFeatures, outputFeatures, datasetName, features_names
+
+def loadAdult(batch_size= 4, test_size =0.2):
+    data = pd.read_csv("./Adult/all.csv")
+    
+    datasetType = "categorical"
+    datasetName = "Adult"
+   
+    outputFeatures = 2
+
+
+    data = data[~data.isin(['?']).any(axis=1)]
+    data = data[:500]
+    data['target'] = data['target'].replace('>50K.', '>50k')
+    data['target'] = data['target'].replace('<=50K.', '<=50k') 
+
+    label_encoder = LabelEncoder()
+    for i in data.columns:
+
+        data[i] = label_encoder.fit_transform(data[i])
+    X_DF = data.drop("target",axis=1)
+    featureNames =  X_DF.columns
+    inputFeatures = len(featureNames)
+    
+    y_DF = data["target"]
+    print(y_DF)
+    trainloader , testloader ,X_train , X_test ,  y_train, y_test , random_indices_train, random_indices_test = preProcessingData(X=X_DF, y=y_DF ,batch_size=batch_size, test_size=test_size, datasetType=datasetType)
+
+    return trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, featureNames, datasetType
+
