@@ -13,7 +13,7 @@ seedObject = TorchRandomSeed.TorchRandomSeed(seed=1)
 with seedObject:
     droplist = []#["BloodPressure", "Pregnancies", "Age", "SkinThickness"]
 
-    num_epochs = 2
+    num_epochs = 1
     batch_size = 32
     test_size = 0.2 #0.2 # is going to be split again in eval and test
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -29,9 +29,9 @@ with seedObject:
     # load data
   
     #trainloader ,random_indices_train, testloader, random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, featureNames= dataloader.load_kaggle_diabetes_dataset(batch_size=batch_size , droplist= droplist)
-    trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, featureNames= dataloader.BreastCancerUCI(batch_size= batch_size, droplist=droplist, test_size=test_size)
+    #trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, featureNames= dataloader.BreastCancerUCI(batch_size= batch_size, droplist=droplist, test_size=test_size)
     #trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, featureNames= dataloader.dryBeanUCI(batch_size=batch_size , droplist= droplist)
-    
+    trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, featureNames, datasetType= dataloader.loadAdult(batch_size= batch_size, test_size=test_size)
     #model = modelClass.Net(inputFeatures= inputFeatures, out_features=outputFeatures)
     model= modelClass.BinaryClassification2HL64N(inputFeatures= inputFeatures, outputFeatures= outputFeatures)
     modelName = model.modelName
@@ -156,7 +156,7 @@ for modelNumber,filename in enumerate(np.sort(list(eval(i) for i in modelsDirFil
 ####
                                     # data   
 #print(trainedModelPrediction_Test)
-cega_utils.calculateAndSaveOHE_Rules(X_test, featureNames,trainedModelPrediction_Test_overIterations[-1], data["testGradientsPerSamplePerFeature_iteration"], debug= False) #OHEresults
+cega_utils.calculateAndSaveOHE_Rules(X_test, featureNames,trainedModelPrediction_Test_overIterations[-1], data["testGradientsPerSamplePerFeature_iteration"], datasetType,debug= False) #OHEresults
 
 
 import warnings
@@ -173,9 +173,16 @@ neg_label = '0'
 
 rulesResultDataPath = dirPath + "rulesResultData/" 
 
-featureDict= {'Pregnancies':0, 'Glucose':1, 'BloodPressure':2, 'SkinThickness':3, 'Insulin':4, \
-              'BMI':5, 'DiabetesPedigreeFunction':6, 'Age':7}
+#featureDict= {'Pregnancies':0, 'Glucose':1, 'BloodPressure':2, 'SkinThickness':3, 'Insulin':4, \
+#              'BMI':5, 'DiabetesPedigreeFunction':6, 'Age':7}
 
+#string_list = ["test test", "example string", "replace spaces"]
+
+#featureNames = [s.replace(" ", "_") for s in featureNames]
+#print(featureNames)
+featureDict = {feature: index  for index, feature in enumerate(featureNames)}
+
+print(featureDict)
 # Get the current date and time
 now = datetime.now()
 # Format the date and time as a string without leading zeros
@@ -197,7 +204,9 @@ coverageList_overIterations = []
 ruleSupportList_overIterations = []
 numberOfGeneratedRules_overIterations = []
 jaccardSimilarity_overIterations = []
-
+cosineSimilarity_overIterations = []
+diceSimilarity_overIterations = []
+overlapSimilarity_overIterations = []
 tempRules_list = None
 from tqdm import tqdm
 for i in tqdm(range(len(os.listdir("./OHEresults/")))):
@@ -230,26 +239,26 @@ for i in tqdm(range(len(os.listdir("./OHEresults/")))):
     resultName = "discriminative_rules"
     #resultName = "charachteristic_rules"
     #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath)
-    try:    
-        rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, featureDict, testloader, trainedModelPrediction_Test_overIterations[i])
+    #try:    
+    rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, featureDict, testloader, trainedModelPrediction_Test_overIterations[i])
         #print("after calc metrics")
         #print(psutil.virtual_memory())
     #resultName = "charachteristic_rules"
     #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,  = numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(charachteristic_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath, debug=True )
-        discriminative_rules_overIterations.append(discriminative_rules)
-        charachteristic_rules_overIterations.append(charachteristic_rules) 
+    discriminative_rules_overIterations.append(discriminative_rules)
+    charachteristic_rules_overIterations.append(charachteristic_rules) 
     #
     #print(rules_list)
-    except:
-        print("rules df empty")
-        rules_list = []
-        labelList_rules = []
-        rulePrecisionList =[]
-        predictionComparisonList = []
-        rulesComplexityList = []
-        coverageList = 0
-        ruleSupportList = []
-        numberOfGeneratedRules = 0
+    #except:
+    #       print("rules df empty")
+    #       rules_list = []
+    #       labelList_rules = []
+    #       rulePrecisionList =[]
+    #       predictionComparisonList = []
+    #       rulesComplexityList = []
+    #       coverageList = 0
+    #       ruleSupportList = []
+    #       numberOfGeneratedRules = 0
         
     rules_list_overIterations.append(rules_list)
     labelList_rules_overIterations.append(labelList_rules)
@@ -263,7 +272,12 @@ for i in tqdm(range(len(os.listdir("./OHEresults/")))):
 
     if tempRules_list is not None:
         print("not Jaccard")
-        jaccardSimilarity_overIterations.append(cega_utils.dice_similarity(rules_list , tempRules_list))
+        jaccardSimilarity_overIterations.append(cega_utils.jaccard_similarity(rules_list , tempRules_list))
+        cosineSimilarity_overIterations.append(cega_utils.cosine_similarity(rules_list , tempRules_list))
+        diceSimilarity_overIterations.append(cega_utils.dice_similarity(rules_list , tempRules_list))
+        overlapSimilarity_overIterations.append(cega_utils.overlap_coefficient(rules_list , tempRules_list))
+        #jaccardSimilarity_overIterations.append(cega_utils.cosine_similarity(rules_list , tempRules_list))
+
     tempRules_list = rules_list
 
 if debug:
@@ -281,6 +295,9 @@ utils.appendToNPZ(pathToNPZ, "coverageList_overIterations", coverageList_overIte
 utils.appendToNPZ(pathToNPZ, "ruleSupportList_overIterations", ruleSupportList_overIterations)
 utils.appendToNPZ(pathToNPZ, "numberOfGeneratedRules_overIterations", numberOfGeneratedRules_overIterations)
 utils.appendToNPZ(pathToNPZ, "jaccardSimilarity_overIterations", jaccardSimilarity_overIterations)
+utils.appendToNPZ(pathToNPZ, "cosineSimilarity_overIterations", cosineSimilarity_overIterations)
+utils.appendToNPZ(pathToNPZ, "overlapSimilarity_overIterations", overlapSimilarity_overIterations)
+utils.appendToNPZ(pathToNPZ, "diceSimilarity_overIterations", diceSimilarity_overIterations)
 
 #utils.appendToNPZ(rules_data)
     #charachteristic_rules
@@ -298,11 +315,13 @@ import statistics
 def calculate_mean_of_lists(list_of_lists):
     means = []
     for sublist in list_of_lists:
-        try:
-            sublist_mean = statistics.mean(sublist)
+        if len(sublist) == 0:
+            means.append(-1)
+        else:
+            sublist_mean = np.mean(sublist)
             means.append(sublist_mean)
-        except statistics.StatisticsError:
-            means.append(0)  # or any other value to indicate the empty sublist
+            #except statistics.StatisticsError:
+          # or any other value to indicate the empty sublist
     return means
 
 #import pickle5 as pickle
@@ -313,17 +332,13 @@ pathToCharachteristic_rules = "./rulesResults/charachteristic_rules"
 resultPaths_dicriminative_rules = os.listdir(pathToDiscriminative_rules)
 resultPaths_charachteristic_rules = os.listdir(pathToCharachteristic_rules)
 
-#print(resultPaths_dicriminative_rules)
 resultPaths_dicriminative_rules= np.sort(resultPaths_dicriminative_rules)
-#print(resultPaths_dicriminative_rules[-1])
 
 mostRecentResultPaths_discriminative = pathToDiscriminative_rules + (resultPaths_dicriminative_rules[-1])
-#print(mostRecentResultPaths_discriminative)
 
 #/home/rosario/explainable/test/Bachelor/rulesResults/discriminative_rules/_2023-06-07 12:18:40.npz
 
 data = utils.loadData(mostRecentResultPaths_discriminative)
-#print(data["rulePrecisionList_overIterations"])
 #rules_list_overIterations
 #labelList_rules_overIterations
 #rulePrecisionList_overIterations
@@ -334,7 +349,6 @@ pathToRulesResults = "./rulesResults/"
 
 #plt.show()
 fig1, axs1 = plt.subplots(nrows=1, ncols=1)
-
 
 axs1.plot(calculate_mean_of_lists(data["rulePrecisionList_overIterations"]))
 axs1.set_title("rulePrecisionList_overIterations")
@@ -403,5 +417,39 @@ axs6.set_xlabel("iteration")
 axs6.set_ylabel("similarity")
 
 pickle.dump(fig6, open(pathToRulesResults + "jaccardSimilarity_overIterations", 'wb'))
+
+
+
+fig7, axs7 = plt.subplots(nrows=1, ncols=1)
+axs7.plot(data["cosineSimilarity_overIterations"])
+axs7.set_title("cosineSimilarity_overIterations")
+axs7.set_xlabel("iteration")
+axs7.set_ylabel("numGeneratedRules")
+
+fig7.savefig(str(pathToRulesResults) + "cosineSimilarity_overIterations")    
+pickle.dump(fig7, open(pathToRulesResults + "cosineSimilarity_overIterations", 'wb'))
+#fig5.show()
+
+
+fig8, axs8 = plt.subplots(nrows=1, ncols=1)
+axs8.plot(data["diceSimilarity_overIterations"])
+axs8.set_title("diceSimilarity_overIterations")
+axs8.set_xlabel("iteration")
+axs8.set_ylabel("numGeneratedRules")
+
+fig8.savefig(str(pathToRulesResults) + "diceSimilarity_overIterations")    
+pickle.dump(fig8, open(pathToRulesResults + "diceSimilarity_overIterations", 'wb'))
+#fig5.show()
+
+
+fig9, axs9 = plt.subplots(nrows=1, ncols=1)
+axs9.plot(data["overlapSimilarity_overIterations"])
+axs9.set_title("overlapSimilarity_overIterations")
+axs9.set_xlabel("iteration")
+axs9.set_ylabel("numGeneratedRules")
+
+fig9.savefig(str(pathToRulesResults) + "overlapSimilarity_overIterations")    
+pickle.dump(fig9, open(pathToRulesResults + "overlapSimilarity_overIterations", 'wb'))
+#fig5.show()
 
 #fig6.show()
