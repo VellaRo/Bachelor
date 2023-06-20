@@ -68,7 +68,7 @@ def preProcessingData(X, y, batch_size= 4, test_size =0.2 ,datasetType="numerica
     returns trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test
 numerical
     """
-    inputFeatures= 0
+    #inputFeatures= 0
 
     # split into train , eval test
     #X_train, X_rem, y_train, y_rem = train_test_split(X,y, test_size =test_size,random_state=1)
@@ -96,10 +96,11 @@ numerical
         return normalizeed1
     
     
- 
-    X_train = normalize(X_train, dim=1)
-    #X_eval = normalize(X_eval, dim=1)
-    X_test = normalize(X_test, dim=1)
+    if datasetType == "numerical":
+        X_train = normalize(X_train, dim=1)
+        #X_eval = normalize(X_eval, dim=1)
+        X_test = normalize(X_test, dim=1)
+        print(X_test)
 
     # stratisfied sampler
     ##print(batch_size)
@@ -158,7 +159,7 @@ def load_kaggle_diabetes_dataset( batch_size= 4, test_size =0.2):
         
     path = "./Diabetes/Data/diabetes.csv"
     
-
+    datasetType ="numerical"
     datasetName ="KaggleDiabetesALL"
     data = pd.read_csv(path) #macht ohne r' problme ?
 
@@ -174,15 +175,15 @@ def load_kaggle_diabetes_dataset( batch_size= 4, test_size =0.2):
     #X = X[:100]
 
     ### droping all features that i dont want in my Dataloader
-    X , inputFeatures= dropFeatures( X=X, inputFeatures=inputFeatures)
+    #X , inputFeatures= dropFeatures( X=X, inputFeatures=inputFeatures)
     
     y = data["Outcome"]
     #y = y[:100]
 
-    trainloader , testloader ,X_train , X_test ,  y_train, y_test , random_indices_train, random_indices_test= preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size)
+    trainloader , testloader ,X_train , X_test ,  y_train, y_test , random_indices_train, random_indices_test= preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size, datasetType=datasetType)
     #return trainloader ,evalloader, testloader ,X_train, X_eval, X_test, y_train, y_eval, y_test , inputFeatures, outputFeatures, datasetName   trainloader ,evalloader, testloader ,X_train ,X_eval, X_test ,  y_train, y_eval, y_test= preProcessingData(X=X, y=y,batch_size=batch_size, features_names
     #trainloader , testloader ,X_train , X_test ,  y_train, y_test ,random_indices_train, random_indices_test, = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size,droplist=droplist)
-    return trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, features_names
+    return trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, features_names, datasetType
 
 
 def BreastCancerUCI(batch_size= 4, test_size =0.2 ): # 0.2 tset,size  0.2 macght probleme ???ß
@@ -194,6 +195,7 @@ def BreastCancerUCI(batch_size= 4, test_size =0.2 ): # 0.2 tset,size  0.2 macght
 
     returns trainloader , testloader ,X_train ,X_test ,  y_train , y_test, inputFeatures according to specifications
     """
+    datasetType = "numerical"
     datasetName = "BreastCancerUCI"
     data= load_breast_cancer(as_frame=True)
     features_names =  data.feature_names
@@ -216,8 +218,8 @@ def BreastCancerUCI(batch_size= 4, test_size =0.2 ): # 0.2 tset,size  0.2 macght
     print(np.shape(X))
 
     #X, inputFeatures = dropFeatures( X=X, inputFeatures=inputFeatures)
-    trainloader , testloader ,X_train , X_test ,  y_train, y_test , random_indices_train, random_indices_test = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size)
-    return  trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, features_names
+    trainloader , testloader ,X_train , X_test ,  y_train, y_test , random_indices_train, random_indices_test = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size, datasetType=datasetType)
+    return  trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, features_names, datasetType
 
 def dryBeanUCI(batch_size= 4, test_size =0.2 ):
     """
@@ -229,8 +231,9 @@ def dryBeanUCI(batch_size= 4, test_size =0.2 ):
     droplist: (list of strings) a list of string of features to drop ( not consider for training/testing) 
     
     """
-    path = "./Diabetes/Data/DryBeanDataset/Dry_Bean_Dataset.csv"
+    path = "./DryBeans/Dry_Bean_Dataset.csv"
     
+    datasetType = "numerical"
     datasetName = "dryBeanUCI"
     inputFeatures = 16
     outputFeatures = 2# 7# 
@@ -248,13 +251,12 @@ def dryBeanUCI(batch_size= 4, test_size =0.2 ):
     
     ### droping all features that i dont want in my Dataloader
 
-    X , inputFeatures= dropFeatures( X=X, inputFeatures=inputFeatures)
+    #X , inputFeatures= dropFeatures( X=X, inputFeatures=inputFeatures)
     y = data["IntClass"]
     y = y[:3349]
-    trainloader , testloader ,X_train , X_test ,  y_train, y_test , random_indices_train, random_indices_test = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size)
+    trainloader , testloader ,X_train , X_test ,  y_train, y_test , random_indices_train, random_indices_test = preProcessingData(X=X, y=y,batch_size=batch_size, test_size=test_size , datasetType=datasetType)
 
-    return trainloader , testloader ,X_train, X_test, y_train, y_test , inputFeatures, outputFeatures, datasetName, features_names
-
+    return trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, features_names, datasetType
 def loadAdult(batch_size= 4, test_size =0.2):
     data = pd.read_csv("./Adult/all.csv")
     
