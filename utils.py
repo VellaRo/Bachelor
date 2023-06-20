@@ -45,8 +45,13 @@ def smooth_grad(input, n_samples, stdev_spread ,model):
                     noisy_inputs.requires_grad = True
                     #print(type(noisy_inputs))
                     #print(noisy_inputs.dtype)
-                    out = model(noisy_inputs)
-                    out = softmax(out, dim=1)
+                    try:
+                        out = model(noisy_inputs)
+                        out = softmax(out, dim=1)
+                    except:
+                        print("for NLP:")
+                        out = model.forward_embedded_softmax(noisy_inputs)
+
                     #CHECK FOR WHICH DIMENSION IS CORRECT
                     grad = calc_grads(out, noisy_inputs)
                     grad = grad.detach()

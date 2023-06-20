@@ -66,7 +66,7 @@ with seedObject:
     print(dirPath)
     #print(modelsDirPath)
     ##
-    dataPath= dirPath+ "Trainingresults/"
+    dataPath= dirPath+ "Results/Trainingresults/"
 print("plotting...")
 import utils 
 import numpy as np
@@ -284,7 +284,7 @@ for i in tqdm(range(len(os.listdir("./OHEresults/")))):
 if debug:
     pathToNPZ =  dirPath + f"DEBUG.npz"
 else:    
-    pathToNPZ =  dirPath +"rulesResults/" f"{resultName}/_{date_time_string}.npz"
+    pathToNPZ =  dirPath +"Results/rulesResults/" f"{resultName}/_{date_time_string}.npz"
 #
 #print(pathToNPZ)
 np.savez(pathToNPZ ,rules_list_overIterations = rules_list_overIterations) 
@@ -328,8 +328,8 @@ def calculate_mean_of_lists(list_of_lists):
 #import pickle5 as pickle
 
 #plot
-pathToDiscriminative_rules = "./rulesResults/discriminative_rules/"
-pathToCharachteristic_rules = "./rulesResults/charachteristic_rules"
+pathToDiscriminative_rules = "./Results/rulesResults/discriminative_rules/"
+pathToCharachteristic_rules = "./Results/rulesResults/charachteristic_rules"
 resultPaths_dicriminative_rules = os.listdir(pathToDiscriminative_rules)
 resultPaths_charachteristic_rules = os.listdir(pathToCharachteristic_rules)
 
@@ -346,7 +346,7 @@ data = utils.loadData(mostRecentResultPaths_discriminative)
 #predictionComparisonList_overIterations
 #rulesComplexityList_overIterations                  )
 
-pathToRulesResults = "./rulesResults/"
+pathToRulesResults = "./Results/rulesResults/"
 
 #plt.show()
 fig1, axs1 = plt.subplots(nrows=1, ncols=1)

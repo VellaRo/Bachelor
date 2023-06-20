@@ -34,36 +34,17 @@ def _filepath_fn(root, split, _=None):
 
 def _modify_res(t):
     label, text = int(t[0]), " ".join(t[1:])
-    if label in [0, 1]:
+    if label in [1, 2]:
         return label, text
     else:
-        return None
+        return None  # Skip other labels
 
 
 @_create_dataset_directory(dataset_name=DATASET_NAME)
 @_wrap_split_argument(("train", "test"))
 def AG_NEWS(root: str, split: Union[Tuple[str], str]):
     """AG_NEWS Dataset
-
-    .. warning::
-
-        Using datapipes is still currently subject to a few caveats. If you wish
-        to use this dataset with shuffling, multi-processing, or distributed
-        learning, please see :ref:`this note <datapipes_warnings>` for further
-        instructions.
-
-    For additional details refer to https://paperswithcode.com/dataset/ag-news
-
-    Number of lines per split:
-        - train: 120000
-        - test: 7600
-
-    Args:
-        root: Directory where the datasets are saved. Default: os.path.expanduser('~/.torchtext/cache')
-        split: split or splits to be returned. Can be a string or tuple of strings. Default: (`train`, `test`)
-
-    :returns: DataPipe that yields tuple of label (0 or 1) and text
-    :rtype: (int, str)
+    ...
     """
     if not is_module_available("torchdata"):
         raise ModuleNotFoundError(
@@ -80,4 +61,11 @@ def AG_NEWS(root: str, split: Union[Tuple[str], str]):
     cache_dp = cache_dp.end_caching(mode="wb", same_filepath_fn=True)
 
     data_dp = FileOpener(cache_dp, encoding="utf-8")
-    return data_dp.parse_csv().map(fn=_modify_res).shuffle().set_shuffle(False).sharding_filter()
+    return (
+        data_dp.parse_csv()
+        .map(fn=_modify_res)
+        .filter(filter_fn=lambda x: x is not None)  # Skip None values
+        .shuffle()
+        .set_shuffle(False)
+        .sharding_filter()
+    )

@@ -31,7 +31,7 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
         name = i
         ... (RUN ALL)
     """
-    dataPath= dirPath+ "Trainingresults/"
+    dataPath= dirPath+ "Results/Trainingresults/"
     #np.savez(dirPath + 'data.npz', exec(f'{name}acc = "{acc}"')) #exec :  executes the string that it gets 
     np.savez(dataPath + 'data.npz', y_test = yList[0]) 
     #utils.appendToNPZ(dirPath + 'data.npz',"y_eval", yList[1])
@@ -120,7 +120,6 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
 
         # load and loop through all model Iterations
         for modelNumber,filename in tqdm(enumerate(np.sort(list(eval(i) for i in modelsDirFiltered)))): #(os.listdir(modelsDirPath)))): # iterations time 
-            print("Jp?")
 
             model.load_state_dict(torch.load(modelsDirPath + "/" +str(filename)))
             model.eval()

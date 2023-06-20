@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from datasetsNLP import get_agnews
 from modelsNLP import SentenceCNN, BiLSTMClassif
-
+import evalModel
 
 def _get_outputs(inference_fn, data, model, device, batch_size=256):
 
@@ -87,18 +87,25 @@ if __name__ == '__main__':
 
     size_train_batch = 64
     size_test_batch = 1024
-    n_batches = 10
+    n_batches = 100
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
     train_set, test_set, size_vocab, n_classes = get_agnews(random_state=42, batch_sizes=(size_train_batch, size_test_batch))
-
-    X_test, Y_test = next(iter(test_set))  # only use first batch as a test set
+    
+    #X_test, Y_test = next(iter(test_set))  # only use first batch as a test set
+    #X_test, Y_test = next(test_set)
+    print(test_set)
+    for X,y in test_set:
+        X_test, Y_test =X,y
+        break
+    print(len(Y_test))
+    
     Y_test_distr = torch.bincount(Y_test, minlength=n_classes)/size_test_batch
     print(f"class distribution in test set: {Y_test_distr}")  # this should roughly be uniformly distributed
 
-    # model = BiLSTMClassif(n_classes=n_classes, embed_dim=embedding_dim, vocab_size=size_vocab, hid_size=64)
-    model = SentenceCNN(n_classes=n_classes, embed_dim=embedding_dim, vocab_size=size_vocab)
+    model = BiLSTMClassif(n_classes=n_classes, embed_dim=embedding_dim, vocab_size=size_vocab, hid_size=64)
+    #model = SentenceCNN(n_classes=n_classes, embed_dim=embedding_dim, vocab_size=size_vocab)
     optimizer = Adam(model.parameters())
     loss_fun = torch.nn.CrossEntropyLoss()
 
@@ -107,6 +114,18 @@ if __name__ == '__main__':
     model, loss, test_accuracies = \
         train_loop(model, optimizer, loss_fun, train_set, (X_test, Y_test),
                    inference_fn=model.forward_softmax, device=device, n_batches_max=n_batches)
+    
+    dirPath ="./"
+    modelsDirPath = dirPath + "NLP_Models"
+
+    loaderList = [test_set] # testLoader
+    nameList = ["test"]
+    yList = [Y_test]
+    inputFeatures = []  
+    num_epochs = n_batches # just for tracking progress
+
+
+    evalModel.doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_fun, num_epochs, nameList, yList, inputFeatures, random_indices_test)
 
     _t_end = time()
     print(f"Training finished in {int(_t_end - _t_start)} s")

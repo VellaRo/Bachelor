@@ -42,7 +42,7 @@ class BiLSTMClassif(nn.Module):
         return y
 
     def forward_embedded_softmax(self, embedded_seq):
-        x = self._forward_embedded(embedded_seq)
+        x = self.forward_embedded(embedded_seq)
         y = torch.softmax(x, dim=1)
         return y
 
@@ -59,7 +59,7 @@ class SentenceCNN(nn.Module):
         super(SentenceCNN, self).__init__()
 
         if n_classes == 2:
-            n_classes = 1
+            n_classes = 2#1
 
         kernel_widths = [3, 4, 5]
         out_channels = 100
