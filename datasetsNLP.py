@@ -93,40 +93,43 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
         vocab = _get_vocab('AG_NEWS', train_iter)
         collate_batch, size_vocab = _build_collate_fn(vocab, label_pipeline)
         #MEEE
-        print(size_vocab)
         import utilsNLP
         import random
         X_train= []
+        TRAIN =[]
         for label,text,  in train_iter:
             #label, text = example[0], example[1]
             X_train.extend(text)
-        
+            TRAIN.append((label,text))
         X_test = []
+        TEST=[]
         for label,text, in test_iter:
             #label, text = example[0], example[1]
             X_test.extend(text)
+            TEST.append((label,text))
 
 
-
-        random_indices_test =  data_list = random.sample(range(len(X_test)), len(X_test))
+        random_indices_test =  random.sample(range(len(X_test)), len(X_test))
         #print(random_indices_test)
-        random_indices_train =  data_list = random.sample(range(len(X_train)), len(X_train))
-
+        random_indices_train =  random.sample(range(len(X_train)), len(X_train))
         sampler_test = utilsNLP.OrderedListSampler(random_indices_test)
         sampler_train = utilsNLP.OrderedListSampler(random_indices_train)
 
         #END MEEE 
 
 
-        train_loader = DataLoader(train_iter, batch_size=batch_sizes[0],
-                                   collate_fn=collate_batch, sampler=sampler_train)#shuffle=True,generator=gen_train)
+        train_loader = DataLoader(train_iter, batch_size=batch_sizes[0], shuffle=False,
+                                   collate_fn=collate_batch,
+                                    )#sampler=sampler_train, )#num_workers=2)#,generator=gen_train)#shuffle=True,generator=gen_train)
         test_loader = DataLoader(test_iter, batch_size=batch_sizes[-1],  collate_fn=collate_batch,
-                                sampler=sampler_test) 
-                                 #shuffle=True, generator=gen_test)
+                                shuffle=False,) #sampler=sampler_test, )#num_workers=2)#,generator=gen_test) 
+
+
+                                         #shuffle=True, generator=gen_test)
         #train_loader = DataLoader(train_iter, batch_size=batch_sizes[0],
         #                           collate_fn=collate_batch, shuffle=True,generator=gen_train)#sampler=sampler_train)#
         #test_loader = DataLoader(test_iter, batch_size=batch_sizes[-1],  collate_fn=collate_batch,
         #                        shuffle=True, generator=gen_test)#sampler=sampler_test)
 
-    return train_loader, test_loader, size_vocab, 2 # 4
+    return train_loader, test_loader, size_vocab,  2,random_indices_train,random_indices_test, # 4
 

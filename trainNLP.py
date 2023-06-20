@@ -57,6 +57,17 @@ def train_loop(model, optim, loss_fn, tr_data: DataLoader, te_data: tuple, infer
     n_batches = 0
     _epochs, i_max = 0, 0
     accs = []
+    # save model
+    import os
+    import shutil
+    modelsdirPath = "./NLP_Models"
+
+    if os.path.exists(modelsdirPath) and os.path.isdir(modelsdirPath):
+        shutil.rmtree(modelsdirPath)
+
+    os.mkdir(modelsdirPath)
+    epoch_counter = 0
+    iterationCounter = 0
     while n_batches <= n_batches_max:
         for i, (text, labels) in enumerate(tr_data, 0):
             acc = validate(inference_fn, model, *te_data)
@@ -69,14 +80,23 @@ def train_loop(model, optim, loss_fn, tr_data: DataLoader, te_data: tuple, infer
             loss = loss_fn(out, labels)
             optim.zero_grad()
             loss.backward()
+            # save model
+            torch.save(model.state_dict(), modelsdirPath +"/"+str(iterationCounter))
+            iterationCounter += 1
+            #
             optim.step()
             losses.append(loss.item())
-
+            
             n_batches += 1
             if n_batches > n_batches_max:
                 break
         i_max = i
+    #copy and name special Models 
+    shutil.copyfile(modelsdirPath +"/"+str(0), modelsdirPath +"/initialModel")
+    shutil.copy(modelsdirPath +"/"+str(iterationCounter -1), modelsdirPath +"/finalModel") # rename macht probleme ???
 
+    print("NOTE: THESE SAVED MODELS ARE BEEING OVERWRITTEN ON NEXT RUN")
+    ##
     acc_val.append(validate(inference_fn, model, *te_data))
     print("accuracies over test set")
     print(acc_val)
@@ -91,15 +111,18 @@ if __name__ == '__main__':
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
-    train_set, test_set, size_vocab, n_classes = get_agnews(random_state=42, batch_sizes=(size_train_batch, size_test_batch))
+    train_set, test_set, size_vocab, n_classes , random_indices_train, random_indices_test = get_agnews(random_state=42, batch_sizes=(size_train_batch, size_test_batch))
     
-    #X_test, Y_test = next(iter(test_set))  # only use first batch as a test set
+    #for i in test_set:
+    #    print(i)
+    X_test, Y_test = next(iter(test_set))  # only use first batch as a test set
+    
     #X_test, Y_test = next(test_set)
-    print(test_set)
-    for X,y in test_set:
-        X_test, Y_test =X,y
-        break
-    print(len(Y_test))
+    #print(test_set)
+    #for X,y in test_set:
+    #    X_test, Y_test =X,y
+    #    break
+    #print(len(Y_test))
     
     Y_test_distr = torch.bincount(Y_test, minlength=n_classes)/size_test_batch
     print(f"class distribution in test set: {Y_test_distr}")  # this should roughly be uniformly distributed
@@ -121,7 +144,7 @@ if __name__ == '__main__':
     loaderList = [test_set] # testLoader
     nameList = ["test"]
     yList = [Y_test]
-    inputFeatures = []  
+    inputFeatures = size_vocab  
     num_epochs = n_batches # just for tracking progress
 
 

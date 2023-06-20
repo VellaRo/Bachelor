@@ -110,9 +110,9 @@ numerical
     ##print(batch_size)
     trainset = list(zip(X_train , y_train))      
     
-    random_indices_test =  data_list = random.sample(range(len(X_test)), len(X_test))
+    random_indices_test =random.sample(range(len(X_test)), len(X_test))
     #print(random_indices_test)
-    random_indices_train =  data_list = random.sample(range(len(X_train)), len(X_train))
+    random_indices_train = random.sample(range(len(X_train)), len(X_train))
 
     
     class OrderedListSampler(Sampler):

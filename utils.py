@@ -17,16 +17,25 @@ def calc_grads(outputs, inputs):
     _outputs_max_idx = torch.argmax(outputs, dim=1) # indexthat contains maximal value per row (prediction per sample in batch)
     _outputs = torch.gather(outputs, dim=1, index= _outputs_max_idx.unsqueeze(1)) # gather sammelt outputs aus y entlang der Axe 
                                                                                          # dim die in index spezifiziert sind, 
-                                                                                         # wobei index einen tensor von shape(batch_size, 1)
-                                                                                         # erwartet (->unsqueeze(1))
              
+                
+    #print("kkkkkkkkkkk")          
+    #print(_outputs.device)
+    #print("llasas")
+                                                                  # wobei index einen tensor von shape(batch_size, 1)
+    #_outputs = _outputs.to('cpu')          
+    #print("joooo")                                                                     # erwartet (->unsqueeze(1))
+    #print(_outputs.device)
+    #inputs = inputs.to('cpu')
+    #print(inputs.device)
     grad = torch.autograd.grad(torch.unbind(_outputs), inputs)[0]
 
     return grad
 
-def smooth_grad(input, n_samples, stdev_spread ,model):   
+def smooth_grad(input, n_samples, stdev_spread ,model,device):   
                 #input_embedded = model.embed_input(input)
                 if input.is_cuda:
+
                     input = input.detach().cpu()
 
                 # Convert the tensor to a NumPy array
@@ -34,23 +43,35 @@ def smooth_grad(input, n_samples, stdev_spread ,model):
 
                 stdev = stdev_spread * (torch.max(input) - torch.min(input))
 
-                total_gradients = torch.zeros_like(input.data,device="cuda:0")
+                total_gradients = torch.zeros_like(input.data,device=device)
                 #print((total_gradients.device))
                 for i in range(n_samples):
 
                     # Create a batch of inputs with added Gaussian noise
                     noisy_inputs = input + np.random.normal(0, stdev, input_np.shape).astype(np.float32)
-                    noisy_inputs = noisy_inputs.to("cuda:0")
+                    noisy_inputs = noisy_inputs.to(device)
                     #print(noisy_inputs.device)
                     noisy_inputs.requires_grad = True
                     #print(type(noisy_inputs))
                     #print(noisy_inputs.dtype)
+
+                    #print("for NLP:")
+                        
+                    #noisy_inputs = noisy_inputs.to(torch.long) 
+                    #out = model.forward_softmax(noisy_inputs)
+
                     try:
+                        print("for NLP:")
+                        
+                        tmp_noisy_inputs = noisy_inputs.to(torch.long) 
+                        out = model.forward_softmax(tmp_noisy_inputs)
+
+                    except:
+
                         out = model(noisy_inputs)
                         out = softmax(out, dim=1)
-                    except:
-                        print("for NLP:")
-                        out = model.forward_embedded_softmax(noisy_inputs)
+
+
 
                     #CHECK FOR WHICH DIMENSION IS CORRECT
                     grad = calc_grads(out, noisy_inputs)

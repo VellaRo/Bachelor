@@ -31,6 +31,8 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
         name = i
         ... (RUN ALL)
     """
+    device = next(model.parameters()).device
+
     dataPath= dirPath+ "Results/Trainingresults/"
     #np.savez(dirPath + 'data.npz', exec(f'{name}acc = "{acc}"')) #exec :  executes the string that it gets 
     np.savez(dataPath + 'data.npz', y_test = yList[0]) 
@@ -154,7 +156,7 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
 
                     #inputs = F.softmax(input, dim=1) # softmax
 
-                    grad = utils.smooth_grad(inputs, n_samples, stdev_spread ,model) # for test dataset # grad for a Sample
+                    grad = utils.smooth_grad(inputs, n_samples, stdev_spread ,model, device) # for test dataset # grad for a Sample
                     #print(np.shape(grad)) # 32 ,8 , batchsize , featuresize
                     ##
                     for i in range(len(inputs)):  # for batch size

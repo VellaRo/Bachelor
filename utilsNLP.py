@@ -1,4 +1,4 @@
-from torch.utils.data.sampler import Sampler
+from torch.utils.data import Sampler
 """
 def getVocabSize():
 
