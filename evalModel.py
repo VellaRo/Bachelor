@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from sklearn.metrics.pairwise import cosine_similarity
 
-def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_function, num_epochs, nameList, yList, inputFeatures, random_indices_test):
+def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_function, num_epochs, nameList, yList, inputFeatures,NLP=False):
     """
         parameters:
             model: an ititialised model with the same parameters, as for training
@@ -32,8 +32,10 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
         ... (RUN ALL)
     """
     device = next(model.parameters()).device
-
-    dataPath= dirPath+ "Results/Trainingresults/"
+    if NLP== True:
+        dataPath= dirPath+ "NLP_Results/Trainingresults/"    
+    else:
+        dataPath= dirPath+ "Results/Trainingresults/"
     #np.savez(dirPath + 'data.npz', exec(f'{name}acc = "{acc}"')) #exec :  executes the string that it gets 
     np.savez(dataPath + 'data.npz', y_test = yList[0]) 
     #utils.appendToNPZ(dirPath + 'data.npz',"y_eval", yList[1])
@@ -132,8 +134,11 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
             ### calculate grads
 
             if True :#name == "eval" or name == "train":
-                gradAtitearation = [None] * len(yList[0] -1)
-                random_indices_testCOUNTER = 0
+                #print(len(yList[0]))
+                #gradAtitearation = [None] * len((yList[0]) -1)
+
+                #random_indices_testCOUNTER = 0
+                
                 for inputs, labels in loader:
                     #inputs = inputs.to(device)
                     #labels = labels.to(device)
@@ -151,7 +156,7 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
                     #gradientList.append(grads.cpu())
                     inputs = inputs.to(device)
                     labels = labels.to(device)
-                    n_samples = 25
+                    n_samples = 2#5
                     stdev_spread = 0.2
 
                     #inputs = F.softmax(input, dim=1) # softmax
@@ -159,15 +164,27 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
                     grad = utils.smooth_grad(inputs, n_samples, stdev_spread ,model, device) # for test dataset # grad for a Sample
                     #print(np.shape(grad)) # 32 ,8 , batchsize , featuresize
                     ##
-                    for i in range(len(inputs)):  # for batch size
-                        #print(random_indices_testCOUNTER)
-                        gradAtitearation[random_indices_test[random_indices_testCOUNTER]] = grad[i] # grads for the whole test dataset at given iteration 
-                        random_indices_testCOUNTER +=1
+
+                    #for i in range(len(inputs)):  # for batch size
+                    #    #print(random_indices_test(random_indices_testCOUNTER))
+                    #    #print(random_indices_testCOUNTER)
+
+                    #    #gradAtitearation[random_indices_test[random_indices_testCOUNTER]] = grad[i] # grads for the whole test dataset at given iteration 
+                    #    gradAtitearation[random_indices_testCOUNTER] = grad[i] 
+                    #    random_indices_testCOUNTER +=1
                     #print(counterTest)
                     #counterTest += 1
                     #print(len(gradAtitearation))
-                gradientList_iteration.append(gradAtitearation)# 11,154,
-                
+                    if NLP== True:
+                        print("NLLLLOLP")
+                        grad = np.sum(grad, axis=-1)
+                        print("after")
+                        print(grad[0])
+                        print(np.shape(grad[0]))
+                        break
+                gradientList_iteration.append(grad)# 11,154,
+        
+                print(np.shape(gradientList_iteration))
                 #get weights of model at iteration
                 #if name=="train":
                 #iterationWeightsF = utils.getWeights(finalModel)
@@ -256,7 +273,7 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
                     loss = np.mean(temp_Loss_epoch)
                     lossPerEpochList.append(loss)
 
-                    gradientList.append(gradAtitearation)  
+                    gradientList.append(grad)  
                     #Progress
                     print("Progess: " + "{:.2f}".format( (modelNumber/ len(modelsDirFiltered) *100) )+"%")
                     print( name + " acc: " + "{:.2f}".format(acc*100) +"%") 
@@ -274,12 +291,20 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
 
         ### GRADIENT_MAGNITUDE
         if True:#name == "train" or name== "eval": 
-            #print(np.shape(gradientList))
-            unpackedGradiends = utils.unpackingGradients(inputFeatures, gradientList)
+            print(np.shape(gradientList))
+            if NLP== True:
+                unpackedGradiends =utils.unpackingGradients((len(grad[-1]) -1), gradientList)
+                
+            else:
+                unpackedGradiends = utils.unpackingGradients(inputFeatures, gradientList)
             averagedGradientMagnitude = np.average(np.absolute(unpackedGradiends), axis=0) 
             gradientMagnitudePerFeature = np.absolute(unpackedGradiends)
             ## per iteration:
-            unpackedGradiends_iteration = utils.unpackingGradients(inputFeatures, gradientList_iteration)
+            if NLP== True:
+                unpackedGradiends_iteration =utils.unpackingGradients((len(grad[-1]) -1), gradientList_iteration)
+                
+            else:
+                unpackedGradiends_iteration = utils.unpackingGradients(gradientList_iterationgradientList)            
             averagedGradientMagnitude_iteration = np.average(np.absolute(unpackedGradiends_iteration), axis=0) 
             gradientMagnitudePerFeature_iteration = np.absolute(unpackedGradiends_iteration)
         

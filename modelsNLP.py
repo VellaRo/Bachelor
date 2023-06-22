@@ -105,6 +105,6 @@ class SentenceCNN(nn.Module):
         out = self.act_out(out)
         return out
     def forward_embedded_softmax(self, embedded_seq):
-        x = self._forward_embedded(embedded_seq)
+        x = self.forward_embedded(embedded_seq)
         y = torch.softmax(x, dim=1)
         return y

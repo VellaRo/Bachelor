@@ -131,5 +131,5 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
         #test_loader = DataLoader(test_iter, batch_size=batch_sizes[-1],  collate_fn=collate_batch,
         #                        shuffle=True, generator=gen_test)#sampler=sampler_test)
 
-    return train_loader, test_loader, size_vocab,  2,random_indices_train,random_indices_test, # 4
+    return train_loader, test_loader, size_vocab,  2#,random_indices_train,random_indices_test, # 4
 
