@@ -46,7 +46,30 @@ class BiLSTMClassif(nn.Module):
         y = torch.softmax(x, dim=1)
         return y
 
+    def predict(self,input_list):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # Use GPU if available
 
+        #input_data = torch.tensor(input_list) 
+        input_data = input_list.clone().detach() 
+        dataset = torch.utils.data.TensorDataset(input_data)
+
+        data_loader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=False)
+
+        self.to(device)
+        self.eval()  
+        predictions= []
+        with torch.no_grad():
+            for batch in data_loader:
+                input_batch = batch[0].to(device) 
+
+                batch_predictions = self(input_batch)
+                _, batch_predictions = torch.max(batch_predictions, dim=1)
+
+                # Append batch predicted classes to the list
+                predictions.extend(batch_predictions.detach().cpu().tolist())
+
+    
+        return predictions    
 class SentenceCNN(nn.Module):
 
     '''
@@ -104,7 +127,33 @@ class SentenceCNN(nn.Module):
         out = self.fc(lin_in)
         out = self.act_out(out)
         return out
+    
     def forward_embedded_softmax(self, embedded_seq):
         x = self.forward_embedded(embedded_seq)
         y = torch.softmax(x, dim=1)
         return y
+   
+    def predict(self,input_list):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # Use GPU if available
+
+        #input_data = torch.tensor(input_list) 
+        input_data = input_list.clone().detach() 
+        dataset = torch.utils.data.TensorDataset(input_data)
+
+        data_loader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=False)
+
+        self.to(device)
+        self.eval()  
+        predictions= []
+        with torch.no_grad():
+            for batch in data_loader:
+                input_batch = batch[0].to(device) 
+
+                batch_predictions = self(input_batch)
+                _, batch_predictions = torch.max(batch_predictions, dim=1)
+
+                # Append batch predicted classes to the list
+                predictions.extend(batch_predictions.detach().cpu().tolist())
+
+    
+        return predictions

@@ -11,7 +11,9 @@ import utils
 from datetime import datetime
 ##
 import time
-
+from torchtext.data.utils import get_tokenizer 
+from datasetsNLP import _get_vocab
+import numpy as np
 def loadOHE_Rules(iterationNumber):
     """
     """
@@ -104,9 +106,50 @@ def categoricalToOHE(data):
 
     return OHE_DF, newFeatureNames
 
+def vocabToOHE(data ,vocab):
+    #def get_vocab_dictionary: 
+    #tokenizer = get_tokenizer('basic_english')
+    #vocab = _get_vocab 
+    #padding_val =vocab['<pad>']
+
+    #def text_pipeline(input):
+    #    return vocab(tokenizer(input))
+
+    vocab_dictionary = []
+    for x in range(len(data)):
+
+        #processed_text = torch.tensor(text_pipeline(_text), dtype=torch.int64)
+        text = data.iloc[x].values
+        #processed_text = text_pipeline(text)
+        #processed_text = torch.tensor(text_pipeline(_text), dtype=torch.int64)
+        processed_text_int = []
+        #print(processed_text)
+        for i in text:
+            processed_text_int.append(i)
+        vocab_dictionary.extend(processed_text_int)
+
+    
+    vocab_dictionary =  set(vocab_dictionary)
+
+    featureNames = np.sort(list(vocab_dictionary))
+
+    OHE = np.zeros((len(data), len(vocab_dictionary)))
+    OHE_DF =  pd.DataFrame(OHE, columns=featureNames)
+    for i in range(len(data)):
+        for j in range(len(featureNames)):
+            if featureNames[j] in data.iloc[i].values:
+                OHE_DF.iloc[i,j] = 1
+            else:
+                OHE_DF.iloc[i,j] = 0
+    
+
+	    #return set(vocab_directory)
+    
+    return OHE_DF, featureNames
+
 #only for binary 
                   #X_test
-def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, grads, datasetType ,debug=False):
+def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, grads, datasetType ,debug=False, vocab = None):
 
     """
     explainationGrads should have shape of [epochs * iterationsPerEpoch , testDatasetSize, featuresize ]
@@ -125,10 +168,13 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
 
     shap_threshold = 0.001
     num_cores = cpu_count()
-    
-    if len(intervals_dict) == 0:
-        compute_intervals(intervals_dict, data_df, 5)
-    
+
+    if datasetType == "numerical":
+        if len(intervals_dict) == 0:
+            compute_intervals(intervals_dict, data_df, 5)
+    else:
+        pass
+
     p = Pool(num_cores)
 
 
@@ -163,18 +209,21 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
             else:
                 itemset.add(feature)
     else: 
-        data_df, featureNames = categoricalToOHE(data_df)
+        #data_df, featureNames = categoricalToOHE(data_df)
+        print("NLP")
+        data_df, featureNames = vocabToOHE(data_df, vocab)
         for feature in data_df.columns.to_list():
             itemset.add(feature)
 
     itemset.add(pos_label)
     itemset.add(neg_label)
+    print("ahaa")
 
 
     def CEGA(gradsPerIteration): 
         ### for every model iteration the gradients of whole test_dataset is calculated
         for indx in range(len(trainedModelPrediction_Test)): #  len test dataset
-            
+            print(indx)
             pos_queue.put(pos_label)
             neg_queue.put(neg_label)
             exp = gradsPerIteration[indx]#[item[indx] for item in sample] #normalize featureListALL ?
@@ -196,7 +245,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         return ohe_df #ohe_dfList.append(ohe_df)
     
     for i in tqdm (range(len(grads))):
-
+        print("==")
         gradsPerIteration  = grads[i]
         #trainedModelPrediction_TestPerIteration = trainedModelPrediction_Test[i]
         output_filename = f'{output_directory}{output_base_filename}_{iterationCounter}.pkl'
@@ -221,14 +270,14 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
 
 def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add  to def input ?
                                             # 10/ len(pred)
-    freq_items = apriori(ohe_df, min_support=(10/testDataLength), use_colnames=True, max_len=3, low_memory=True)
+    freq_items = apriori(ohe_df, min_support=(10/testDataLength*5), use_colnames=True, max_len=3, low_memory=True)
 
     all_rules = association_rules(freq_items, metric="confidence", min_threshold=0.0 ,support_only=False) # 0.7 support_only=False
                                         # 10/ len(pred)
-    freq_items = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(10/testDataLength), use_colnames=True, max_len=3 , low_memory=True) # max len 3
+    freq_items = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(10/testDataLength*5), use_colnames=True, max_len=3 , low_memory=True) # max len 3
     pos_rules = association_rules(freq_items, metric="confidence", min_threshold=0.0, support_only=False) # 0.6 support_only=False
                                                                         # 10/ len(pred)
-    freq_items = apriori(ohe_df.loc[ohe_df[neg_label] == 1], min_support=(10/testDataLength), use_colnames=True, max_len=3, low_memory=True) # max len 3 
+    freq_items = apriori(ohe_df.loc[ohe_df[neg_label] == 1], min_support=(10/testDataLength*5), use_colnames=True, max_len=3, low_memory=True) # max len 3 
     neg_rules = association_rules(freq_items, metric="confidence", min_threshold=0.0 , support_only=False) # 0.6 support_only=False
 
     #np.savez("./test.npz",all_rules , )

@@ -61,14 +61,20 @@ def _build_collate_fn(vocab, label_pipeline):
 
     def collate_batch(batch):
         label_list, text_list, offsets = [], [], [0]
+        #vocab_dictionary = []
         for (_label, _text) in batch:
             label_list.append(label_pipeline(_label))
             processed_text = torch.tensor(text_pipeline(_text), dtype=torch.int64)
+            
             text_list.append(processed_text)
-
+            
+            #processed_text_int = [int(word.item()) for word in processed_text]
+            #vocab_dictionary.extend(processed_text_int)
+            
         labels = torch.tensor(label_list, dtype=torch.int64)
         text = pad_sequence(text_list, batch_first=True, padding_value=padding_val)
         return text, labels
+    
 
     return collate_batch, len(vocab)
 
@@ -91,6 +97,7 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
         test_iter = to_map_style_dataset(test_iter)
 
         vocab = _get_vocab('AG_NEWS', train_iter)
+
         collate_batch, size_vocab = _build_collate_fn(vocab, label_pipeline)
         #MEEE
         import utilsNLP
@@ -131,5 +138,5 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
         #test_loader = DataLoader(test_iter, batch_size=batch_sizes[-1],  collate_fn=collate_batch,
         #                        shuffle=True, generator=gen_test)#sampler=sampler_test)
 
-    return train_loader, test_loader, size_vocab,  2#,random_indices_train,random_indices_test, # 4
+    return train_loader, test_loader, size_vocab,  2, vocab #,random_indices_train,random_indices_test, # 4
 

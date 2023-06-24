@@ -109,17 +109,16 @@ if __name__ == '__main__':
     from matplotlib import pyplot as plt
     import pickle    
     size_train_batch = 64
-    size_test_batch = 20#1024
-    n_batches = 10
+    size_test_batch = 1024
+    n_batches = 200
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
-    train_set, test_set, size_vocab, n_classes  = get_agnews(random_state=42, batch_sizes=(size_train_batch, size_test_batch))
+    train_set, test_set, size_vocab, n_classes, vocab  = get_agnews(random_state=42, batch_sizes=(size_train_batch, size_test_batch))
     
     #for i in test_set:
     #    print(i)
     X_test, Y_test = next(iter(test_set))  # only use first batch as a test set
-    print(X_test)
     #X_test, Y_test = next(test_set)
     #print(test_set)
     #for X,y in test_set:
@@ -243,8 +242,14 @@ if __name__ == '__main__':
     #print(trainedModelPrediction_Test)
     print("DATASETTYPE DEBUG :::!! CKECK PLS")
     datasetType = "categorical"
+    featureNames = []
+    #for i in range(len(data["testGradientsPerSamplePerFeature"][-1])): #vocab_size
+    gradsTemp = data["testGradientsPerSamplePerFeature"]
+    for i in range(len(gradsTemp[1][-1])):
 
-    cega_utils.calculateAndSaveOHE_Rules(X_test, featureNames,trainedModelPrediction_Test_overIterations[-1], data["testGradientsPerSamplePerFeature_iteration"], datasetType,debug= False) #OHEresults
+        featureNames.append(str(i))
+
+    cega_utils.calculateAndSaveOHE_Rules(X_test, featureNames,trainedModelPrediction_Test_overIterations[-1], data["testGradientsPerSamplePerFeature_iteration"], datasetType,debug= False, vocab=vocab) #OHEresults
 
 
     import warnings
@@ -328,7 +333,7 @@ if __name__ == '__main__':
         #resultName = "charachteristic_rules"
         #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath)
         #try:    
-        rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, featureDict, testloader, trainedModelPrediction_Test_overIterations[i])
+        rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, featureDict, test_set, trainedModelPrediction_Test_overIterations[i])
             #print("after calc metrics")
             #print(psutil.virtual_memory())
         #resultName = "charachteristic_rules"

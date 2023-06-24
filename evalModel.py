@@ -176,11 +176,7 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
                     #counterTest += 1
                     #print(len(gradAtitearation))
                     if NLP== True:
-                        print("NLLLLOLP")
                         grad = np.sum(grad, axis=-1)
-                        print("after")
-                        print(grad[0])
-                        print(np.shape(grad[0]))
                         break
                 gradientList_iteration.append(grad)# 11,154,
         
