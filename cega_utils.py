@@ -133,15 +133,23 @@ def vocabToOHE(data ,vocab):
 
     featureNames = np.sort(list(vocab_dictionary))
 
-    OHE = np.zeros((len(data), len(vocab_dictionary)))
-    OHE_DF =  pd.DataFrame(OHE, columns=featureNames)
-    for i in range(len(data)):
-        for j in range(len(featureNames)):
-            if featureNames[j] in data.iloc[i].values:
-                OHE_DF.iloc[i,j] = 1
-            else:
-                OHE_DF.iloc[i,j] = 0
-    
+# Create a DataFrame with all zeros
+    OHE_DF = pd.DataFrame(np.zeros((len(data), len(featureNames))), columns=featureNames)
+
+# Iterate over featureNames and check if each one is in the corresponding row of 'data'
+    for j, feature in enumerate(featureNames):
+        OHE_DF[feature] = np.where(data.apply(lambda row: feature in row.values, axis=1), 1, 0)
+
+
+
+    #OHE = np.zeros((len(data), len(vocab_dictionary)))
+    #OHE_DF =  pd.DataFrame(OHE, columns=featureNames)
+    #for i in range(len(data)):
+     #   for j in range(len(featureNames)):
+      #      if featureNames[j] in data.iloc[i].values:
+       #         OHE_DF.iloc[i,j] = 1
+        #    else:
+        #        OHE_DF.iloc[i,j] = 0
 
 	    #return set(vocab_directory)
     
