@@ -217,7 +217,6 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
 
     itemset.add(pos_label)
     itemset.add(neg_label)
-    print("ahaa")
 
 
     def CEGA(gradsPerIteration): 
@@ -245,7 +244,6 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         return ohe_df #ohe_dfList.append(ohe_df)
     
     for i in tqdm (range(len(grads))):
-        print("==")
         gradsPerIteration  = grads[i]
         #trainedModelPrediction_TestPerIteration = trainedModelPrediction_Test[i]
         output_filename = f'{output_directory}{output_base_filename}_{iterationCounter}.pkl'
