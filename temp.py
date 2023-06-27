@@ -110,7 +110,7 @@ if __name__ == '__main__':
     import pickle    
     size_train_batch = 64
     size_test_batch = 1024
-    n_batches = 200
+    n_batches = 81
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -136,9 +136,9 @@ if __name__ == '__main__':
 
     _t_start = time()
 
-    model, loss, test_accuracies = \
-        train_loop(model, optimizer, loss_fun, train_set, (X_test, Y_test),
-                   inference_fn=model.forward_softmax, device=device, n_batches_max=n_batches)
+    #model, loss, test_accuracies = \
+    #    train_loop(model, optimizer, loss_fun, train_set, (X_test, Y_test),
+    #               inference_fn=model.forward_softmax, device=device, n_batches_max=n_batches)
     
     dirPath ="./"
     modelsDirPath = dirPath + "NLP_Models"

@@ -300,7 +300,7 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
                 unpackedGradiends_iteration =utils.unpackingGradients((len(grad[-1]) -1), gradientList_iteration)
                 
             else:
-                unpackedGradiends_iteration = utils.unpackingGradients(gradientList_iterationgradientList)            
+                unpackedGradiends_iteration = utils.unpackingGradients(inputFeatures, gradientList_iteration)            
             averagedGradientMagnitude_iteration = np.average(np.absolute(unpackedGradiends_iteration), axis=0) 
             gradientMagnitudePerFeature_iteration = np.absolute(unpackedGradiends_iteration)
         

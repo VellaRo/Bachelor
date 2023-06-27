@@ -174,12 +174,12 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
     summed_values = {}
     num_features = data.shape[1]
 
-    shap_threshold = 0.001
+    shap_threshold = 0 # 0 0.0001
     num_cores = cpu_count()
 
-    if datasetType == "numerical":
+    if datasetType == "NLP": #"numerical":
         if len(intervals_dict) == 0:
-            compute_intervals(intervals_dict, data_df, 5)
+            compute_intervals(intervals_dict, data_df, 1) #5 
     else:
         pass
 
@@ -203,7 +203,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         os.makedirs(output_directory)
 
     if datasetType == "numerical":
-
+        print(data_df)
         for feature in data_df.columns.to_list(): # for NLP this must be the whole vocab 
             if feature in intervals_dict:
                 intervals = intervals_dict[feature]
@@ -216,34 +216,55 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
 
             else:
                 itemset.add(feature)
+        print(itemset)
+
+
     else: 
         #data_df, featureNames = categoricalToOHE(data_df)
-        print("NLP")
+        #print("NLP")
         data_df, featureNames = vocabToOHE(data_df, vocab)
+        #print(data_df)
+        #for feature in data_df.columns.to_list(): # for NLP this must be the whole vocab 
+        #    if feature in intervals_dict:
+        #        intervals = intervals_dict[feature]
+        #        for interval in intervals:
+        #            if interval != interval: continue
+        #            left = interval.left
+        #            right = interval.right
+        #            name = f'{left}<{feature}<={right}'
+        #            itemset.add(name)
+
+        #    else:
+        #        itemset.add(feature)
+        #print(itemset)
+
         for feature in data_df.columns.to_list():
             itemset.add(feature)
-
+        #print(itemset)
     itemset.add(pos_label)
     itemset.add(neg_label)
+    print(len(itemset))
 
 
     def CEGA(gradsPerIteration): 
         ### for every model iteration the gradients of whole test_dataset is calculated
-        for indx in range(len(trainedModelPrediction_Test)): #  len test dataset
+        for indx in range(len(gradsPerIteration)):#(len(trainedModelPrediction_Test)): #  len test dataset
             print(indx)
             pos_queue.put(pos_label)
             neg_queue.put(neg_label)
             exp = gradsPerIteration[indx]#[item[indx] for item in sample] #normalize featureListALL ?
+            #print("exp")
+            #print(exp)
 
-
-            instance_features = data_df.iloc[[indx]].to_dict(orient='records')[0]
+            instance_features = data_df.iloc[[indx]].to_dict(orient='records')[0] 
             feature_vals = [instance_features[name] for name in featureNames] #put here grads# feature values ?? 
-
+       
             zipped = zip(exp, feature_vals,
                          featureNames, [shap_threshold]*len(featureNames))
 
 
             p.map(get_relevant_features, zipped)
+            #print(encoded_vals)
             append_to_encoded_vals(pos_queue, itemset, encoded_vals)
             append_to_encoded_vals(neg_queue, itemset, encoded_vals)
 
@@ -451,7 +472,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         #print(rules_DF)
         rulesList =rules_DF["itemset"].to_list()
         rulesList = [set(frozenset) for frozenset in rulesList]
-        
+        print(rulesList)
         labelList_rules = rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
         labelList_rules = [set(frozenset).pop() for frozenset in labelList_rules]
 
@@ -575,7 +596,6 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
     coverageList = globalCoverage(predictionComparisonList)
     #rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
     numberOfGeneratedRules = (len(rules_list))
-
     return rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,
 
     ## Get the current date and time

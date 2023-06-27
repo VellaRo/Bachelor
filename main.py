@@ -51,7 +51,7 @@ with seedObject:
     #grads = train.train(trainloader, model, num_epochs, device, y_train,loss_function, optimizer)    
     grads =  train.train(trainloader,random_indices_train, testloader,random_indices_test, model, num_epochs, device, y_train, y_test, loss_function, optimizer)
  
-    #train.train(trainloader,random_indices_train, testloader,random_indices_test, model, num_epochs, device, y_train, y_test, loss_function, optimizer)
+    train.train(trainloader,random_indices_train, testloader,random_indices_test, model, num_epochs, device, y_train, y_test, loss_function, optimizer)
     #print(dirPath)
 
     import evalModel
