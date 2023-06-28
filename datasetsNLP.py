@@ -124,14 +124,86 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
 
         #END MEEE 
 
-
-        train_loader = DataLoader(train_iter, batch_size=batch_sizes[0], shuffle=False,
+        train_loader = DataLoader(train_iter, batch_size=batch_sizes[0], 
                                    collate_fn=collate_batch,
-                                    )#sampler=sampler_train, )#num_workers=2)#,generator=gen_train)#shuffle=True,generator=gen_train)
+                                 generator=gen_train, shuffle=True)
         test_loader = DataLoader(test_iter, batch_size=batch_sizes[-1],  collate_fn=collate_batch,
-                                shuffle=False,) #sampler=sampler_test, )#num_workers=2)#,generator=gen_test) 
+                                shuffle=True, generator=gen_test) 
+
+        #MEEE
+        tokenizer = get_tokenizer('basic_english')
+
+        X_test, Y_test = next(iter(test_loader))  # only use first batch as a test set
+    
+        processed_text = []
+        for i in X_test:
+            intList = [j.item() for j in i]
+            processed_text.extend(intList)
+
+        vocab_dictionary= set(processed_text)
+        #print("set")
+        #print(vocab_dictionary)
+        #print(len(vocab_dictionary))
+
+        #print("Train")
+        #print(len(train_iter) )
+        newListTrain = []
+        
+        colsion =False
+        for  text_batch, lable_batch in train_loader:
+            #print(text_batch[0])
+
+            for text in text_batch:
+                #print(text)
+                
+                #if colsion == True:
+                    #newListTrain.append(text)
+                
+                #if any(word not in vocab_dictionary for word in text):
+                count = 0
+
+                for word in text:
+                    #print(vocab_dictionary)
+                    #print(text)
+                    #print(word.item())
+                    #print(word.item() in vocab_dictionary)
+                    #word.wordss
+
+                    if word not in list(vocab_dictionary):
+
+                    #newListTrain.append(text)
+                        count += 1
+                #else:
+                #    newListTrain.append(text)
+                #    break
+                #print(count / len(text))
+                #if (count / len(text)) != 1.0:
+
+                    #print("----")
+                    #print(len(text))
+                    #print(count)
+                 #   print(count / len(text))
+                 #   print("----")
+                if (count / len(text)) < 0.5: # errorrate
+                    print((count / len(text)))
+                    newListTrain.append(text)
+               # else:
+               #     newListTrain.append(text)
+        
+            #break
+        #newListTrain = []
+
+        #for lable_batch, text_batch in train_loader:
+        # Check if any word in the batch is not in the vocabulary
+        #    if any(word not in vocab_dictionary for word in text for text in text_batch ):
+        #        newListTrain.extend(text_batch)
+        #print(newListTrain.count(0))
+        print("==?????")
+        print(len(newListTrain))
+                         
 
 
+        # end meee
                                          #shuffle=True, generator=gen_test)
         #train_loader = DataLoader(train_iter, batch_size=batch_sizes[0],
         #                           collate_fn=collate_batch, shuffle=True,generator=gen_train)#sampler=sampler_train)#

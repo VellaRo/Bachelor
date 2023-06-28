@@ -109,8 +109,8 @@ if __name__ == '__main__':
     from matplotlib import pyplot as plt
     import pickle    
     size_train_batch = 64
-    size_test_batch = 300
-    n_batches = 20
+    size_test_batch = 500
+    n_batches = 15
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -119,6 +119,7 @@ if __name__ == '__main__':
     #for i in test_set:
     #    print(i)
     X_test, Y_test = next(iter(test_set))  # only use first batch as a test set
+    
     #X_test, Y_test = next(test_set)
     #print(test_set)
     #for X,y in test_set:
