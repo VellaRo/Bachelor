@@ -111,7 +111,7 @@ if __name__ == '__main__':
     from matplotlib import pyplot as plt
     import pickle    
     size_train_batch = 64
-    size_test_batch = 100
+    size_test_batch = 300
     n_batches = 200
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
