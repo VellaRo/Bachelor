@@ -99,6 +99,7 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
         vocab = _get_vocab('AG_NEWS', train_iter)
 
         collate_batch, size_vocab = _build_collate_fn(vocab, label_pipeline)
+
         #MEEE
         #import utilsNLP
         #import random
@@ -168,15 +169,23 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
 
         colsion =False
         from tqdm import tqdm
+        print(type(train_iter))
         #for text_batch, label_batch in tqdm(train_loader):
-        for lable, text in train_iter:#zip(text_batch, label_batch):
+        
+        #true1 = False
+        #true2 = False
+
+        for label, text in train_iter:#zip(text_batch, label_batch):
+
             count = 0
             for word in text:
                 if word not in list(vocab_dictionary):
                     count += 10
                     break #2h without
-            if (count / len(text)) <= 0.03: # errorrate
-                #print("jo")
+            #print(count / len(text))
+            #print(count / len(text) <= 0.5)
+            if (count / len(text)) <= 0.05: # errorrate
+                
                 newListTrain_X.append(text)
                 newListTrain_y.append(label)
 

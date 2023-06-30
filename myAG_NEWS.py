@@ -34,6 +34,7 @@ def _filepath_fn(root, split, _=None):
 
 def _modify_res(t):
     label, text = int(t[0]), " ".join(t[1:])
+
     if label in [1, 2]:
         return label, text
     else:
