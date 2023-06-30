@@ -184,7 +184,7 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
                     break #2h without
             #print(count / len(text))
             #print(count / len(text) <= 0.5)
-            if (count / len(text)) <= 0.05: # errorrate
+            if (count / len(text)) <= 0.03: # errorrate
                 
                 newListTrain_X.append(text)
                 newListTrain_y.append(label)
