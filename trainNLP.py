@@ -51,7 +51,7 @@ def validate(inference_fn, model, X, Y):
 def train_loop(model, optim, loss_fn, tr_data: DataLoader, te_data: tuple, inference_fn=None, \
                n_batches_max=10, device='cuda'):
     
-    print(device)
+#    print(device)
     model.to(device)
     acc_val = []
     losses = []
@@ -71,6 +71,8 @@ def train_loop(model, optim, loss_fn, tr_data: DataLoader, te_data: tuple, infer
     iterationCounter = 0
     while n_batches <= n_batches_max:
         for i, (text, labels) in enumerate(tr_data, 0):
+
+            #break
             acc = validate(inference_fn, model, *te_data)
             accs.append(acc)
             if i % 100 == 0:
@@ -109,12 +111,12 @@ if __name__ == '__main__':
     from matplotlib import pyplot as plt
     import pickle    
     size_train_batch = 64
-    size_test_batch = 500
+    size_test_batch = 200
     n_batches = 15
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
-    train_set, test_set, size_vocab, n_classes, vocab  = get_agnews(random_state=42, batch_sizes=(size_train_batch, size_test_batch))
+    train_set, test_set, size_vocab, n_classes, vocab = get_agnews(random_state=42, batch_sizes=(size_train_batch, size_test_batch))
     
     #for i in test_set:
     #    print(i)
@@ -151,7 +153,7 @@ if __name__ == '__main__':
     inputFeatures = size_vocab  
     num_epochs = n_batches # just for tracking progress
 
-
+    print("eval")
     evalModel.doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_fun, num_epochs, nameList, yList, inputFeatures,NLP=True)
     ####
 

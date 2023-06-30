@@ -276,16 +276,16 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         gradsPerIteration  = grads[i]
         #trainedModelPrediction_TestPerIteration = trainedModelPrediction_Test[i]
         output_filename = f'{output_directory}{output_base_filename}_{iterationCounter}.pkl'
-        try:
-            with open(output_filename, 'xb') as f:
-                ohe_df = CEGA(gradsPerIteration)#,trainedModelPrediction_TestPerIteration)
-                pickle.dump(ohe_df, f)
-                iterationCounter += 1
-        except FileExistsError:
-            # If the file already exists, increment the counter and try again
-            iterationCounter += 1
+        #try:
+        with open(output_filename, 'wb') as f:
+            ohe_df = CEGA(gradsPerIteration)#,trainedModelPrediction_TestPerIteration)
             pickle.dump(ohe_df, f)
-            print("exception")
+            iterationCounter += 1
+        #except FileExistsError:
+            # If the file already exists, increment the counter and try again
+        #    iterationCounter += 1
+        #    pickle.dump(ohe_df, f)
+        #    print("exception")
         encoded_vals = []
 
 

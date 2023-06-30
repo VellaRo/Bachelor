@@ -100,107 +100,102 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
 
         collate_batch, size_vocab = _build_collate_fn(vocab, label_pipeline)
         #MEEE
-        import utilsNLP
-        import random
-        X_train= []
-        TRAIN =[]
-        for label,text,  in train_iter:
+        #import utilsNLP
+        #import random
+        #X_train= []
+        #TRAIN =[]
+        #for label,text,  in train_iter:
+        #    #label, text = example[0], example[1]
+        #    X_train.extend(text)
+        #    TRAIN.append((label,text))
+        #X_test = []
+        #TEST=[]
+        #for label,text, in test_iter:
             #label, text = example[0], example[1]
-            X_train.extend(text)
-            TRAIN.append((label,text))
-        X_test = []
-        TEST=[]
-        for label,text, in test_iter:
-            #label, text = example[0], example[1]
-            X_test.extend(text)
-            TEST.append((label,text))
+        #    X_test.extend(text)
+        #    TEST.append((label,text))
 
 
-        random_indices_test =  random.sample(range(len(X_test)), len(X_test))
+        #random_indices_test =  random.sample(range(len(X_test)), len(X_test))
         #print(random_indices_test)
-        random_indices_train =  random.sample(range(len(X_train)), len(X_train))
-        sampler_test = utilsNLP.OrderedListSampler(random_indices_test)
-        sampler_train = utilsNLP.OrderedListSampler(random_indices_train)
+        #random_indices_train =  random.sample(range(len(X_train)), len(X_train))
+        #sampler_test = utilsNLP.OrderedListSampler(random_indices_test)
+        #sampler_train = utilsNLP.OrderedListSampler(random_indices_train)
 
         #END MEEE 
 
-        train_loader = DataLoader(train_iter, batch_size=batch_sizes[0], 
-                                   collate_fn=collate_batch,
-                                 generator=gen_train, shuffle=True)
-        test_loader = DataLoader(test_iter, batch_size=batch_sizes[-1],  collate_fn=collate_batch,
-                                shuffle=True, generator=gen_test) 
+        #train_loader = DataLoader(train_iter, batch_size=batch_sizes[0], 
+        #                           collate_fn=collate_batch,
+        #                         generator=gen_train, shuffle=True)
+        #test_loader = DataLoader(test_iter, batch_size=batch_sizes[-1], 
+        #                         collate_fn=collate_batch,
+        #                        shuffle=True, generator=gen_test) 
 
+        
         #MEEE
         tokenizer = get_tokenizer('basic_english')
 
-        X_test, Y_test = next(iter(test_loader))  # only use first batch as a test set
-    
+        #X_test, Y_test = next(iter(test_loader))  # only use first batch as a test set
+        #dataTest = tuple(zip(X_test, Y_test))
+        #print(len(dataTest))
+
         processed_text = []
-        for i in X_test:
-            intList = [j.item() for j in i]
-            processed_text.extend(intList)
+        tempTextList = []
+        tempLabelList = []
+        for i, (label, text) in enumerate(test_iter):
+            if i == batch_sizes[-1]:
+                #print(i)
+                #print(text)
+                break
+
+            temp = vocab(tokenizer(text))
+            #print(temp)
+            processed_text.extend(temp)
+            tempTextList.append(text)
+            tempLabelList.append(label)
+        dataTest = tuple(zip(tempLabelList, tempTextList))
+        print(len(dataTest))
+        
+        #for i in X_test:
+        #    intList = [j.item() for j in i]
+        #    processed_text.extend(intList)
 
         vocab_dictionary= set(processed_text)
-        #print("set")
-        #print(vocab_dictionary)
-        #print(len(vocab_dictionary))
 
-        #print("Train")
-        #print(len(train_iter) )
-        newListTrain = []
-        
+        #dataTrain = []
+        newListTrain_X = []
+        newListTrain_y = []
+
         colsion =False
-        for  text_batch, lable_batch in train_loader:
-            #print(text_batch[0])
+        from tqdm import tqdm
+        #for text_batch, label_batch in tqdm(train_loader):
+        for lable, text in train_iter:#zip(text_batch, label_batch):
+            count = 0
+            for word in text:
+                if word not in list(vocab_dictionary):
+                    count += 10
+                    break #2h without
+            if (count / len(text)) <= 0.03: # errorrate
+                #print("jo")
+                newListTrain_X.append(text)
+                newListTrain_y.append(label)
 
-            for text in text_batch:
-                #print(text)
-                
-                #if colsion == True:
-                    #newListTrain.append(text)
-                
-                #if any(word not in vocab_dictionary for word in text):
-                count = 0
-
-                for word in text:
-                    #print(vocab_dictionary)
-                    #print(text)
-                    #print(word.item())
-                    #print(word.item() in vocab_dictionary)
-                    #word.wordss
-
-                    if word not in list(vocab_dictionary):
-
-                    #newListTrain.append(text)
-                        count += 1
-                #else:
-                #    newListTrain.append(text)
-                #    break
-                #print(count / len(text))
-                #if (count / len(text)) != 1.0:
-
-                    #print("----")
-                    #print(len(text))
-                    #print(count)
-                 #   print(count / len(text))
-                 #   print("----")
-                if (count / len(text)) < 0.5: # errorrate
-                    print((count / len(text)))
-                    newListTrain.append(text)
-               # else:
-               #     newListTrain.append(text)
-        
-            #break
-        #newListTrain = []
-
-        #for lable_batch, text_batch in train_loader:
-        # Check if any word in the batch is not in the vocabulary
-        #    if any(word not in vocab_dictionary for word in text for text in text_batch ):
-        #        newListTrain.extend(text_batch)
-        #print(newListTrain.count(0))
-        print("==?????")
-        print(len(newListTrain))
+        dataTrain = tuple(zip(newListTrain_y,newListTrain_X))
+        print(len(dataTrain))
+        #dataTrain = []        
+        #for i in range(len(newListTrain_X)):
+        #    dataTrain.append(tupel(newListTrain_X[i],newListTrain_y[i]))
+        #print(len(newListTrain_y))
                          
+        train_loader = DataLoader(dataTrain, batch_size=batch_sizes[0], 
+                                  collate_fn=collate_batch,
+                                  generator=gen_train, 
+                                  shuffle=True)
+
+        test_loader = DataLoader(dataTest, batch_size=batch_sizes[-1],
+                                 collate_fn=collate_batch,
+                                 shuffle=True, 
+                                 generator=gen_test) 
 
 
         # end meee
@@ -209,6 +204,6 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
         #                           collate_fn=collate_batch, shuffle=True,generator=gen_train)#sampler=sampler_train)#
         #test_loader = DataLoader(test_iter, batch_size=batch_sizes[-1],  collate_fn=collate_batch,
         #                        shuffle=True, generator=gen_test)#sampler=sampler_test)
-
+    print("we dont need to return the vocab")
     return train_loader, test_loader, size_vocab,  2, vocab #,random_indices_train,random_indices_test, # 4
 
