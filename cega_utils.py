@@ -495,7 +495,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
                     set_filtered.append((lower_bound, feature[1:-2], upper_bound))
             rules_list.append(set_filtered)
         #print(len(rules_list))
-        return rules_list, labelList_rules
+        return rules_list, labelList_rules, rulesList
 
     def applyRulesOnData(X,predictions, rules, labelList_rules, featureDict):
         """
@@ -588,7 +588,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
     
 
 
-    rules_list, labelList_rules = extractRules_df(rules_DF)
+    rules_list, labelList_rules, raw_rules= extractRules_df(rules_DF)
 
     predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
     
@@ -596,7 +596,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
     coverageList = globalCoverage(predictionComparisonList)
     #rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
     numberOfGeneratedRules = (len(rules_list))
-    return rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,
+    return rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules, raw_rules
 
     ## Get the current date and time
     #now = datetime.now()

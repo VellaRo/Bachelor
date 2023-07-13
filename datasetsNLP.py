@@ -205,7 +205,11 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
                                  collate_fn=collate_batch,
                                  shuffle=True, 
                                  generator=gen_test) 
-
+    # save
+    with open('./test_loader'+ '_train:' + str(batch_size[0])+ '_test:' + str(batch_size[1]), 'wb') as f:
+        pickle.dump(test_loader, f)
+    with open('./train_loader'+ '_train:' + str(batch_size[0])+ '_test:' + str(batch_size[1]), 'wb') as f:
+        pickle.dump(train_loader, f)
 
         # end meee
                                          #shuffle=True, generator=gen_test)
@@ -213,6 +217,8 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
         #                           collate_fn=collate_batch, shuffle=True,generator=gen_train)#sampler=sampler_train)#
         #test_loader = DataLoader(test_iter, batch_size=batch_sizes[-1],  collate_fn=collate_batch,
         #                        shuffle=True, generator=gen_test)#sampler=sampler_test)
+
+    
     print("we dont need to return the vocab")
     return train_loader, test_loader, size_vocab,  2, vocab #,random_indices_train,random_indices_test, # 4
 
