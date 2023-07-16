@@ -181,7 +181,8 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         if len(intervals_dict) == 0:
             compute_intervals(intervals_dict, data_df, 1) #5 
     else:
-        pass
+        if len(intervals_dict) == 0:
+            compute_intervals(intervals_dict, data_df, 5) #5 
 
     p = Pool(num_cores)
 
@@ -203,7 +204,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         os.makedirs(output_directory)
 
     if datasetType == "numerical":
-        print(data_df)
+        #print(data_df)
         for feature in data_df.columns.to_list(): # for NLP this must be the whole vocab 
             if feature in intervals_dict:
                 intervals = intervals_dict[feature]
@@ -216,7 +217,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
 
             else:
                 itemset.add(feature)
-        print(itemset)
+        #print(itemset)
 
 
     else: 
@@ -264,7 +265,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
             
             feature_vals = [instance_features[name] for name in featureNames] #put here grads#   feature values ?? 
             print(feature_vals)
-            print.essa
+            #print.essa
             zipped = zip(exp, feature_vals,
                          featureNames, [shap_threshold]*len(featureNames))
 
@@ -284,11 +285,11 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         output_filename = f'{output_directory}{output_base_filename}_{iterationCounter}.pkl'
         #try:
         print(i)
-        if i ==0 or i ==50 or i ==149 or i ==199:
-            with open(output_filename, 'wb') as f:
-                ohe_df = CEGA(gradsPerIteration)#,trainedModelPrediction_TestPerIteration)
-                pickle.dump(ohe_df, f)
-                iterationCounter += 1
+        #if i ==0 or i ==50 or i ==149 or i ==199:
+        with open(output_filename, 'wb') as f:
+            ohe_df = CEGA(gradsPerIteration)#,trainedModelPrediction_TestPerIteration)
+            pickle.dump(ohe_df, f)
+        iterationCounter += 1
 
         #except FileExistsError:
             # If the file already exists, increment the counter and try again
@@ -479,6 +480,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
     
     def extractRules_df(rules_DF):
         #print(rules_DF)
+        print(rules_DF)
         rulesList =rules_DF["itemset"].to_list()
         rulesList = [set(frozenset) for frozenset in rulesList]
         print("ruleesss RAAAWWWWWW")

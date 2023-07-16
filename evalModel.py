@@ -35,6 +35,7 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
     if NLP== True:
         dataPath= dirPath+ "NLP_Results/Trainingresults/"    
     else:
+        print("jo")
         dataPath= dirPath+ "Results/Trainingresults/"
     #np.savez(dirPath + 'data.npz', exec(f'{name}acc = "{acc}"')) #exec :  executes the string that it gets 
     np.savez(dataPath + 'data.npz', y_test = yList[0]) 
