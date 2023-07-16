@@ -113,8 +113,8 @@ if __name__ == '__main__':
     #SETUP
 
     size_train_batch = 64
-    size_test_batch = 200
-    n_batches = 100
+    size_test_batch = 30
+    n_batches = 2
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -124,8 +124,8 @@ if __name__ == '__main__':
     X_test, Y_test = next(iter(test_set))  # only use first batch as a test set
     
 
-    Y_test_distr = torch.bincount(Y_test, minlength=n_classes)/size_test_batch
-    print(f"class distribution in test set: {Y_test_distr}")  # this should roughly be uniformly distributed
+    #Y_test_distr = torch.bincount(Y_test, minlength=n_classes)/size_test_batch
+    #print(f"class distribution in test set: {Y_test_distr}")  # this should roughly be uniformly distributed
 
     #model = BiLSTMClassif(n_classes=n_classes, embed_dim=embedding_dim, vocab_size=size_vocab, hid_size=64)
     model = SentenceCNN(n_classes=n_classes, embed_dim=embedding_dim, vocab_size=size_vocab) # learns faster then LSTM
@@ -250,11 +250,12 @@ if __name__ == '__main__':
     diceSimilarity_overIterations = []
     overlapSimilarity_overIterations = []
     raw_rules_overIterations = []
+    numberOfGeneratedRulesRAW_overIterations =[]
     tempRules_list = None
     
     from tqdm import tqdm
     for i in tqdm(range(len(os.listdir("./OHEresults/")))):
-
+        print(i)
         ohe_df = cega_utils.loadOHE_Rules(i)
 
         all_rules, pos_rules , neg_rules =  cega_utils.runApriori(ohe_df,len(X_test), pos_label ,neg_label)
@@ -294,6 +295,7 @@ if __name__ == '__main__':
         ruleSupportList_overIterations.append(ruleSupportList)
         numberOfGeneratedRules_overIterations.append(numberOfGeneratedRules)
         raw_rules_overIterations.append(raw_rules)
+        numberOfGeneratedRulesRAW_overIterations.append(len(raw_rules))
 
         if tempRules_list is not None:
             print("not Jaccard")
@@ -323,6 +325,7 @@ if __name__ == '__main__':
     utils.appendToNPZ(pathToNPZ, "overlapSimilarity_overIterations", overlapSimilarity_overIterations)
     utils.appendToNPZ(pathToNPZ, "diceSimilarity_overIterations", diceSimilarity_overIterations)
     utils.appendToNPZ(pathToNPZ, "raw_rules_overIterations", raw_rules_overIterations)
+    utils.appendToNPZ(pathToNPZ, "numberOfGeneratedRulesRAW_overIterations", numberOfGeneratedRulesRAW_overIterations)
 
 
 
@@ -418,7 +421,7 @@ if __name__ == '__main__':
     axs7.plot(data["cosineSimilarity_overIterations"])
     axs7.set_title("cosineSimilarity_overIterations")
     axs7.set_xlabel("iteration")
-    axs7.set_ylabel("numGeneratedRules")
+    axs7.set_ylabel("similarity")
 
     fig7.savefig(str(pathToRulesResults) + "cosineSimilarity_overIterations")    
     pickle.dump(fig7, open(pathToRulesResults + "cosineSimilarity_overIterations", 'wb'))
@@ -427,7 +430,7 @@ if __name__ == '__main__':
     axs8.plot(data["diceSimilarity_overIterations"])
     axs8.set_title("diceSimilarity_overIterations")
     axs8.set_xlabel("iteration")
-    axs8.set_ylabel("numGeneratedRules")
+    axs8.set_ylabel("similarity")
 
     fig8.savefig(str(pathToRulesResults) + "diceSimilarity_overIterations")    
     pickle.dump(fig8, open(pathToRulesResults + "diceSimilarity_overIterations", 'wb'))
@@ -437,12 +440,21 @@ if __name__ == '__main__':
     axs9.plot(data["overlapSimilarity_overIterations"])
     axs9.set_title("overlapSimilarity_overIterations")
     axs9.set_xlabel("iteration")
-    axs9.set_ylabel("numGeneratedRules")
+    axs9.set_ylabel("similarity")
 
     fig9.savefig(str(pathToRulesResults) + "overlapSimilarity_overIterations")    
     pickle.dump(fig9, open(pathToRulesResults + "overlapSimilarity_overIterations", 'wb'))
 
+    fig10, axs10 = plt.subplots(nrows=1, ncols=1)
+    axs10.plot(data["numberOfGeneratedRulesRAW_overIterations"])
+    axs10.set_title("numberOfGeneratedRulesRAW_overIterations")
+    axs10.set_xlabel("iteration")
+    axs10.set_ylabel("numberOfGeneratedRulesRAW_overIterations")
 
+    fig10.savefig(str(pathToRulesResults) + "numberOfGeneratedRulesRAW_overIterations")    
+    pickle.dump(fig10, open(pathToRulesResults + "numberOfGeneratedRulesRAW_overIterations", 'wb'))
+    
+    print(data["numberOfGeneratedRulesRAW_overIterations"])
     _t_end = time()
     print(f"Training finished in {int(_t_end - _t_start)} s")
 

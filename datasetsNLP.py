@@ -5,7 +5,9 @@ from torchtext.data.utils import get_tokenizer
 from torchtext.data.functional import to_map_style_dataset
 from torchtext.vocab import build_vocab_from_iterator
 #from torchtext.datasets import AG_NEWS
+from torchdata.datapipes.iter import IterableWrapper
 from myAG_NEWS import AG_NEWS
+import pickle
 # ----------------------------------------------------------------------------------------------------------------------
 
 DATA_ROOT = './datasets'
@@ -95,7 +97,7 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
 
         test_iter = AG_NEWS(root, split='test')
         test_iter = to_map_style_dataset(test_iter)
-
+        #print(type.looool)
         vocab = _get_vocab('AG_NEWS', train_iter)
 
         collate_batch, size_vocab = _build_collate_fn(vocab, label_pipeline)
@@ -149,12 +151,14 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
                 #print(text)
                 break
 
-            temp = vocab(tokenizer(text))
+            temp = tokenizer(text)
+            #print(temp)#
             #print(temp)
             processed_text.extend(temp)
             tempTextList.append(text)
             tempLabelList.append(label)
-        dataTest = tuple(zip(tempLabelList, tempTextList))
+        dataTest = IterableWrapper(list(zip(tempLabelList, tempTextList)))
+        #dataTest = to_map_style_dataset(dataTest)
         print(len(dataTest))
         
         #for i in X_test:
@@ -169,33 +173,58 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
 
         colsion =False
         from tqdm import tqdm
-        print(type(train_iter))
+        #print(type(train_iter))
         #for text_batch, label_batch in tqdm(train_loader):
         
         #true1 = False
         #true2 = False
 
+        #print(vocab_dictionary)
         for label, text in train_iter:#zip(text_batch, label_batch):
-
+            processed_text = tokenizer(text)
             count = 0
-            for word in text:
+            for word in processed_text:
+                if word in list(vocab_dictionary):
+                    #print(word)
+                    pass
                 if word not in list(vocab_dictionary):
-                    count += 10
-                    break #2h without
+                    count += 1 # muss 1 sein??? 
+                    if count == 10:
+                        #print("over 10")
+                        break #2h without
             #print(count / len(text))
             #print(count / len(text) <= 0.5)
-            if (count / len(text)) <= 0.03: # errorrate
-                
+            if (count / len(processed_text)) <= 0.1: # errorrate
+                #print(count / len(processed_text))
+
+            #if count <=49:   
                 newListTrain_X.append(text)
                 newListTrain_y.append(label)
+        print(len(newListTrain_X))
+        #dataTrain = []
+        #for X,y in zip(newListTrain_X,newListTrain_y):
+        #    print(X)
+        #    print(y)#
 
-        dataTrain = tuple(zip(newListTrain_y,newListTrain_X))
-        print(len(dataTrain))
+        #    ten =  torch.tensor([[X],[y]])
+        #    dataTrain.append(ten)
+        #print(dataTrain[0])    
+        dataTrain = IterableWrapper(list(zip(newListTrain_y,newListTrain_X))) #iter(list(zip(newListTrain_y,newListTrain_X)))
+        #dataTrain = to_map_style_dataset(dataTrain)
+       # print(len(dataTrain))
+        #print(dataTrain[0:2])
         #dataTrain = []        
         #for i in range(len(newListTrain_X)):
         #    dataTrain.append(tupel(newListTrain_X[i],newListTrain_y[i]))
         #print(len(newListTrain_y))
-                         
+        
+        with open('./dataTrain'+ '_train:' + str(batch_sizes[0])+ '_test:' + str(batch_sizes[1]), 'wb') as f:
+            pickle.dump(dataTrain, f)
+        with open('./dataTest'+ '_train:' + str(batch_sizes[0])+ '_test:' + str(batch_sizes[1]), 'wb') as f:
+            pickle.dump(dataTest, f)
+
+        #def tuple_of_tensors_to_tensor(tuple_of_tensors):
+        #    return  torch.stack(list(tuple_of_tensors), dim=0)
         train_loader = DataLoader(dataTrain, batch_size=batch_sizes[0], 
                                   collate_fn=collate_batch,
                                   generator=gen_train, 
@@ -206,10 +235,7 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
                                  shuffle=True, 
                                  generator=gen_test) 
     # save
-    with open('./test_loader'+ '_train:' + str(batch_size[0])+ '_test:' + str(batch_size[1]), 'wb') as f:
-        pickle.dump(test_loader, f)
-    with open('./train_loader'+ '_train:' + str(batch_size[0])+ '_test:' + str(batch_size[1]), 'wb') as f:
-        pickle.dump(train_loader, f)
+
 
         # end meee
                                          #shuffle=True, generator=gen_test)

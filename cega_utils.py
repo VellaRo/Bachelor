@@ -223,6 +223,8 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         #data_df, featureNames = categoricalToOHE(data_df)
         #print("NLP")
         data_df, featureNames = vocabToOHE(data_df, vocab)
+        print(data_df)
+        print(featureNames)
         #print(data_df)
         #for feature in data_df.columns.to_list(): # for NLP this must be the whole vocab 
         #    if feature in intervals_dict:
@@ -249,7 +251,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
     def CEGA(gradsPerIteration): 
         ### for every model iteration the gradients of whole test_dataset is calculated
         for indx in range(len(gradsPerIteration)):#(len(trainedModelPrediction_Test)): #  len test dataset
-            print(indx)
+            #print(indx)
             pos_queue.put(pos_label)
             neg_queue.put(neg_label)
             exp = gradsPerIteration[indx]#[item[indx] for item in sample] #normalize featureListALL ?
@@ -257,8 +259,12 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
             #print(exp)
 
             instance_features = data_df.iloc[[indx]].to_dict(orient='records')[0] 
-            feature_vals = [instance_features[name] for name in featureNames] #put here grads# feature values ?? 
-       
+            print("print(instance_features)")
+            print(instance_features)
+            
+            feature_vals = [instance_features[name] for name in featureNames] #put here grads#   feature values ?? 
+            print(feature_vals)
+            print.essa
             zipped = zip(exp, feature_vals,
                          featureNames, [shap_threshold]*len(featureNames))
 
@@ -277,10 +283,13 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         #trainedModelPrediction_TestPerIteration = trainedModelPrediction_Test[i]
         output_filename = f'{output_directory}{output_base_filename}_{iterationCounter}.pkl'
         #try:
-        with open(output_filename, 'wb') as f:
-            ohe_df = CEGA(gradsPerIteration)#,trainedModelPrediction_TestPerIteration)
-            pickle.dump(ohe_df, f)
-            iterationCounter += 1
+        print(i)
+        if i ==0 or i ==50 or i ==149 or i ==199:
+            with open(output_filename, 'wb') as f:
+                ohe_df = CEGA(gradsPerIteration)#,trainedModelPrediction_TestPerIteration)
+                pickle.dump(ohe_df, f)
+                iterationCounter += 1
+
         #except FileExistsError:
             # If the file already exists, increment the counter and try again
         #    iterationCounter += 1
@@ -296,15 +305,15 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
     # TAKES ~30 sec for 154 samples  
 
 def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add  to def input ?
-                                            # 10/ len(pred)
-    freq_items = apriori(ohe_df, min_support=(10/testDataLength*5), use_colnames=True, max_len=3, low_memory=True)
+                                            # 10/ len(pred)10/testDataLength*5
+    freq_items = apriori(ohe_df, min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True)
 
     all_rules = association_rules(freq_items, metric="confidence", min_threshold=0.0 ,support_only=False) # 0.7 support_only=False
-                                        # 10/ len(pred)
-    freq_items = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(10/testDataLength*5), use_colnames=True, max_len=3 , low_memory=True) # max len 3
+                                        # 10/ len(pred)10/testDataLength*5
+    freq_items = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(0.00000000000000001), use_colnames=True, max_len=3 , low_memory=True) # max len 3
     pos_rules = association_rules(freq_items, metric="confidence", min_threshold=0.0, support_only=False) # 0.6 support_only=False
-                                                                        # 10/ len(pred)
-    freq_items = apriori(ohe_df.loc[ohe_df[neg_label] == 1], min_support=(10/testDataLength*5), use_colnames=True, max_len=3, low_memory=True) # max len 3 
+                                                                        # 10/ len(pred)10/testDataLength*5
+    freq_items = apriori(ohe_df.loc[ohe_df[neg_label] == 1], min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True) # max len 3 
     neg_rules = association_rules(freq_items, metric="confidence", min_threshold=0.0 , support_only=False) # 0.6 support_only=False
 
     #np.savez("./test.npz",all_rules , )
@@ -472,6 +481,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         #print(rules_DF)
         rulesList =rules_DF["itemset"].to_list()
         rulesList = [set(frozenset) for frozenset in rulesList]
+        print("ruleesss RAAAWWWWWW")
         print(rulesList)
         labelList_rules = rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
         labelList_rules = [set(frozenset).pop() for frozenset in labelList_rules]
@@ -494,6 +504,8 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
                     lower_bound, feature,_, upper_bound, = matches[0]
                     set_filtered.append((lower_bound, feature[1:-2], upper_bound))
             rules_list.append(set_filtered)
+        print("ruleesss_LIST")
+        print(rules_list)
         #print(len(rules_list))
         return rules_list, labelList_rules, rulesList
 
