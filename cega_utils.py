@@ -138,7 +138,7 @@ def vocabToOHE(data ,vocab):
 
 # Iterate over featureNames and check if each one is in the corresponding row of 'data'
     for j, feature in enumerate(featureNames):
-        OHE_DF[feature] = np.where(data.apply(lambda row: feature in row.values, axis=1), 1, 0)
+        OHE_DF[feature] = np.where(data.apply(lambda row: feature in row.values, axis=1),1, 0)# str(feature)+ " : 1", str(feature)+ " : 0") #
 
 
 
@@ -179,7 +179,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
 
     if datasetType == "NLP": #"numerical":
         if len(intervals_dict) == 0:
-            compute_intervals(intervals_dict, data_df, 1) #5 
+            compute_intervals(intervals_dict, data_df, 1) #1
     else:
         if len(intervals_dict) == 0:
             compute_intervals(intervals_dict, data_df, 5) #5 
@@ -205,6 +205,8 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
 
     if datasetType == "numerical":
         #print(data_df)
+        #print("DATA")
+        #print(data_df)
         for feature in data_df.columns.to_list(): # for NLP this must be the whole vocab 
             if feature in intervals_dict:
                 intervals = intervals_dict[feature]
@@ -224,8 +226,10 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         #data_df, featureNames = categoricalToOHE(data_df)
         #print("NLP")
         data_df, featureNames = vocabToOHE(data_df, vocab)
-        print(data_df)
-        print(featureNames)
+        #print("DATA")
+        #print(data_df)
+        #print(data_df.öoll)
+        #print(featureNames)
         #print(data_df)
         #for feature in data_df.columns.to_list(): # for NLP this must be the whole vocab 
         #    if feature in intervals_dict:
@@ -242,11 +246,13 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         #print(itemset)
 
         for feature in data_df.columns.to_list():
-            itemset.add(feature)
+            #print(feature)
+            itemset.add(str(feature))
+            #print(itemset)
         #print(itemset)
     itemset.add(pos_label)
     itemset.add(neg_label)
-    print(len(itemset))
+    #print(len(itemset))
 
 
     def CEGA(gradsPerIteration): 
@@ -260,11 +266,11 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
             #print(exp)
 
             instance_features = data_df.iloc[[indx]].to_dict(orient='records')[0] 
-            print("print(instance_features)")
-            print(instance_features)
+            #print("print(instance_features)")
+            #print(instance_features)
             
             feature_vals = [instance_features[name] for name in featureNames] #put here grads#   feature values ?? 
-            print(feature_vals)
+            #print(feature_vals)
             #print.essa
             zipped = zip(exp, feature_vals,
                          featureNames, [shap_threshold]*len(featureNames))
@@ -276,7 +282,8 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
             append_to_encoded_vals(neg_queue, itemset, encoded_vals)
 
             ohe_df = pd.DataFrame(encoded_vals)
-
+            #print(ohe_df)
+            #print.pes   
         return ohe_df #ohe_dfList.append(ohe_df)
     
     for i in tqdm (range(len(grads))):
@@ -304,11 +311,11 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
 
 
     # TAKES ~30 sec for 154 samples  
+    return featureNames
 
 def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add  to def input ?
                                             # 10/ len(pred)10/testDataLength*5
     freq_items = apriori(ohe_df, min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True)
-
     all_rules = association_rules(freq_items, metric="confidence", min_threshold=0.0 ,support_only=False) # 0.7 support_only=False
                                         # 10/ len(pred)10/testDataLength*5
     freq_items = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(0.00000000000000001), use_colnames=True, max_len=3 , low_memory=True) # max len 3

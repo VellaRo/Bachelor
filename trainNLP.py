@@ -212,7 +212,7 @@ if __name__ == '__main__':
 
         featureNames.append(str(i))
 
-    cega_utils.calculateAndSaveOHE_Rules(X_test, featureNames,trainedModelPrediction_Test_overIterations[-1], data["testGradientsPerSamplePerFeature_iteration"], datasetType,debug= False, vocab=vocab) #OHEresults
+    featureNames = cega_utils.calculateAndSaveOHE_Rules(X_test, featureNames,trainedModelPrediction_Test_overIterations[-1], data["testGradientsPerSamplePerFeature_iteration"], datasetType,debug= False, vocab=vocab) #OHEresults
 
 
     import warnings
@@ -230,6 +230,7 @@ if __name__ == '__main__':
     rulesResultDataPath = dirPath + "rulesResultData/" 
     featureDict = {feature: index  for index, feature in enumerate(featureNames)}
     print(featureDict)
+    #print.sasa
     now = datetime.now()
     date_time_string = now.strftime("%Y-%m-%d %H:%M:%S")
     # Replace space with underscore
@@ -259,7 +260,6 @@ if __name__ == '__main__':
         ohe_df = cega_utils.loadOHE_Rules(i)
 
         all_rules, pos_rules , neg_rules =  cega_utils.runApriori(ohe_df,len(X_test), pos_label ,neg_label)
-
         discriminative_rules = cega_utils.getDiscriminativeRules(all_rules, pos_label, neg_label )
         charachteristic_rules = cega_utils.getCharasteristicRules(pos_rules, pos_label, neg_rules,neg_label )
 
