@@ -291,7 +291,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         #trainedModelPrediction_TestPerIteration = trainedModelPrediction_Test[i]
         output_filename = f'{output_directory}{output_base_filename}_{iterationCounter}.pkl'
         #try:
-        print(i)
+        #print(i)
         #if i ==0 or i ==50 or i ==149 or i ==199:
         with open(output_filename, 'wb') as f:
             ohe_df = CEGA(gradsPerIteration)#,trainedModelPrediction_TestPerIteration)
@@ -485,13 +485,25 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         X_List.extend(inputs.detach())
         y_List.extend(lables.detach())
     
-    def extractRules_df(rules_DF):
+    def extractNlpRules_df(rules_DF):
         #print(rules_DF)
-        print(rules_DF)
+        #print(rules_DF)
         rulesList =rules_DF["itemset"].to_list()
         rulesList = [set(frozenset) for frozenset in rulesList]
-        print("ruleesss RAAAWWWWWW")
-        print(rulesList)
+        #print("ruleesss RAAAWWWWWW")
+        #print(rulesList)
+        labelList_rules = rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
+        labelList_rules = [set(frozenset).pop() for frozenset in labelList_rules]
+        
+        return rulesList, labelList_rules, rulesList # dont filter so RAW and "filtered" are same
+     
+    def extractRules_df(rules_DF):
+        #print(rules_DF)
+        #print(rules_DF)
+        rulesList =rules_DF["itemset"].to_list()
+        rulesList = [set(frozenset) for frozenset in rulesList]
+        #print("ruleesss RAAAWWWWWW")
+        #print(rulesList)
         labelList_rules = rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
         labelList_rules = [set(frozenset).pop() for frozenset in labelList_rules]
 
@@ -513,11 +525,47 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
                     lower_bound, feature,_, upper_bound, = matches[0]
                     set_filtered.append((lower_bound, feature[1:-2], upper_bound))
             rules_list.append(set_filtered)
-        print("ruleesss_LIST")
-        print(rules_list)
+
         #print(len(rules_list))
         return rules_list, labelList_rules, rulesList
 
+    def applyNlpRulesOnData(X,predictions, rules, labelList_rules, featureDict):
+
+        predictionComparisonList = []  
+
+        for j in range(len(X)):
+            tempPredictionList = []  
+            rulesComplexityList = []
+            for i in range(len(rules)): 
+                # for all rules per sample # num samples * num rules
+                                                # only works for one 
+
+                conditionsAreMet = False
+                rulesComplexityList.append(len(rules[i]))
+                for k in range(len(rules[i])): # if rule consists of more than one tupel (3< insulin <=5 , 2< glucose <=7)
+                    featureZ = list(rules[i])[k]
+
+                    if featureZ ==1:
+                        conditionsAreMet = True
+                        # Rule is apicable
+                    else:
+                        # rules is not aplicable      
+                        tempPredictionList.append(-1)
+                        conditionsAreMet = False
+                        break # if one condition of the rule is not aplicable break
+
+                if conditionsAreMet == True:
+                    if predictions[j] ==  int(labelList_rules[i]):
+                        # explaination model prediction is the same as trained Model prediction
+                        tempPredictionList.append(1)
+                    elif predictions[j] != int(labelList_rules[i]):
+                        # explaination model prediction not the same as trained Model prediction
+                        tempPredictionList.append(0)
+
+            predictionComparisonList.append(tempPredictionList)
+            return predictionComparisonList, rulesComplexityList
+        
+        
     def applyRulesOnData(X,predictions, rules, labelList_rules, featureDict):
         """
         X: List
@@ -607,11 +655,11 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         return rulePrecisionList, ruleSupportList
     
     
-
-
-    rules_list, labelList_rules, raw_rules= extractRules_df(rules_DF)
-
-    predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
+    rules_list, labelList_rules, raw_rules = extractNlpRules_df(rules_DF)
+    
+    #rules_list, labelList_rules, raw_rules= extractRules_df(rules_DF)
+    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
+    #predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
     
     rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
     coverageList = globalCoverage(predictionComparisonList)

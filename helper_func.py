@@ -56,17 +56,11 @@ def append_to_encoded_vals(class_queue, itemset, encoded_vals):
 
     while class_queue.qsize() > 0:
         rowset.add(class_queue.get())
-            
-    print("itemset")
-    print(itemset)
-    print("rowset")
-    print(rowset)
+
     uncommons = list(itemset - rowset)
-    print("uncommons")
-    print(uncommons)
+
     commons = list(itemset.intersection(rowset))
-    print("commons")
-    print(commons)
+
 
     for uc in uncommons:
         labels[uc] = 0

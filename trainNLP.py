@@ -113,8 +113,8 @@ if __name__ == '__main__':
     #SETUP
 
     size_train_batch = 64
-    size_test_batch = 30
-    n_batches = 2
+    size_test_batch = 100
+    n_batches = 200
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -229,7 +229,7 @@ if __name__ == '__main__':
 
     rulesResultDataPath = dirPath + "rulesResultData/" 
     featureDict = {feature: index  for index, feature in enumerate(featureNames)}
-    print(featureDict)
+    #print(featureDict)
     #print.sasa
     now = datetime.now()
     date_time_string = now.strftime("%Y-%m-%d %H:%M:%S")
@@ -256,7 +256,6 @@ if __name__ == '__main__':
     
     from tqdm import tqdm
     for i in tqdm(range(len(os.listdir("./OHEresults/")))):
-        print(i)
         ohe_df = cega_utils.loadOHE_Rules(i)
 
         all_rules, pos_rules , neg_rules =  cega_utils.runApriori(ohe_df,len(X_test), pos_label ,neg_label)
