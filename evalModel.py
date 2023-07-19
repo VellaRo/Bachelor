@@ -331,6 +331,7 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
             utils.appendToNPZ(dataPath+ "data.npz", name + "GradientsPerFeature_iteration", unpackedGradiends_iteration)
             utils.appendToNPZ(dataPath+ "data.npz", name + "GradientMagnitudePerFeature_iteration", gradientMagnitudePerFeature_iteration)
             utils.appendToNPZ(dataPath+ "data.npz", name + "AveragedGradientMagnitude_iteration", averagedGradientMagnitude_iteration)
+            #utils.appendToNPZ(dataPath+ "data.npz", name + "total_gradientsList",total_gradientsList)
 
        
     return None # just save to npz

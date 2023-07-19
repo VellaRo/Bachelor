@@ -60,6 +60,7 @@ def train_loop(model, optim, loss_fn, tr_data: DataLoader, te_data: tuple, infer
     n_batches = 0
     _epochs, i_max = 0, 0
     accs = []
+    
     # save model
     import os
     import shutil
@@ -71,6 +72,7 @@ def train_loop(model, optim, loss_fn, tr_data: DataLoader, te_data: tuple, infer
     os.mkdir(modelsdirPath)
     epoch_counter = 0
     iterationCounter = 0
+    total_gradientsList = []
     while n_batches <= n_batches_max:
         for i, (text, labels) in enumerate(tr_data, 0):
 
@@ -85,6 +87,19 @@ def train_loop(model, optim, loss_fn, tr_data: DataLoader, te_data: tuple, infer
             loss = loss_fn(out, labels)
             optim.zero_grad()
             loss.backward()
+            # Sum up the gradients of the weights in the neural network
+            
+            total_gradients = 0.0   
+            for param in model.parameters():                
+                if param.grad is not None:
+                    print(param.grad.numel())
+                    print(param.grad)
+
+                    total_gradients += (torch.abs(param.grad).sum() / param.grad.numel())
+                    print(total_gradients)
+            total_gradientsList.append(total_gradients.cpu())
+
+
             # save model
             torch.save(model.state_dict(), modelsdirPath +"/"+str(iterationCounter))
             iterationCounter += 1
@@ -105,7 +120,7 @@ def train_loop(model, optim, loss_fn, tr_data: DataLoader, te_data: tuple, infer
     acc_val.append(validate(inference_fn, model, *te_data))
     print("accuracies over test set")
     print(acc_val)
-    return model, losses, accs
+    return model, losses, accs , total_gradientsList
 
 
 if __name__ == '__main__':
@@ -134,7 +149,7 @@ if __name__ == '__main__':
 
     _t_start = time()
 
-    model, loss, test_accuracies = \
+    model, loss, test_accuracies , total_gradientsList= \
         train_loop(model, optimizer, loss_fun, train_set, (X_test, Y_test),
                    inference_fn=model.forward_softmax, device=device, n_batches_max=n_batches)
     
@@ -150,7 +165,7 @@ if __name__ == '__main__':
 
     print("eval")
 
-    evalModel.doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_fun, num_epochs, nameList, yList, inputFeatures,NLP=True)
+    evalModel.doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_fun, num_epochs, nameList, yList, inputFeatures, NLP=True)
 
     dataPath= dirPath+ "NLP_Results/Trainingresults/"
     
@@ -172,6 +187,9 @@ if __name__ == '__main__':
     plotResults.plotGradientMagnitude(dataPath, "averageGradientMagnitude3","test", perFeature=False)
     print("GradientMagnitudePerFeature3")
     plotResults.plotGradientMagnitude(dataPath, "GradientMagnitudePerFeature3","test", perFeature=True)
+    
+    print("total_gradientsList")
+    plotResults.plotTotalGradientMagnitude(total_gradientsList,dataPath, "total_gradientsList","test")
 
     figAcc, axsAcc = plt.subplots(nrows=1, ncols=1)
 

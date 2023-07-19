@@ -339,10 +339,10 @@ def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add 
                                             # 10/ len(pred)10/testDataLength*5
     freq_items1 = apriori(ohe_df, min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True)
     freq_items = gely.gely(ohe_df.values, 3) 
-    print(freq_items1)
-    print(freq_items1["antecedent"])
-    print("??")
-    print(freq_items)
+    #print(freq_items1)
+    #print(freq_items1["antecedent"])
+    #print("??")
+    #print(freq_items)
     #print(type(freq_items1["itemsets"][0]))
     freq_items = gelyOutputToDF(freq_items)
 

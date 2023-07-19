@@ -472,6 +472,18 @@ def plotWeightTrace(dirPath, plotName, set):
     return None
 
 #CLEANED # also do with set ...? 
+
+def plotTotalGradientMagnitude(total_gradientsList,dirPath, plotName, set):
+    print("plotting: total gradient magnitude Averaged over number of grads in parameters")
+    figGM, axsGM = plt.subplots(nrows=1, ncols=1)
+    axsGM.plot(total_gradientsList)
+    axsGM.set_xlabel('iteration')
+    axsGM.set_ylabel('totalGradientMagnitude')
+    axsGM.set_title("gradient magnitude Averaged over number of grads")
+    figGM.savefig(str(dirPath) + plotName+ "Averaged")
+    pickle.dump(figGM , open(str(dirPath) + str(plotName)+ "Averaged", 'wb'))
+
+
 def plotGradientMagnitude(dirPath, plotName, set, perFeature):
     """
     plots the cosine_Similarity for trainingSet and testSet 
