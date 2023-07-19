@@ -113,8 +113,8 @@ if __name__ == '__main__':
     #SETUP
 
     size_train_batch = 64
-    size_test_batch = 100
-    n_batches = 200
+    size_test_batch = 20 # 3h apriori
+    n_batches = 3
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -227,7 +227,7 @@ if __name__ == '__main__':
     neg_label = '0'
 
 
-    rulesResultDataPath = dirPath + "rulesResultData/" 
+    #rulesResultDataPath = dirPath + "rulesResultData/" 
     featureDict = {feature: index  for index, feature in enumerate(featureNames)}
     #print(featureDict)
     #print.sasa
@@ -237,7 +237,7 @@ if __name__ == '__main__':
     date_time_string = date_time_string.replace(" ", "_")
 
     discriminative_rules_overIterations = []
-    charachteristic_rules_overIterations = []
+    characteristic_rules_overIterations = []
     rules_list_overIterations   = []
     labelList_rules_overIterations = []
     rulePrecisionList_overIterations =[]
@@ -260,17 +260,17 @@ if __name__ == '__main__':
 
         all_rules, pos_rules , neg_rules =  cega_utils.runApriori(ohe_df,len(X_test), pos_label ,neg_label)
         discriminative_rules = cega_utils.getDiscriminativeRules(all_rules, pos_label, neg_label )
-        charachteristic_rules = cega_utils.getCharasteristicRules(pos_rules, pos_label, neg_rules,neg_label )
+        characteristic_rules = cega_utils.getCharasteristicRules(pos_rules, pos_label, neg_rules,neg_label )
 
         resultName = "discriminative_rules"
-        #resultName = "charachteristic_rules"
+        #resultName = "characteristic_rules"
         #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath)
         #try:    
         rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules, raw_rules  =cega_utils.calculateRulesMetrics(discriminative_rules, featureDict, test_set, trainedModelPrediction_Test_overIterations[i])
-        #resultName = "charachteristic_rules"
-        #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,  = numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(charachteristic_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath, debug=True )
+        #resultName = "characteristic_rules"
+        #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,  = numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(characteristic_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath, debug=True )
         discriminative_rules_overIterations.append(discriminative_rules)
-        charachteristic_rules_overIterations.append(charachteristic_rules) 
+        characteristic_rules_overIterations.append(characteristic_rules) 
         #
         #print(rules_list)
         #except:
@@ -287,7 +287,6 @@ if __name__ == '__main__':
         rules_list_overIterations.append(rules_list)
         labelList_rules_overIterations.append(labelList_rules)
         rulePrecisionList_overIterations.append(rulePrecisionList)
-        #print(rulePrecisionList_overIterations)
         predictionComparisonList_overIterations.append(predictionComparisonList)
         rulesComplexityList_overIterations.append(rulesComplexityList)
         coverageList_overIterations.append(coverageList)
@@ -309,7 +308,7 @@ if __name__ == '__main__':
     if debug:
         pathToNPZ =  dirPath + f"DEBUG.npz"
     else:    
-        pathToNPZ =  dirPath +"Results/rulesResults/" f"{resultName}/_{date_time_string}.npz"
+        pathToNPZ =  dirPath +"NLP_Results/rulesResults/" f"{resultName}/_{date_time_string}.npz"
 
     np.savez(pathToNPZ ,rules_list_overIterations = rules_list_overIterations) 
     utils.appendToNPZ(pathToNPZ, "labelList_rules_overIterations", labelList_rules_overIterations)
@@ -342,10 +341,10 @@ if __name__ == '__main__':
         return means
 
 
-    pathToDiscriminative_rules = "./Results/rulesResults/discriminative_rules/"
-    pathToCharachteristic_rules = "./Results/rulesResults/charachteristic_rules"
+    pathToDiscriminative_rules = "./NLP_Results/rulesResults/discriminative_rules/"
+    pathToCharacteristic_rules = "./NLP_Results/rulesResults/characteristic_rules"
     resultPaths_dicriminative_rules = os.listdir(pathToDiscriminative_rules)
-    resultPaths_charachteristic_rules = os.listdir(pathToCharachteristic_rules)
+    resultPaths_characteristic_rules = os.listdir(pathToCharacteristic_rules)
     resultPaths_dicriminative_rules= np.sort(resultPaths_dicriminative_rules)
 
     #get last generated rule
@@ -353,7 +352,7 @@ if __name__ == '__main__':
 
     data = utils.loadData(mostRecentResultPaths_discriminative)
 
-    pathToRulesResults = "./Results/rulesResults/"
+    pathToRulesResults = "./NLP_Results/rulesResults/"
 
     fig1, axs1 = plt.subplots(nrows=1, ncols=1)
 

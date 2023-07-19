@@ -257,7 +257,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
 
     def CEGA(gradsPerIteration): 
         ### for every model iteration the gradients of whole test_dataset is calculated
-        for indx in range(len(gradsPerIteration)):#(len(trainedModelPrediction_Test)): #  len test dataset
+        for indx in tqdm (range(len(gradsPerIteration))):#(len(trainedModelPrediction_Test)): #  len test dataset
             #print(indx)
             pos_queue.put(pos_label)
             neg_queue.put(neg_label)
@@ -291,8 +291,8 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         #trainedModelPrediction_TestPerIteration = trainedModelPrediction_Test[i]
         output_filename = f'{output_directory}{output_base_filename}_{iterationCounter}.pkl'
         #try:
-        #print(i)
-        #if i ==0 or i ==50 or i ==149 or i ==199:
+        print(i)
+        #if i ==0 or i ==50 or i ==100 or i ==199:
         with open(output_filename, 'wb') as f:
             ohe_df = CEGA(gradsPerIteration)#,trainedModelPrediction_TestPerIteration)
             pickle.dump(ohe_df, f)
@@ -312,17 +312,58 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
 
     # TAKES ~30 sec for 154 samples  
     return featureNames
+import gely
+
+import myAssociationRules
 
 def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add  to def input ?
+    
+    def gelyOutputToDF(gelyOutput):
+        # Create a dictionary to hold the data in the required format
+        data_dict = {"support": [], "itemsets": []}
+
+        # Extract the itemset and support values from the input and populate the dictionary
+        for itemsets, support in gelyOutput:
+            #print(type(itemsets))
+            itemsets = {str(item) for item in itemsets} # convert to string
+
+            data_dict["itemsets"].append(frozenset(itemsets))
+            data_dict["support"].append(support / testDataLength)
+
+        # Create a pandas DataFrame using the dictionary
+        freq_items = pd.DataFrame(data_dict)
+
+        return freq_items
+
+
                                             # 10/ len(pred)10/testDataLength*5
-    freq_items = apriori(ohe_df, min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True)
-    all_rules = association_rules(freq_items, metric="confidence", min_threshold=0.0 ,support_only=False) # 0.7 support_only=False
-                                        # 10/ len(pred)10/testDataLength*5
-    freq_items = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(0.00000000000000001), use_colnames=True, max_len=3 , low_memory=True) # max len 3
-    pos_rules = association_rules(freq_items, metric="confidence", min_threshold=0.0, support_only=False) # 0.6 support_only=False
-                                                                        # 10/ len(pred)10/testDataLength*5
-    freq_items = apriori(ohe_df.loc[ohe_df[neg_label] == 1], min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True) # max len 3 
-    neg_rules = association_rules(freq_items, metric="confidence", min_threshold=0.0 , support_only=False) # 0.6 support_only=False
+    freq_items1 = apriori(ohe_df, min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True)
+    freq_items = gely.gely(ohe_df.values, 3) 
+    print(freq_items1)
+    print(freq_items1["antecedent"])
+    print("??")
+    print(freq_items)
+    #print(type(freq_items1["itemsets"][0]))
+    freq_items = gelyOutputToDF(freq_items)
+
+    #print(freq_items)
+    #print("-------")
+    #print(freq_items1)     
+    all_rules = myAssociationRules.association_rules(freq_items, metric="confidence", min_threshold=0.0 ,support_only=False) # 0.7 support_only=False
+
+    #exit()                                    # 10/ len(pred)10/testDataLength*5
+    #freq_items1 = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(0.00000000000000001), use_colnames=True, max_len=3 , low_memory=True) # max len 3
+    freq_items = gely.gely(ohe_df.loc[ohe_df[pos_label] == 1].values, 3) 
+    freq_items = gelyOutputToDF(freq_items)
+
+    pos_rules = myAssociationRules.association_rules(freq_items, metric="confidence", min_threshold=0.0, support_only=False) # 0.6 support_only=False
+    #print(ohe_df.loc[ohe_df[neg_label] == 1])
+    #print.epss
+    freq_items = gely.gely(ohe_df.loc[ohe_df[neg_label] == 1].values, 3) 
+    freq_items = gelyOutputToDF(freq_items)
+                                                                    # 10/ len(pred)10/testDataLength*5
+    #freq_items1 = apriori(ohe_df.loc[ohe_df[neg_label] == 1], min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True) # max len 3 
+    neg_rules = myAssociationRules.association_rules(freq_items, metric="confidence", min_threshold=0.0 , support_only=False) # 0.6 support_only=False
 
     #np.savez("./test.npz",all_rules , )
     #utils.appendToNPZ("./test.npz")
@@ -543,9 +584,13 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
                 conditionsAreMet = False
                 rulesComplexityList.append(len(rules[i]))
                 for k in range(len(rules[i])): # if rule consists of more than one tupel (3< insulin <=5 , 2< glucose <=7)
-                    featureZ = list(rules[i])[k]
+                    feature = list(rules[i])[k]
+                    #print("feature")
+                    #print(X[j][featureDict[int(feature)]].item)
+                    #print(type(featureZ))
 
-                    if featureZ ==1:
+                    if  X[j][featureDict[int(feature)]] == 1:#
+                        #print("a condition is met")
                         conditionsAreMet = True
                         # Rule is apicable
                     else:
@@ -553,9 +598,14 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
                         tempPredictionList.append(-1)
                         conditionsAreMet = False
                         break # if one condition of the rule is not aplicable break
-
+                #print("lpp")
+                #print(predictions[j])
+                #print("as")
+                #print(int(labelList_rules[i]))
+                #print()
                 if conditionsAreMet == True:
-                    if predictions[j] ==  int(labelList_rules[i]):
+                    #print("ALL condition ARE met")
+                    if predictions[j] ==   int(labelList_rules[i]):
                         # explaination model prediction is the same as trained Model prediction
                         tempPredictionList.append(1)
                     elif predictions[j] != int(labelList_rules[i]):

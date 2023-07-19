@@ -8,6 +8,8 @@ from torchtext.vocab import build_vocab_from_iterator
 from torchdata.datapipes.iter import IterableWrapper
 from myAG_NEWS import AG_NEWS
 import pickle
+import os
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 DATA_ROOT = './datasets'
@@ -178,50 +180,62 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
         
         #true1 = False
         #true2 = False
+        if os.path.isfile('./dataTrain'+ '_train:' + str(batch_sizes[0])+ '_test:' + str(batch_sizes[1])):
+            print("isFILE")
+            with open('./dataTrain'+ '_train:' + str(batch_sizes[0])+ '_test:' + str(batch_sizes[1]), 'rb') as f:
+                dataTrain = pickle.load(f)
+            with open('./dataTest'+ '_train:' + str(batch_sizes[0])+ '_test:' + str(batch_sizes[1]), 'rb') as f:
+                dataTest = pickle.load(f)
+             
+             
+            # = pickle.loads(pathlib.Path('./dataTrain'+ '_train:' + str(batch_sizes[0])+ '_test:' + str(batch_sizes[1])).read_bytes())
+            #dataTest = pickle.loads(pathlib.Path('./dataTest'+ '_train:' + str(batch_sizes[0])+ '_test:' + str(batch_sizes[1])).read_bytes())
 
-        #print(vocab_dictionary)
-        for label, text in train_iter:#zip(text_batch, label_batch):
-            processed_text = tokenizer(text)
-            count = 0
-            for word in processed_text:
-                if word in list(vocab_dictionary):
-                    #print(word)
-                    pass
-                if word not in list(vocab_dictionary):
-                    count += 1 # muss 1 sein??? 
-                    if count == 10:
-                        #print("over 10")
-                        break #2h without
-            #print(count / len(text))
-            #print(count / len(text) <= 0.5)
-            if (count / len(processed_text)) <= 0.1: # errorrate
-                #print(count / len(processed_text))
+        else:
+            print("data does not exist yet need to Filter first")
+            #print(vocab_dictionary)
+            for label, text in train_iter:#zip(text_batch, label_batch):
+                processed_text = tokenizer(text)
+                count = 0
+                for word in processed_text:
+                    if word in list(vocab_dictionary):
+                        #print(word)
+                        pass
+                    if word not in list(vocab_dictionary):
+                        count += 1 # muss 1 sein??? 
+                        if count == 10:
+                            #print("over 10")
+                            break #2h without
+                #print(count / len(text))
+                #print(count / len(text) <= 0.5)
+                if (count / len(processed_text)) <= 0.1: # errorrate
+                    #print(count / len(processed_text))
 
-            #if count <=49:   
-                newListTrain_X.append(text)
-                newListTrain_y.append(label)
-        print(len(newListTrain_X))
-        #dataTrain = []
-        #for X,y in zip(newListTrain_X,newListTrain_y):
-        #    print(X)
-        #    print(y)#
+                #if count <=49:   
+                    newListTrain_X.append(text)
+                    newListTrain_y.append(label)
+            print(len(newListTrain_X))
+            #dataTrain = []
+            #for X,y in zip(newListTrain_X,newListTrain_y):
+            #    print(X)
+            #    print(y)#
 
-        #    ten =  torch.tensor([[X],[y]])
-        #    dataTrain.append(ten)
-        #print(dataTrain[0])    
-        dataTrain = IterableWrapper(list(zip(newListTrain_y,newListTrain_X))) #iter(list(zip(newListTrain_y,newListTrain_X)))
-        #dataTrain = to_map_style_dataset(dataTrain)
-       # print(len(dataTrain))
-        #print(dataTrain[0:2])
-        #dataTrain = []        
-        #for i in range(len(newListTrain_X)):
-        #    dataTrain.append(tupel(newListTrain_X[i],newListTrain_y[i]))
-        #print(len(newListTrain_y))
-        
-        with open('./dataTrain'+ '_train:' + str(batch_sizes[0])+ '_test:' + str(batch_sizes[1]), 'wb') as f:
-            pickle.dump(dataTrain, f)
-        with open('./dataTest'+ '_train:' + str(batch_sizes[0])+ '_test:' + str(batch_sizes[1]), 'wb') as f:
-            pickle.dump(dataTest, f)
+            #    ten =  torch.tensor([[X],[y]])
+            #    dataTrain.append(ten)
+            #print(dataTrain[0])    
+            dataTrain = IterableWrapper(list(zip(newListTrain_y,newListTrain_X))) #iter(list(zip(newListTrain_y,newListTrain_X)))
+            #dataTrain = to_map_style_dataset(dataTrain)
+       #     print(len(dataTrain))
+            #print(dataTrain[0:2])
+            #dataTrain = []        
+            #for i in range(len(newListTrain_X)):
+            #    dataTrain.append(tupel(newListTrain_X[i],newListTrain_y[i]))
+            #print(len(newListTrain_y))
+
+            with open('./dataTrain'+ '_train:' + str(batch_sizes[0])+ '_test:' + str(batch_sizes[1]), 'wb') as f:
+                pickle.dump(dataTrain, f)
+            with open('./dataTest'+ '_train:' + str(batch_sizes[0])+ '_test:' + str(batch_sizes[1]), 'wb') as f:
+                pickle.dump(dataTest, f)
 
         #def tuple_of_tensors_to_tensor(tuple_of_tensors):
         #    return  torch.stack(list(tuple_of_tensors), dim=0)
