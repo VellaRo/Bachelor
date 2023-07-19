@@ -349,6 +349,7 @@ def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add 
     #print(freq_items)
     #print("-------")
     #print(freq_items1)     
+    association_rules
     all_rules = myAssociationRules.association_rules(freq_items, metric="confidence", min_threshold=0.0 ,support_only=False) # 0.7 support_only=False
 
     #exit()                                    # 10/ len(pred)10/testDataLength*5
