@@ -326,18 +326,37 @@ def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add 
         for itemsets, support in gelyOutput:
             #print(type(itemsets))
             itemsets = {str(item) for item in itemsets} # convert to string
-
+            #print(itemsets)
             data_dict["itemsets"].append(frozenset(itemsets))
-            data_dict["support"].append(support / testDataLength)
+            #mapping = {idx: item for idx, item in enumerate(["support", "itemsets"])}
+
+           # data_dict['itemsets'] = data_dict["itemsets"].apply(lambda x: frozenset([mapping[i] for i in x]))
+            data_dict["support"].append(0.5)#support / testDataLength)
+
 
         # Create a pandas DataFrame using the dictionary
         freq_items = pd.DataFrame(data_dict)
+        # Create a new column to store the length of each frozenset
+        freq_items['itemset_length'] = freq_items['itemsets'].apply(lambda x: len(x))
 
+        # Sort the DataFrame based on the "itemset_length" column
+        freq_items = freq_items.sort_values(by='itemset_length')
+
+        # Drop the temporary "itemset_length" column if you don't need it in the final DataFrame
+        freq_items = freq_items.drop(columns='itemset_length')
+        
         return freq_items
 
 
                                             # 10/ len(pred)10/testDataLength*5
-    freq_items1 = apriori(ohe_df, min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True)
+    freq_items1 = apriori(ohe_df, min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True) #[array[0.5, frozenset]]
+    print(freq_items1["itemsets"])
+    print(freq_items1["itemsets"][0])
+    print(type(freq_items1["itemsets"][0]))
+    #print((freq_items1["itemsets"][0]).dtype)
+
+    all_rules = myAssociationRules.association_rules(freq_items1, metric="confidence", min_threshold=0.0 ,support_only=False) # 0.7 support_only=False
+
     freq_items = gely.gely(ohe_df.values, 3) 
     #print(freq_items1)
     #print(freq_items1["antecedent"])
@@ -345,11 +364,15 @@ def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add 
     #print(freq_items)
     #print(type(freq_items1["itemsets"][0]))
     freq_items = gelyOutputToDF(freq_items)
-
+    print("---")
+    print(freq_items["itemsets"])
+    print(freq_items["itemsets"][0])
+    print(type(freq_items["itemsets"][0]))
+    #print((freq_items["itemsets"][0]).dtype)
     #print(freq_items)
     #print("-------")
     #print(freq_items1)     
-    association_rules
+    #association_rules
     all_rules = myAssociationRules.association_rules(freq_items, metric="confidence", min_threshold=0.0 ,support_only=False) # 0.7 support_only=False
 
     #exit()                                    # 10/ len(pred)10/testDataLength*5

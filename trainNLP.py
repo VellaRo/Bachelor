@@ -129,7 +129,7 @@ if __name__ == '__main__':
 
     size_train_batch = 64
     size_test_batch = 20 # 3h apriori
-    n_batches = 3
+    n_batches = 2
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
