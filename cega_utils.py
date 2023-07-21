@@ -166,8 +166,11 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
     """
     data_df = pd.DataFrame(data, columns=featureNames)
 
-    pos_label = '1'
-    neg_label = '0'
+    #pos_label = '1'#"1"
+    #neg_label = '0'#"0"
+
+    pos_label = 0
+    neg_label = 1   #'0'
 
     itemset = set()
     encoded_vals = []
@@ -336,59 +339,50 @@ def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add 
 
         # Create a pandas DataFrame using the dictionary
         freq_items = pd.DataFrame(data_dict)
-        # Create a new column to store the length of each frozenset
-        freq_items['itemset_length'] = freq_items['itemsets'].apply(lambda x: len(x))
-
-        # Sort the DataFrame based on the "itemset_length" column
-        freq_items = freq_items.sort_values(by='itemset_length')
-
-        # Drop the temporary "itemset_length" column if you don't need it in the final DataFrame
-        freq_items = freq_items.drop(columns='itemset_length')
-        
+        ## Create a new column to store the length of each frozenset
+        #freq_items['itemset_length'] = freq_items['itemsets'].apply(lambda x: len(x))
+#
+        ## Sort the DataFrame based on the "itemset_length" column
+        #freq_items = freq_items.sort_values(by='itemset_length')
+#
+        ## Drop the temporary "itemset_length" column if you don't need it in the final DataFrame
+        #freq_items = freq_items.drop(columns='itemset_length')
+        #freq_items.reset_index(drop=True, inplace=True)
         return freq_items
 
 
                                             # 10/ len(pred)10/testDataLength*5
     freq_items1 = apriori(ohe_df, min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True) #[array[0.5, frozenset]]
-    print(freq_items1["itemsets"])
-    print(freq_items1["itemsets"][0])
-    print(type(freq_items1["itemsets"][0]))
-    #print((freq_items1["itemsets"][0]).dtype)
+
+    #all_rules = myAssociationRules.association_rules(freq_items1, metric="confidence", min_threshold=0.0 ,support_only=True) # 0.7 support_only=False
+
+    #from sympy import symbols, solve, Eq 
+#
+#
+    #x = symbols('x')
+    #expr1 = Eq(x / len(ohe_df) -0.1)
+    #thresholdGely1 =solve(expr1)[0]
+    #expr1 = Eq(x / len(ohe_df.loc[ohe_df[pos_label] == 1]) -0.1)
+    #thresholdGely2 =solve(expr1)[0]
+    #expr1 = Eq(x / len(ohe_df.loc[ohe_df[neg_label] == 1]) -0.1)
+    #thresholdGely3 =solve(expr1)[0]
+
+    #freq_items = gely.gely(ohe_df.values, thresholdGely1)#remove_copmlete_transactions=False) 
+    #freq_items = gelyOutputToDF(freq_items)
 
     all_rules = myAssociationRules.association_rules(freq_items1, metric="confidence", min_threshold=0.0 ,support_only=False) # 0.7 support_only=False
+   
+                              # 10/ len(pred)10/testDataLength*5
+    freq_items1 = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(0.00000000000000001), use_colnames=True, max_len=3 , low_memory=True) # max len 3
+    #freq_items = gely.gely(ohe_df.loc[ohe_df[pos_label] == 1].values, thresholdGely2 )#,remove_copmlete_transactions=False) 
+    #freq_items = gelyOutputToDF(freq_items)
 
-    freq_items = gely.gely(ohe_df.values, 3) 
-    #print(freq_items1)
-    #print(freq_items1["antecedent"])
-    #print("??")
-    #print(freq_items)
-    #print(type(freq_items1["itemsets"][0]))
-    freq_items = gelyOutputToDF(freq_items)
-    print("---")
-    print(freq_items["itemsets"])
-    print(freq_items["itemsets"][0])
-    print(type(freq_items["itemsets"][0]))
-    #print((freq_items["itemsets"][0]).dtype)
-    #print(freq_items)
-    #print("-------")
-    #print(freq_items1)     
-    #association_rules
-    all_rules = myAssociationRules.association_rules(freq_items, metric="confidence", min_threshold=0.0 ,support_only=False) # 0.7 support_only=False
-
-    #exit()                                    # 10/ len(pred)10/testDataLength*5
-    #freq_items1 = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(0.00000000000000001), use_colnames=True, max_len=3 , low_memory=True) # max len 3
-    freq_items = gely.gely(ohe_df.loc[ohe_df[pos_label] == 1].values, 3) 
-    freq_items = gelyOutputToDF(freq_items)
-
-    pos_rules = myAssociationRules.association_rules(freq_items, metric="confidence", min_threshold=0.0, support_only=False) # 0.6 support_only=False
-    #print(ohe_df.loc[ohe_df[neg_label] == 1])
-    #print.epss
-    freq_items = gely.gely(ohe_df.loc[ohe_df[neg_label] == 1].values, 3) 
-    freq_items = gelyOutputToDF(freq_items)
+    pos_rules = myAssociationRules.association_rules(freq_items1, metric="confidence", min_threshold=0.0, support_only=False) # 0.6 support_only=False
+    #freq_items = gely.gely(ohe_df.loc[ohe_df[neg_label] == 1].values, thresholdGely3)#,remove_copmlete_transactions=False) 
+    #freq_items = gelyOutputToDF(freq_items)
                                                                     # 10/ len(pred)10/testDataLength*5
-    #freq_items1 = apriori(ohe_df.loc[ohe_df[neg_label] == 1], min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True) # max len 3 
-    neg_rules = myAssociationRules.association_rules(freq_items, metric="confidence", min_threshold=0.0 , support_only=False) # 0.6 support_only=False
-
+    freq_items1 = apriori(ohe_df.loc[ohe_df[neg_label] == 1], min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True) # max len 3 
+    neg_rules = myAssociationRules.association_rules(freq_items1, metric="confidence", min_threshold=0.0 , support_only=False) # 0.6 support_only=False
     #np.savez("./test.npz",all_rules , )
     #utils.appendToNPZ("./test.npz")
     return all_rules, pos_rules , neg_rules # pickle this ?
@@ -555,11 +549,14 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         #print(rules_DF)
         rulesList =rules_DF["itemset"].to_list()
         rulesList = [set(frozenset) for frozenset in rulesList]
+        #print(rules_DF["label"])
         #print("ruleesss RAAAWWWWWW")
         #print(rulesList)
-        labelList_rules = rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
-        labelList_rules = [set(frozenset).pop() for frozenset in labelList_rules]
-        
+        labelList_rules =  rules_DF["label"].to_list()# rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
+        #print("labelList_rules")
+        #print(labelList_rules)
+        labelList_rules = [frozenset for frozenset in labelList_rules] #[set(frozenset).pop() for frozenset in labelList_rules]
+        #print(labelList_rules)
         return rulesList, labelList_rules, rulesList # dont filter so RAW and "filtered" are same
      
     def extractRules_df(rules_DF):
@@ -569,9 +566,10 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         rulesList = [set(frozenset) for frozenset in rulesList]
         #print("ruleesss RAAAWWWWWW")
         #print(rulesList)
+ 
         labelList_rules = rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
         labelList_rules = [set(frozenset).pop() for frozenset in labelList_rules]
-
+  
         # Regular expression pattern
         #pattern = r"([+-]?\d+\.\d+)(<\w+<=)([+-]?\d+\.\d+)"
 
@@ -607,11 +605,18 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
 
                 conditionsAreMet = False
                 rulesComplexityList.append(len(rules[i]))
+                #print(rules[i])
+                #print(len(rules[i]))
                 for k in range(len(rules[i])): # if rule consists of more than one tupel (3< insulin <=5 , 2< glucose <=7)
                     feature = list(rules[i])[k]
+
                     #print("feature")
                     #print(X[j][featureDict[int(feature)]].item)
                     #print(type(featureZ))
+                                        #int(feature)
+                    #print("featureDict[feature]")
+                    #print(featureDict[int(feature)])
+
 
                     if  X[j][featureDict[int(feature)]] == 1:#
                         #print("a condition is met")
@@ -629,6 +634,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
                 #print()
                 if conditionsAreMet == True:
                     #print("ALL condition ARE met")
+                    
                     if predictions[j] ==   int(labelList_rules[i]):
                         # explaination model prediction is the same as trained Model prediction
                         tempPredictionList.append(1)
@@ -653,12 +659,16 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         for j in range(len(X)):
             tempPredictionList = []  
             rulesComplexityList = []
-            for i in range(len(rules)): 
+            print("jm   ")
+            for i in range(len(rules)):
+                print("laa") 
                 # for all rules per sample # num samples * num rules
                                                 # only works for one 
 
                 conditionsAreMet = False
                 rulesComplexityList.append(len(rules[i]))
+
+
                 for k in range(len(rules[i])): # if rule consists of more than one tupel (3< insulin <=5 , 2< glucose <=7)
                     lowerBound, feature, upperBound = rules[i][k]
 

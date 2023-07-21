@@ -154,7 +154,10 @@ def association_rules(df, metric="confidence", min_threshold=0.8, support_only=F
             for c in combinations(k, r=idx):
                 antecedent = frozenset(c)
                 consequent = k.difference(antecedent)
-
+                #print("antecendent:")
+                #print(antecedent)
+                #print("consequent:")
+                #print(consequent)
                 if support_only:
                     # support doesn't need these,
                     # hence, placeholders should suffice

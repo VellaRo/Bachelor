@@ -147,11 +147,11 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
         processed_text = []
         tempTextList = []
         tempLabelList = []
-        for i, (label, text) in enumerate(test_iter):
-            if i == batch_sizes[-1]:
+        for i, (label, text) in enumerate(train_iter):
+            #if i == batch_sizes[-1]:
                 #print(i)
                 #print(text)
-                break
+             #   break
 
             temp = tokenizer(text)
             #print(temp)#
@@ -159,28 +159,49 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
             processed_text.extend(temp)
             tempTextList.append(text)
             tempLabelList.append(label)
-        dataTest = IterableWrapper(list(zip(tempLabelList, tempTextList)))
-        #dataTest = to_map_style_dataset(dataTest)
-        print(len(dataTest))
+        dataTrain = IterableWrapper(list(zip(tempLabelList, tempTextList)))
+        #
+
+
+
+
+        #processed_text = []
+        #tempTextList = []
+        #tempLabelList = []
+        #for i, (label, text) in enumerate(test_iter):
+        #    if i == batch_sizes[-1]:
+        #        #print(i)
+        #        #print(text)
+        #        break
+#
+        #    temp = tokenizer(text)
+        #    #print(temp)#
+        #    #print(temp)
+        #    processed_text.extend(temp)
+        #    tempTextList.append(text)
+        #    tempLabelList.append(label)
+        #dataTest = IterableWrapper(list(zip(tempLabelList, tempTextList)))
+        ##dataTest = to_map_style_dataset(dataTest)
+        #print(len(dataTest))
         
         #for i in X_test:
         #    intList = [j.item() for j in i]
         #    processed_text.extend(intList)
 
-        vocab_dictionary= set(processed_text)
+        vocab_dictionary= set(processed_text) # from Train
 
         #dataTrain = []
-        newListTrain_X = []
-        newListTrain_y = []
+        newListTest_X = []
+        newListTest_y = []
 
-        colsion =False
+        #colsion =False
         from tqdm import tqdm
         #print(type(train_iter))
         #for text_batch, label_batch in tqdm(train_loader):
         
         #true1 = False
         #true2 = False
-        if os.path.isfile('./dataTrain'+ '_train:' + str(batch_sizes[0])+ '_test:' + str(batch_sizes[1])):
+        if False:#os.path.isfile('./dataTrain'+ '_train:' + str(batch_sizes[0])+ '_test:' + str(batch_sizes[1])):
             print("isFILE")
             with open('./dataTrain'+ '_train:' + str(batch_sizes[0])+ '_test:' + str(batch_sizes[1]), 'rb') as f:
                 dataTrain = pickle.load(f)
@@ -194,7 +215,10 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
         else:
             print("data does not exist yet need to Filter first")
             #print(vocab_dictionary)
-            for label, text in train_iter:#zip(text_batch, label_batch):
+            for i, (label, text) in enumerate(test_iter):#zip(text_batch, label_batch): # vorher train_iter
+                print(i)
+                if i == batch_sizes[-1]:
+                    break
                 processed_text = tokenizer(text)
                 count = 0
                 for word in processed_text:
@@ -203,18 +227,22 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
                         pass
                     if word not in list(vocab_dictionary):
                         count += 1 # muss 1 sein??? 
-                        if count == 10:
-                            #print("over 10")
+                        if count == 1:
+                            print("ja u")
+                            #print("over 10")   
                             break #2h without
                 #print(count / len(text))
                 #print(count / len(text) <= 0.5)
-                if (count / len(processed_text)) <= 0.1: # errorrate
+                if (count / len(processed_text)) <= 0.0: # errorrate
+                    print("mm")
                     #print(count / len(processed_text))
 
                 #if count <=49:   
-                    newListTrain_X.append(text)
-                    newListTrain_y.append(label)
-            print(len(newListTrain_X))
+                    newListTest_X.append(text)
+                    newListTest_y.append(label)
+                #else:
+                #    batch_sizes[-1] = batch_sizes[-1] -1 # adapt batch size since sample is taken out  
+            print(len(newListTest_X))
             #dataTrain = []
             #for X,y in zip(newListTrain_X,newListTrain_y):
             #    print(X)
@@ -223,7 +251,7 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
             #    ten =  torch.tensor([[X],[y]])
             #    dataTrain.append(ten)
             #print(dataTrain[0])    
-            dataTrain = IterableWrapper(list(zip(newListTrain_y,newListTrain_X))) #iter(list(zip(newListTrain_y,newListTrain_X)))
+            dataTest = IterableWrapper(list(zip(newListTest_y,newListTest_X))) #iter(list(zip(newListTrain_y,newListTrain_X)))
             #dataTrain = to_map_style_dataset(dataTrain)
        #     print(len(dataTrain))
             #print(dataTrain[0:2])

@@ -9,7 +9,10 @@ def _is_frequent(pattern, D, threshold):
     for d in D:
         if pattern.issubset(d):
             c += 1
+    
     is_frequent = c >= threshold
+    #ME
+    #is_frequent = c / len(D) >= threshold 
     return is_frequent, c
 
 
@@ -132,7 +135,7 @@ def gely(B, threshold, use_binary=False, remove_copmlete_transactions=True, targ
         D = B[unfull_transactions]
         n_full_transactions = np.sum(-1*(unfull_transactions-1))
         print(f"removed {n_full_transactions} transactions that contained all items")
-        threshold = threshold - n_full_transactions
+        threshold = threshold - n_full_transactions # /len
         assert threshold > 0
         print(f"adapted threshold to {threshold+n_full_transactions} - {n_full_transactions} = {threshold}")
     else:
@@ -143,7 +146,7 @@ def gely(B, threshold, use_binary=False, remove_copmlete_transactions=True, targ
     #  remove items that never occur in any transaction in D (ie, filter zero columns)
     _non_zero_cols = np.argwhere(np.sum(D, 0) > 0).squeeze()
     I = I[_non_zero_cols]
-    _t = threshold
+    _t = threshold #/ len(D)
 
     # transform binary rows into transactions represented by lists of items (as indices)
     _D = []

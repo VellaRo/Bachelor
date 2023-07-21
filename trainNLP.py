@@ -90,13 +90,14 @@ def train_loop(model, optim, loss_fn, tr_data: DataLoader, te_data: tuple, infer
             # Sum up the gradients of the weights in the neural network
             
             total_gradients = 0.0   
+            # no softmax
             for param in model.parameters():                
                 if param.grad is not None:
-                    print(param.grad.numel())
-                    print(param.grad)
+                    #print(param.grad.numel())
+                    #print(param.grad)
 
                     total_gradients += (torch.abs(param.grad).sum() / param.grad.numel())
-                    print(total_gradients)
+                    #print(total_gradients)
             total_gradientsList.append(total_gradients.cpu())
 
 
@@ -128,8 +129,8 @@ if __name__ == '__main__':
     #SETUP
 
     size_train_batch = 64
-    size_test_batch = 20 # 3h apriori
-    n_batches = 2
+    size_test_batch = 100 # 3h apriori
+    n_batches = 100
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -241,12 +242,18 @@ if __name__ == '__main__':
     import os 
     from datetime import datetime
 
-    pos_label = '1'
-    neg_label = '0'
+    pos_label = 0
+    neg_label = 1#'0'
+
 
 
     #rulesResultDataPath = dirPath + "rulesResultData/" 
-    featureDict = {feature: index  for index, feature in enumerate(featureNames)}
+    # eigentlich ohne dict
+    featureDict = {feature: index  for index, feature in enumerate(featureNames)} #{feature: int(feature)  for feature in featureNames}#{feature: index  for index, feature in enumerate(featureNames)}
+    #featureDict[pos_label] = int(pos_label)
+    #featureDict[neg_label] = int(neg_label)
+
+    #print(featureDict)
     #print(featureDict)
     #print.sasa
     now = datetime.now()
@@ -261,7 +268,7 @@ if __name__ == '__main__':
     rulePrecisionList_overIterations =[]
     predictionComparisonList_overIterations = []
     rulesComplexityList_overIterations = []
-    coverageList_overIterations = []
+    coverageList_overIterations = []    
     ruleSupportList_overIterations = []
     numberOfGeneratedRules_overIterations = []
     jaccardSimilarity_overIterations = []
