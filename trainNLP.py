@@ -377,6 +377,11 @@ if __name__ == '__main__':
 
     data = utils.loadData(mostRecentResultPaths_discriminative)
 
+    trackedRules_OHE = cega_utils.trackRulesList(data["rules_list_overIterations"])
+    
+    utils.appendToNPZ(pathToNPZ, "trackedRules_OHE", trackedRules_OHE)
+
+
     pathToRulesResults = "./NLP_Results/rulesResults/"
 
     fig1, axs1 = plt.subplots(nrows=1, ncols=1)

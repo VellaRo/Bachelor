@@ -371,7 +371,7 @@ def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add 
     #freq_items = gelyOutputToDF(freq_items)
 
     all_rules = myAssociationRules.association_rules(freq_items1, metric="confidence", min_threshold=0.0 ,support_only=False) # 0.7 support_only=False
-   
+    
                               # 10/ len(pred)10/testDataLength*5
     freq_items1 = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(0.00000000000000001), use_colnames=True, max_len=3 , low_memory=True) # max len 3
     #freq_items = gely.gely(ohe_df.loc[ohe_df[pos_label] == 1].values, thresholdGely2 )#,remove_copmlete_transactions=False) 
@@ -786,31 +786,54 @@ def trackRulesList(rules_list_overIterations):
     iterations
 
     """
-    unique_items = set(item for sublist in rules_list_overIterations for item in sublist)
+    #print(rules_list_overIterations)
+    
+    rulesTemp = [rules for rules in rules_list_overIterations]
+    
+    print(rulesTemp)
+    print(type(rulesTemp))  
+    
+    #for i in rulesTemp:
+    #    print(i)
+    #unique_rules = set().union(*[set.union(*lst) for lst in rulesTemp])
+    #unique_rules = (set(rule) for rule in rulesTemp)
+        #item for rule in 
+    #print(unique_rules)
+    # Initialize an empty set to store the tuples
+    unique_rules = set()
 
-    item_to_index = {item: index for index, item in enumerate(unique_items)}
+    # Iterate through each element in the nested lists
+    for rule in rulesTemp:
+        for s in rule:
+            # Convert the set to a tuple and add it to the result set
+            unique_rules.add(tuple(s))
+    #print(unique_rules)
+    item_to_index = {item: index for index, item in enumerate(unique_rules)}
 
-    num_items = len(unique_items)
+    num_uniqueRules = len(unique_rules)
 
     one_hot_matrix = []
 
-    for sublist in rules_list_overIterations:
-        sublist_encoded = [0] * num_items
+    for i,rules in enumerate(rules_list_overIterations): # rulesSet for each iteration 
+        #print(type(rules))
+        #print(rules)
+        rule_encoded = [0] * num_uniqueRules
     
-        for tup in sublist:
-            item, _ = tup
-        
-            index = item_to_index[item]
-            sublist_encoded[index] = 1
+        for rule in rules:
+            #print(rule)
+            #print(type(rule))
+            index = item_to_index[tuple(rule)]
+            rule_encoded[index] = 1
     
-        one_hot_matrix.append(sublist_encoded)
+        one_hot_matrix.append(rule_encoded)
     one_hot_matrix = np.array(one_hot_matrix)
 
     print(one_hot_matrix)
+    trackedRules_OHE = one_hot_matrix
+    return trackedRules_OHE
 
 ###TODO:
-#for two: overlay jaccardsimilarity and testing accuracy  
-
+#  
 #for 3 : need to asses "positive influence" *** 
 
 #for 3a: go back to set without the "stable" rule 
