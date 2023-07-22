@@ -129,8 +129,8 @@ if __name__ == '__main__':
     #SETUP
 
     size_train_batch = 64
-    size_test_batch = 100 # 3h apriori
-    n_batches = 100
+    size_test_batch = 20 # 3h apriori
+    n_batches = 6
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -268,7 +268,7 @@ if __name__ == '__main__':
     rulePrecisionList_overIterations =[]
     predictionComparisonList_overIterations = []
     rulesComplexityList_overIterations = []
-    coverageList_overIterations = []    
+    globalCoverageList_overIterations = []    
     ruleSupportList_overIterations = []
     numberOfGeneratedRules_overIterations = []
     jaccardSimilarity_overIterations = []
@@ -277,6 +277,8 @@ if __name__ == '__main__':
     overlapSimilarity_overIterations = []
     raw_rules_overIterations = []
     numberOfGeneratedRulesRAW_overIterations =[]
+    rulePrecisionListPerRule_overIterations = []
+
     tempRules_list = None
     
     from tqdm import tqdm
@@ -289,11 +291,11 @@ if __name__ == '__main__':
 
         resultName = "discriminative_rules"
         #resultName = "characteristic_rules"
-        #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath)
+        #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath)
         #try:    
-        rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules, raw_rules  =cega_utils.calculateRulesMetrics(discriminative_rules, featureDict, test_set, trainedModelPrediction_Test_overIterations[i])
+        rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportList,   numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule  =cega_utils.calculateRulesMetrics(discriminative_rules, featureDict, test_set, trainedModelPrediction_Test_overIterations[i])
         #resultName = "characteristic_rules"
-        #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,  = numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(characteristic_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath, debug=True )
+        #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportList,  = numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(characteristic_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath, debug=True )
         discriminative_rules_overIterations.append(discriminative_rules)
         characteristic_rules_overIterations.append(characteristic_rules) 
         #
@@ -305,7 +307,7 @@ if __name__ == '__main__':
         #       rulePrecisionList =[]
         #       predictionComparisonList = []
         #       rulesComplexityList = []
-        #       coverageList = 0
+        #       globalCoverage = 0
         #       ruleSupportList = []
         #       numberOfGeneratedRules = 0
 
@@ -314,11 +316,12 @@ if __name__ == '__main__':
         rulePrecisionList_overIterations.append(rulePrecisionList)
         predictionComparisonList_overIterations.append(predictionComparisonList)
         rulesComplexityList_overIterations.append(rulesComplexityList)
-        coverageList_overIterations.append(coverageList)
+        globalCoverageList_overIterations.append(globalCoverage)
         ruleSupportList_overIterations.append(ruleSupportList)
         numberOfGeneratedRules_overIterations.append(numberOfGeneratedRules)
         raw_rules_overIterations.append(raw_rules)
         numberOfGeneratedRulesRAW_overIterations.append(len(raw_rules))
+        rulePrecisionListPerRule_overIterations.append(rulePrecisionListPerRule)
 
         if tempRules_list is not None:
             print("not Jaccard")
@@ -340,7 +343,7 @@ if __name__ == '__main__':
     utils.appendToNPZ(pathToNPZ, "rulePrecisionList_overIterations", rulePrecisionList_overIterations)
     utils.appendToNPZ(pathToNPZ, "predictionComparisonList_overIterations", predictionComparisonList_overIterations)
     utils.appendToNPZ(pathToNPZ, "rulesComplexityList_overIterations", rulesComplexityList_overIterations)
-    utils.appendToNPZ(pathToNPZ, "coverageList_overIterations", coverageList_overIterations)
+    utils.appendToNPZ(pathToNPZ, "globalCoverageList_overIterations", globalCoverageList_overIterations)
     utils.appendToNPZ(pathToNPZ, "ruleSupportList_overIterations", ruleSupportList_overIterations)
     utils.appendToNPZ(pathToNPZ, "numberOfGeneratedRules_overIterations", numberOfGeneratedRules_overIterations)
     utils.appendToNPZ(pathToNPZ, "jaccardSimilarity_overIterations", jaccardSimilarity_overIterations)
@@ -348,8 +351,8 @@ if __name__ == '__main__':
     utils.appendToNPZ(pathToNPZ, "overlapSimilarity_overIterations", overlapSimilarity_overIterations)
     utils.appendToNPZ(pathToNPZ, "diceSimilarity_overIterations", diceSimilarity_overIterations)
     utils.appendToNPZ(pathToNPZ, "raw_rules_overIterations", raw_rules_overIterations)
-    utils.appendToNPZ(pathToNPZ, "numberOfGeneratedRulesRAW_overIterations", numberOfGeneratedRulesRAW_overIterations)
-
+    utils.appendToNPZ(pathToNPZ, "numberOfGeneratedRulesRAW_overIterations", numberOfGeneratedRulesRAW_overIterations) 
+    utils.appendToNPZ(pathToNPZ, "rulePrecisionListPerRule_overIterations", rulePrecisionListPerRule_overIterations)
 
 
     rules_data = np.load(pathToNPZ , allow_pickle=True)
@@ -385,72 +388,59 @@ if __name__ == '__main__':
     pathToRulesResults = "./NLP_Results/rulesResults/"
 
     fig1, axs1 = plt.subplots(nrows=1, ncols=1)
-
     axs1.plot(calculate_mean_of_lists(data["rulePrecisionList_overIterations"]))
     axs1.set_title("rulePrecisionList_overIterations")
     axs1.set_xlabel("iteration")
     axs1.set_ylabel("precision")
-
     fig1.savefig(str(pathToRulesResults) + "rulePrecisionList_overIterations")    
     pickle.dump(fig1, open(pathToRulesResults + "rulePrecisionList_overIterations", 'wb'))
 
     fig2, axs2 = plt.subplots(nrows=1, ncols=1)
-
     axs2.plot(calculate_mean_of_lists(data["ruleSupportList_overIterations"]))
     axs2.set_title("ruleSupportList_overIterations")
     axs2.set_xlabel("iteration")
     axs2.set_ylabel("support")
-
     fig2.savefig(str(pathToRulesResults) + "ruleSupportList_overIterations")    
     pickle.dump(fig2, open(pathToRulesResults + "ruleSupportList_overIterations", 'wb'))
 
     fig3, axs3 = plt.subplots(nrows=1, ncols=1)
-
     axs3.plot(calculate_mean_of_lists(data["rulesComplexityList_overIterations"]))
     axs3.set_title("rulesComplexityList_overIterations")
     axs3.set_xlabel("iteration")
     axs3.set_ylabel("complexity")
-
     fig3.savefig(str(pathToRulesResults) + "rulesComplexityList_overIterations")    
     pickle.dump(fig3, open(pathToRulesResults + "rulesComplexityList_overIterations", 'wb'))
+
+
     fig4, axs4 = plt.subplots(nrows=1, ncols=1)
-    axs4.plot(data["coverageList_overIterations"])
-    axs4.set_title("rulesComplexityList_overIterations")
+    axs4.plot(data["globalCoverageList_overIterations"])
+    axs4.set_title("globalCoverageList_overIterations")
     axs4.set_xlabel("iteration")
     axs4.set_ylabel("coverage")
-
-
-    fig4.savefig(str(pathToRulesResults) + "coverageList_overIterations")    
-    pickle.dump(fig4, open(pathToRulesResults + "coverageList_overIterations", 'wb'))
+    fig4.savefig(str(pathToRulesResults) + "globalCoverageList_overIterations")    
+    pickle.dump(fig4, open(pathToRulesResults + "globalCoverageList_overIterations", 'wb'))
 
     fig5, axs5 = plt.subplots(nrows=1, ncols=1)
     axs5.plot(data["numberOfGeneratedRules_overIterations"])
     axs5.set_title("numberOfGeneratedRules_overIterations")
     axs5.set_xlabel("iteration")
     axs5.set_ylabel("numGeneratedRules")
-
     fig5.savefig(str(pathToRulesResults) + "numberOfGeneratedRules_overIterations")    
     pickle.dump(fig5, open(pathToRulesResults + "numberOfGeneratedRules_overIterations", 'wb'))
 
     fig6, axs6 = plt.subplots(nrows=1, ncols=1)
-
-
     axs6.plot(data["jaccardSimilarity_overIterations"])
     fig6.savefig(str(pathToRulesResults) + "jaccardSimilarity_overIterations") 
     axs6.set_title("jaccardSimilarity_overIterations")
     axs6.set_xlabel("iteration")
     axs6.set_ylabel("similarity")
-
     pickle.dump(fig6, open(pathToRulesResults + "jaccardSimilarity_overIterations", 'wb'))
-
-
 
     fig7, axs7 = plt.subplots(nrows=1, ncols=1)
     axs7.plot(data["cosineSimilarity_overIterations"])
     axs7.set_title("cosineSimilarity_overIterations")
     axs7.set_xlabel("iteration")
     axs7.set_ylabel("similarity")
-
     fig7.savefig(str(pathToRulesResults) + "cosineSimilarity_overIterations")    
     pickle.dump(fig7, open(pathToRulesResults + "cosineSimilarity_overIterations", 'wb'))
 
@@ -459,7 +449,6 @@ if __name__ == '__main__':
     axs8.set_title("diceSimilarity_overIterations")
     axs8.set_xlabel("iteration")
     axs8.set_ylabel("similarity")
-
     fig8.savefig(str(pathToRulesResults) + "diceSimilarity_overIterations")    
     pickle.dump(fig8, open(pathToRulesResults + "diceSimilarity_overIterations", 'wb'))
 
@@ -469,7 +458,6 @@ if __name__ == '__main__':
     axs9.set_title("overlapSimilarity_overIterations")
     axs9.set_xlabel("iteration")
     axs9.set_ylabel("similarity")
-
     fig9.savefig(str(pathToRulesResults) + "overlapSimilarity_overIterations")    
     pickle.dump(fig9, open(pathToRulesResults + "overlapSimilarity_overIterations", 'wb'))
 
@@ -478,11 +466,18 @@ if __name__ == '__main__':
     axs10.set_title("numberOfGeneratedRulesRAW_overIterations")
     axs10.set_xlabel("iteration")
     axs10.set_ylabel("numberOfGeneratedRulesRAW_overIterations")
-
     fig10.savefig(str(pathToRulesResults) + "numberOfGeneratedRulesRAW_overIterations")    
     pickle.dump(fig10, open(pathToRulesResults + "numberOfGeneratedRulesRAW_overIterations", 'wb'))
     
-    print(data["numberOfGeneratedRulesRAW_overIterations"])
+    fig1, axs1 = plt.subplots(nrows=1, ncols=1)
+    axs1.plot(calculate_mean_of_lists(data["rulePrecisionListPerRule_overIterations"])) 
+    axs1.set_title("rulePrecisionListPerRule_overIterations")
+    axs1.set_xlabel("iteration")
+    axs1.set_ylabel("rulePrecisionListPerRule_overIterations")
+    fig1.savefig(str(pathToRulesResults) + "rulePrecisionListPerRule_overIterations")    
+    pickle.dump(fig1, open(pathToRulesResults + "rulePrecisionListPerRule_overIterations", 'wb'))
+
+    #print(data["numberOfGeneratedRulesRAW_overIterations"])
     _t_end = time()
     print(f"Training finished in {int(_t_end - _t_start)} s")
 

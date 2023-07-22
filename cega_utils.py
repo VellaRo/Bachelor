@@ -23,14 +23,6 @@ def loadOHE_Rules(iterationNumber):
 
     return ohe_df
 
-#def jaccard_similarity(set1, set2):
-#
-#    intersection = len(set1.intersection(set2))
-#    union = len(set1.union(set2))
-#    similarity = intersection / union
-#
-#    return similarity
-
 def jaccard_similarity(list1, list2):
     set1 = set(tuple(element) for element in list1)
     set2 = set(tuple(element) for element in list2)
@@ -139,19 +131,6 @@ def vocabToOHE(data ,vocab):
 # Iterate over featureNames and check if each one is in the corresponding row of 'data'
     for j, feature in enumerate(featureNames):
         OHE_DF[feature] = np.where(data.apply(lambda row: feature in row.values, axis=1),1, 0)# str(feature)+ " : 1", str(feature)+ " : 0") #
-
-
-
-    #OHE = np.zeros((len(data), len(vocab_dictionary)))
-    #OHE_DF =  pd.DataFrame(OHE, columns=featureNames)
-    #for i in range(len(data)):
-     #   for j in range(len(featureNames)):
-      #      if featureNames[j] in data.iloc[i].values:
-       #         OHE_DF.iloc[i,j] = 1
-        #    else:
-        #        OHE_DF.iloc[i,j] = 0
-
-	    #return set(vocab_directory)
     
     return OHE_DF, featureNames
 
@@ -207,9 +186,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         os.makedirs(output_directory)
 
     if datasetType == "numerical":
-        #print(data_df)
-        #print("DATA")
-        #print(data_df)
+
         for feature in data_df.columns.to_list(): # for NLP this must be the whole vocab 
             if feature in intervals_dict:
                 intervals = intervals_dict[feature]
@@ -222,98 +199,53 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
 
             else:
                 itemset.add(feature)
-        #print(itemset)
 
 
     else: 
         #data_df, featureNames = categoricalToOHE(data_df)
-        #print("NLP")
         data_df, featureNames = vocabToOHE(data_df, vocab)
-        #print("DATA")
-        #print(data_df)
-        #print(data_df.öoll)
-        #print(featureNames)
-        #print(data_df)
-        #for feature in data_df.columns.to_list(): # for NLP this must be the whole vocab 
-        #    if feature in intervals_dict:
-        #        intervals = intervals_dict[feature]
-        #        for interval in intervals:
-        #            if interval != interval: continue
-        #            left = interval.left
-        #            right = interval.right
-        #            name = f'{left}<{feature}<={right}'
-        #            itemset.add(name)
 
-        #    else:
-        #        itemset.add(feature)
-        #print(itemset)
 
         for feature in data_df.columns.to_list():
-            #print(feature)
             itemset.add(str(feature))
-            #print(itemset)
-        #print(itemset)
     itemset.add(pos_label)
     itemset.add(neg_label)
-    #print(len(itemset))
 
 
     def CEGA(gradsPerIteration): 
         ### for every model iteration the gradients of whole test_dataset is calculated
         for indx in tqdm (range(len(gradsPerIteration))):#(len(trainedModelPrediction_Test)): #  len test dataset
-            #print(indx)
             pos_queue.put(pos_label)
             neg_queue.put(neg_label)
             exp = gradsPerIteration[indx]#[item[indx] for item in sample] #normalize featureListALL ?
-            #print("exp")
-            #print(exp)
 
             instance_features = data_df.iloc[[indx]].to_dict(orient='records')[0] 
-            #print("print(instance_features)")
-            #print(instance_features)
-            
+    
             feature_vals = [instance_features[name] for name in featureNames] #put here grads#   feature values ?? 
-            #print(feature_vals)
-            #print.essa
+       
             zipped = zip(exp, feature_vals,
                          featureNames, [shap_threshold]*len(featureNames))
 
 
             p.map(get_relevant_features, zipped)
-            #print(encoded_vals)
             append_to_encoded_vals(pos_queue, itemset, encoded_vals)
             append_to_encoded_vals(neg_queue, itemset, encoded_vals)
 
             ohe_df = pd.DataFrame(encoded_vals)
-            #print(ohe_df)
-            #print.pes   
+
         return ohe_df #ohe_dfList.append(ohe_df)
     
     for i in tqdm (range(len(grads))):
         gradsPerIteration  = grads[i]
-        #trainedModelPrediction_TestPerIteration = trainedModelPrediction_Test[i]
         output_filename = f'{output_directory}{output_base_filename}_{iterationCounter}.pkl'
-        #try:
+        
         print(i)
-        #if i ==0 or i ==50 or i ==100 or i ==199:
         with open(output_filename, 'wb') as f:
             ohe_df = CEGA(gradsPerIteration)#,trainedModelPrediction_TestPerIteration)
             pickle.dump(ohe_df, f)
         iterationCounter += 1
-
-        #except FileExistsError:
-            # If the file already exists, increment the counter and try again
-        #    iterationCounter += 1
-        #    pickle.dump(ohe_df, f)
-        #    print("exception")
         encoded_vals = []
 
-
-
-        #gradsPerIteration  = grads[i]
-
-
-    # TAKES ~30 sec for 154 samples  
     return featureNames
 import gely
 
@@ -327,9 +259,7 @@ def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add 
 
         # Extract the itemset and support values from the input and populate the dictionary
         for itemsets, support in gelyOutput:
-            #print(type(itemsets))
             itemsets = {str(item) for item in itemsets} # convert to string
-            #print(itemsets)
             data_dict["itemsets"].append(frozenset(itemsets))
             #mapping = {idx: item for idx, item in enumerate(["support", "itemsets"])}
 
@@ -545,35 +475,22 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         y_List.extend(lables.detach())
     
     def extractNlpRules_df(rules_DF):
-        #print(rules_DF)
-        #print(rules_DF)
+
         rulesList =rules_DF["itemset"].to_list()
         rulesList = [set(frozenset) for frozenset in rulesList]
-        #print(rules_DF["label"])
-        #print("ruleesss RAAAWWWWWW")
-        #print(rulesList)
+
         labelList_rules =  rules_DF["label"].to_list()# rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
-        #print("labelList_rules")
-        #print(labelList_rules)
+
         labelList_rules = [frozenset for frozenset in labelList_rules] #[set(frozenset).pop() for frozenset in labelList_rules]
         #print(labelList_rules)
         return rulesList, labelList_rules, rulesList # dont filter so RAW and "filtered" are same
      
     def extractRules_df(rules_DF):
-        #print(rules_DF)
-        #print(rules_DF)
         rulesList =rules_DF["itemset"].to_list()
         rulesList = [set(frozenset) for frozenset in rulesList]
-        #print("ruleesss RAAAWWWWWW")
-        #print(rulesList)
- 
         labelList_rules = rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
         labelList_rules = [set(frozenset).pop() for frozenset in labelList_rules]
-  
-        # Regular expression pattern
-        #pattern = r"([+-]?\d+\.\d+)(<\w+<=)([+-]?\d+\.\d+)"
 
-        #pattern = r"([+-]?\d+\.\d+)(<\w+<=)([+-]?\d+\.\d+)"
         pattern = r"([+-]?\d+\.\d+)(<\w+(\s*\w*)*<=)([+-]?\d+\.\d+)"
 
 
@@ -589,7 +506,6 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
                     set_filtered.append((lower_bound, feature[1:-2], upper_bound))
             rules_list.append(set_filtered)
 
-        #print(len(rules_list))
         return rules_list, labelList_rules, rulesList
 
     def applyNlpRulesOnData(X,predictions, rules, labelList_rules, featureDict):
@@ -597,25 +513,15 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         predictionComparisonList = []  
 
         for j in range(len(X)):
+
             tempPredictionList = []  
             rulesComplexityList = []
             for i in range(len(rules)): 
-                # for all rules per sample # num samples * num rules
-                                                # only works for one 
 
                 conditionsAreMet = False
                 rulesComplexityList.append(len(rules[i]))
-                #print(rules[i])
-                #print(len(rules[i]))
                 for k in range(len(rules[i])): # if rule consists of more than one tupel (3< insulin <=5 , 2< glucose <=7)
                     feature = list(rules[i])[k]
-
-                    #print("feature")
-                    #print(X[j][featureDict[int(feature)]].item)
-                    #print(type(featureZ))
-                                        #int(feature)
-                    #print("featureDict[feature]")
-                    #print(featureDict[int(feature)])
 
 
                     if  X[j][featureDict[int(feature)]] == 1:#
@@ -627,13 +533,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
                         tempPredictionList.append(-1)
                         conditionsAreMet = False
                         break # if one condition of the rule is not aplicable break
-                #print("lpp")
-                #print(predictions[j])
-                #print("as")
-                #print(int(labelList_rules[i]))
-                #print()
                 if conditionsAreMet == True:
-                    #print("ALL condition ARE met")
                     
                     if predictions[j] ==   int(labelList_rules[i]):
                         # explaination model prediction is the same as trained Model prediction
@@ -643,7 +543,10 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
                         tempPredictionList.append(0)
 
             predictionComparisonList.append(tempPredictionList)
-            return predictionComparisonList, rulesComplexityList
+            #print("len(predictionComparisonList)")
+            #print(len(predictionComparisonList))
+
+        return predictionComparisonList, rulesComplexityList
         
         
     def applyRulesOnData(X,predictions, rules, labelList_rules, featureDict):
@@ -659,9 +562,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         for j in range(len(X)):
             tempPredictionList = []  
             rulesComplexityList = []
-            print("jm   ")
             for i in range(len(rules)):
-                print("laa") 
                 # for all rules per sample # num samples * num rules
                                                 # only works for one 
 
@@ -690,12 +591,12 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
                         tempPredictionList.append(0)
 
             predictionComparisonList.append(tempPredictionList)
-            return predictionComparisonList, rulesComplexityList
+        return predictionComparisonList, rulesComplexityList
 
     #predictionList, rulesComplexityList = applyRulesOnData(X_List ,predictions, labelList_rules,  featureDict)
     #predictionList
 
-    def globalCoverage(predictionComparisonList):
+    def getGlobalCoverage(predictionComparisonList):
         isCoverdList = []
         correctPredictedList = [] 
         for i in predictionComparisonList:
@@ -707,8 +608,8 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
                     break
             if not isCovered:
                isCoverdList.append(-1)
-        coverageList = isCoverdList.count(1) /len(isCoverdList) # instances covered by global explanation set
-        return coverageList
+        globalCoverage = isCoverdList.count(1) /len(isCoverdList) # instances covered by global explanation set
+        return globalCoverage
     
     #globalCoverage = globalCoverage(predictionList)
 
@@ -716,40 +617,145 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         # recision of an applicable rule on test instances(precision)
         # AND how many instances does a rule cover (Support)
 
-        predictionList_transposed =  np.array(predictionComparisonList).transpose()
-        rulePrecisionList = [] 
-        ruleSupportList = [] 
+        predictionComparisonList_transposed =  np.array(predictionComparisonList).transpose()
+        globalRulePrecisionList = [] 
+        globalRuleSupportList = [] 
+        import sys
 
-        for i in predictionList_transposed:
+        epsilon = sys.float_info.epsilon
+
+        for i in predictionComparisonList: 
             tempCorrectClassified = list(i).count(1)
             tempFalseClassified =   list(i).count(0)
+            tempNotAppliable =   list(i).count(-1)
+
+            globalRulePrecisionList.append(tempCorrectClassified/ ((len(i) -tempNotAppliable)+ epsilon) )
+
+            globalRuleSupportList.append((tempCorrectClassified + tempFalseClassified)/((len(i) -tempNotAppliable) + epsilon) )
+        
+        rulePrecisionListPerRule = []
+        #print(len(predictionComparisonList_transposed))
+        #print(np.shape(predictionComparisonList_transposed))
+        #print(predictionComparisonList[:3])
+        for i in predictionComparisonList_transposed: # 
+            #print(len(i))
             
+            ruleTempCorrectClassified = list(i).count(1)
+            ruleTempFalseClassified =   list(i).count(0)
+            ruleTempNotAppliable =   list(i).count(-1)
 
-            #tempNotAplicable =     list(i).count(0) 
-            try:
-                rulePrecisionList.append(tempCorrectClassified/ len(predictionList_transposed[i]) )
-            except ZeroDivisionError:
-                rulePrecisionList.append(0)
-            try:
-                ruleSupportList.append((tempCorrectClassified + tempFalseClassified)/len(predictionList_transposed[i]) )
-            except ZeroDivisionError:
-                rulePrecisionList.append(0)
+            rulePrecisionListPerRule.append( ruleTempCorrectClassified / 1000 )#((len(i) -ruleTempNotAppliable) +epsilon))
+            #print("accuracy")
+            #print(ruleTempCorrectClassified / ((len(i) -ruleTempNotAppliable) +epsilon))
+        
+        #print((rulePrecisionListPerRule[0]))       
+        #print(len(rulePrecisionListPerRule)) len 1069 [ 0.3, 0.5 ,... 0.2,..]
+
+        # danach gibt es iteration mal 1069 [.. , 0.5 , ..] # das ist die precision jeder einzelnen anwendbarer Rule ( countCorrect / len(appliable))
+        #  
+        print(rulePrecisionListPerRule)
+        print(len(rulePrecisionListPerRule))
+        return globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule
+    
+    def accuracyOfAppliableRules(X):
+
+        for i in X:
+            pass
 
 
-        return rulePrecisionList, ruleSupportList
+    def filterPrecision(precicionThreshold, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList):
+
+        #filteredRulesList = []
+        #tempRuleList = rules_list
+        for i , rules in enumerate(rules_list):
+            #print(i)
+            if rulePrecisionListPerRule[i] <= precicionThreshold:
+                #print(str(rulePrecisionListPerRule[i]) + "  <=  " + str(precicionThreshold))
+                rules_list.pop(i)
+                labelList_rules.pop(i)
+
+                #print(len(tempRuleList))    
+                #if getGlobalCoverage(predictionComparisonList) >= 0.9:
+
+            else:
+                #print(str(rulePrecisionListPerRule[i]) + "  >  " + str(precicionThreshold))
+                #print(rulePrecisionListPerRule[i])
+                pass
+            #print("----")
+        
+        filteredRulesList = rules_list
+        filteredRulesLableList = labelList_rules
+        return filteredRulesList,filteredRulesLableList
+
+
     
     
     rules_list, labelList_rules, raw_rules = extractNlpRules_df(rules_DF)
-    
     #rules_list, labelList_rules, raw_rules= extractRules_df(rules_DF)
+    print("before Filter")
     predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
-    #predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
-    
-    rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
-    coverageList = globalCoverage(predictionComparisonList)
+    #predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)   
+    globalRulePrecisionList, globalRuleSupportList, rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
+    globalCoverage = getGlobalCoverage(predictionComparisonList) # before
+    #print(globalCoverage)
+    print("----")
+    filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
+    print("after Filter")
+    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
+    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
+    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:4
+    filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
+    print("after Filter")
+    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
+    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
+    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
+    filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
+    print("after Filter")
+    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
+    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
+    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
+    filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
+    print("after Filter")
+    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
+    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
+    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
+    print("after Filter")
+    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
+    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
+    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
+    filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
+    print("after Filter")
+    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
+    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
+    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
+
+    print("after Filter")
+    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
+    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
+    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
+    filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
+    print("after Filter")
+    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
+    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
+    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
+
+    print("after Filter")
+    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
+    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
+    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
+    filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
+    print("after Filter")
+    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
+    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
+    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
+
+
+    #print(globalCoverage)
     #rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
     numberOfGeneratedRules = (len(rules_list))
-    return rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , coverageList,  ruleSupportList,   numberOfGeneratedRules, raw_rules
+
+    #print.pes
+    return rules_list, labelList_rules, globalRulePrecisionList, predictionComparisonList, rulesComplexityList , globalCoverage,  globalRuleSupportList,   numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule
 
     ## Get the current date and time
     #now = datetime.now()
@@ -790,8 +796,8 @@ def trackRulesList(rules_list_overIterations):
     
     rulesTemp = [rules for rules in rules_list_overIterations]
     
-    print(rulesTemp)
-    print(type(rulesTemp))  
+    #print(rulesTemp)
+    #print(type(rulesTemp))  
     
     #for i in rulesTemp:
     #    print(i)
