@@ -629,6 +629,10 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
             tempFalseClassified =   list(i).count(0)
             tempNotAppliable =   list(i).count(-1)
 
+           # print(len(i[0]))
+            #print("--")
+            #print(len(i)) # ammount of rules
+
             globalRulePrecisionList.append(tempCorrectClassified/ ((len(i) -tempNotAppliable)+ epsilon) )
 
             globalRuleSupportList.append((tempCorrectClassified + tempFalseClassified)/((len(i) -tempNotAppliable) + epsilon) )
@@ -637,15 +641,25 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         #print(len(predictionComparisonList_transposed))
         #print(np.shape(predictionComparisonList_transposed))
         #print(predictionComparisonList[:3])
-        for i in predictionComparisonList_transposed: # 
-            #print(len(i))
-            
+        for i in predictionComparisonList_transposed: #
+            #print("len(predictionComparisonList_transposed)")
+ 
+#            print(len(predictionComparisonList_transposed))
+#            print(len(i))
             ruleTempCorrectClassified = list(i).count(1)
             ruleTempFalseClassified =   list(i).count(0)
             ruleTempNotAppliable =   list(i).count(-1)
+#            print(ruleTempCorrectClassified)
+#            print(ruleTempFalseClassified)
+#            print(ruleTempNotAppliable)
 
-            rulePrecisionListPerRule.append( ruleTempCorrectClassified / 1000 )#((len(i) -ruleTempNotAppliable) +epsilon))
+            rulePrecisionListPerRule.append( ruleTempCorrectClassified / ((ruleTempCorrectClassified + ruleTempFalseClassified) +epsilon))
+            #if ruleTempCorrectClassified / ((ruleTempCorrectClassified + ruleTempFalseClassified) +epsilon)  <= 0.9:
+            #    print(ruleTempCorrectClassified)
+            #    print(ruleTempFalseClassified)
+            #    print(ruleTempNotAppliable)
             #print("accuracy")
+
             #print(ruleTempCorrectClassified / ((len(i) -ruleTempNotAppliable) +epsilon))
         
         #print((rulePrecisionListPerRule[0]))       
@@ -653,7 +667,11 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
 
         # danach gibt es iteration mal 1069 [.. , 0.5 , ..] # das ist die precision jeder einzelnen anwendbarer Rule ( countCorrect / len(appliable))
         #  
-        print(rulePrecisionListPerRule)
+       # print(rulePrecisionListPerRule)
+       # print(len(rulePrecisionListPerRule))
+        print("asasas")
+        print(len(rules_list))
+        print("lalal")
         print(len(rulePrecisionListPerRule))
         return globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule
     
@@ -665,90 +683,93 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
 
     def filterPrecision(precicionThreshold, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList):
 
+        #filteredPrecisionRulesList = []
         #filteredRulesList = []
-        #tempRuleList = rules_list
+        #filteredRulesLableList = []
+        print(type(rules_list))
+        tempRuleList = rules_list.copy()
+        tempLabelList_rules =labelList_rules.copy()
+        print("len(rulePrecisionListPerRule)")
+        print(len(rulePrecisionListPerRule))
         for i , rules in enumerate(rules_list):
-            #print(i)
-            if rulePrecisionListPerRule[i] <= precicionThreshold:
-                #print(str(rulePrecisionListPerRule[i]) + "  <=  " + str(precicionThreshold))
-                rules_list.pop(i)
-                labelList_rules.pop(i)
+            print(i)
+            if rulePrecisionListPerRule[i] < precicionThreshold:
+                print(str(rulePrecisionListPerRule[i]) + "  <  " + str(precicionThreshold))
+                tempRuleValue = tempRuleList[i]
+                tempRuleList[i] = -1
+                filteredRulesList =  tempRuleList.remove(-1)
+                
+                tempLabelValue = tempLabelList_rules[i]
+                tempLabelList_rules[i] = -1
+                filteredRulesLableList= tempLabelList_rules.remove(-1)
+
+# apply rules on data
+                TestPredictionComparisonList, TestRulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
+#               
+                if getGlobalCoverage(TestPredictionComparisonList) < 0.9:
+                    tempRules_list[i] = tempRuleValue
+                    filteredList = tempRules_list
+                    
+                    tempLabelList_rules[i] = tempLabelValue
+                    filteredRulesLableList = tempLabelList_rules
+                else:
+                    pass
+                    #filteredRuleList ist schon gemacht worden
+
+
+
+
+                #tempRuleList.pop(i)
+                #tempLabelList_rules.pop(i)
 
                 #print(len(tempRuleList))    
-                #if getGlobalCoverage(predictionComparisonList) >= 0.9:
+                
 
             else:
-                #print(str(rulePrecisionListPerRule[i]) + "  >  " + str(precicionThreshold))
+                print(str(rulePrecisionListPerRule[i]) + "  >  " + str(precicionThreshold))
                 #print(rulePrecisionListPerRule[i])
-                pass
+                #filteredPrecisionRulesList.append(rulePrecisionListPerRule[i])
+                #filteredRulesLableList.append(labelList_rules[i])
+                #filteredRulesList.append(rules_list[i])
+                
+            #    if getGlobalCoverage(predictionComparisonList) >= 0.9:
+            
             #print("----")
         
-        filteredRulesList = rules_list
-        filteredRulesLableList = labelList_rules
+        filteredRulesList = tempRuleList
+        print("len(filteredRulesList)")
+        print(len(filteredRulesList))
+        filteredRulesLableList = tempLabelList_rules
+        print("filteredPrecisionRulesList")
+        print(filteredPrecisionRulesList)
         return filteredRulesList,filteredRulesLableList
 
 
     
     
     rules_list, labelList_rules, raw_rules = extractNlpRules_df(rules_DF)
+
+    #rules_list =rules_list[0:10]
     #rules_list, labelList_rules, raw_rules= extractRules_df(rules_DF)
     print("before Filter")
     predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
+
     #predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)   
     globalRulePrecisionList, globalRuleSupportList, rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
     globalCoverage = getGlobalCoverage(predictionComparisonList) # before
+    print(rulePrecisionListPerRule)
+    print(len(rulePrecisionListPerRule))
     #print(globalCoverage)
     print("----")
-    filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
+    filteredRulesList,filteredRulesLableList = filterPrecision(1.0, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
     print("after Filter")
     predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
     globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
     globalCoverage = getGlobalCoverage(predictionComparisonList) # after:4
-    filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
-    print("after Filter")
-    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
-    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
-    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
-    filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
-    print("after Filter")
-    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
-    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
-    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
-    filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
-    print("after Filter")
-    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
-    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
-    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
-    print("after Filter")
-    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
-    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
-    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
-    filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
-    print("after Filter")
-    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
-    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
-    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
-
-    print("after Filter")
-    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
-    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
-    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
-    filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
-    print("after Filter")
-    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
-    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
-    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
-
-    print("after Filter")
-    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
-    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
-    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
-    filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
-    print("after Filter")
-    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, filteredRulesList, filteredRulesLableList, featureDict)
-    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
-    globalCoverage = getGlobalCoverage(predictionComparisonList) # after:
-
+    print(rulePrecisionListPerRule)
+    print(len(rulePrecisionListPerRule))
+    
+    #filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
 
     #print(globalCoverage)
     #rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
