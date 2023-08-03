@@ -295,7 +295,7 @@ if __name__ == '__main__':
         #resultName = "characteristic_rules"
         #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportList,   numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(discriminative_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath)
         #try:    
-        rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportList,   numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule  =cega_utils.calculateRulesMetrics(discriminative_rules, featureDict, test_set, trainedModelPrediction_Test_overIterations[i])
+        rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportList,   numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule  =cega_utils.calculateRulesMetrics(discriminative_rules, featureDict, test_set, trainedModelPrediction_Test_overIterations[i], datasetType)
         #resultName = "characteristic_rules"
         #rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportList,  = numberOfGeneratedRules,  =cega_utils.calculateRulesMetrics(characteristic_rules, resultName ,featureDict, testloader, trainedModelPrediction_Test, rulesResultDataPath, debug=True )
         discriminative_rules_overIterations.append(discriminative_rules)

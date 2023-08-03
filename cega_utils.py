@@ -463,7 +463,7 @@ def getCharasteristicRules(pos_rules, pos_label, neg_rules,neg_label ):
     return  chr_rules
 
                                                             #TODO: predictions to predictionsList over iteration
-def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirPath , debug = False):
+def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, datasetType):#, dirPath , debug = False):
     """
     
     featureDict example: featureDict= {'Pregnancies':0, 'Glucose':1, 'BloodPressure':2, 'SkinThickness':3, 'Insulin':4,
@@ -484,14 +484,22 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         labelList_rules =  rules_DF["label"].to_list()# rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
 
         labelList_rules = [frozenset for frozenset in labelList_rules] #[set(frozenset).pop() for frozenset in labelList_rules]
+        
         #print(labelList_rules)
         return rulesList, labelList_rules, rulesList # dont filter so RAW and "filtered" are same
      
     def extractRules_df(rules_DF):
         rulesList =rules_DF["itemset"].to_list()
         rulesList = [set(frozenset) for frozenset in rulesList]
-        labelList_rules = rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
-        labelList_rules = [set(frozenset).pop() for frozenset in labelList_rules]
+
+        labelList_rules =  rules_DF["label"].to_list()# rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
+
+        labelList_rules = [frozenset for frozenset in labelList_rules] #[set(frozenset).pop() for frozenset in labelList_rules]
+        
+        #rulesList =rules_DF["itemset"].to_list()
+        #rulesList = [set(frozenset) for frozenset in rulesList]
+        #labelList_rules = rules_DF["label"].apply(lambda x: ', '.join(list(x))).astype("unicode")
+        #labelList_rules = [set(frozenset).pop() for frozenset in labelList_rules]
 
         pattern = r"([+-]?\d+\.\d+)(<\w+(\s*\w*)*<=)([+-]?\d+\.\d+)"
 
@@ -551,7 +559,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         return predictionComparisonList, rulesComplexityList
         
         
-    def applyRulesOnData(X,predictions, rules, labelList_rules, featureDict):
+    def applyRulesOnData(X,predictions, rules, labelList_rules, featureDict): 
         """
         X: List
         predictions: List
@@ -615,7 +623,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
     
     #globalCoverage = globalCoverage(predictionList)
 
-    def rulePrecisionAndSupport(predictionComparisonList, precicionThreshold, rules_list, labelList_rules): 
+    def rulePrecisionAndSupport(predictionComparisonList, precicionThreshold, rules_list, labelList_rules, datasetType): 
         # recision of an applicable rule on test instances(precision)
         # AND how many instances does a rule cover (Support)
         import sys
@@ -711,8 +719,11 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
         globalRulePrecisionList = [] 
         globalRuleSupportList = [] 
 
+        if datasetType == "NLP":
 
-        newPredictionComparisonList, _TestRulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
+            newPredictionComparisonList, _TestRulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
+        else:
+            newPredictionComparisonList, _TestRulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
         newPredictionComparisonList_transposed =  np.array(newPredictionComparisonList).transpose()
         #print(np.shape(newPredictionComparisonList))
 
@@ -797,20 +808,27 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
     #labelList_rules =labelList_rules[0:10]
 
     #rules_list, labelList_rules, raw_rules= extractRules_df(rules_DF)
-    print("before Filter")
-    predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
+    if datasetType == "NLP":
 
-    #predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)   
+
+        predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
+    else:
+        rules_list, labelList_rules, raw_rules = extractRules_df(rules_DF)
+
+        predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
+        #predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)   
     
-    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules,predictionComparisonList  = rulePrecisionAndSupport (predictionComparisonList, 0.9, rules_list, labelList_rules)
-    #globalRulePrecisionList, globalRuleSupportList, rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
-    globalCoverage = getGlobalCoverage(predictionComparisonList) # before
+        globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules,predictionComparisonList  = rulePrecisionAndSupport (predictionComparisonList, 0.9, rules_list, labelList_rules, datasetType)
+        #globalRulePrecisionList, globalRuleSupportList, rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
+        globalCoverage = getGlobalCoverage(predictionComparisonList) # before
+
+
     #print(rulePrecisionListPerRule)
     #print(len(rulePrecisionListPerRule))
     #print(globalCoverage)
-    print("----")
+    #print("----")
     #rules_list, labelList_rules = filterPrecision(1.0, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
-    print("after Filter")
+    #print("after Filter")
     #predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
     #and filter
     #globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules = rulePrecisionAndSupport (predictionComparisonList, 0.9, rules_list, labelList_rules,rulePrecisionListPerRule)
