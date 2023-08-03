@@ -714,30 +714,27 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
 
         newPredictionComparisonList, _TestRulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
         newPredictionComparisonList_transposed =  np.array(newPredictionComparisonList).transpose()
+        #print(np.shape(newPredictionComparisonList))
 
-        for i in newPredictionComparisonList: 
-            tempCorrectClassified = list(i).count(1)
+
+        tempCorrectClassified = 0
+        tempFalseClassified = 0
+        tempNotAppliable = 0
+        for i in newPredictionComparisonList_transposed: 
+            tempCorrectClassified +=  list(i).count(1)
             tempFalseClassified =   list(i).count(0)
             tempNotAppliable =   list(i).count(-1)
 
-           # print(len(i[0]))
-            #print("--")
-            #print(len(i)) # ammount of rules
-            print("FIXXX THiS AND CHECK TRANSPOSED OR NOT ????")
-            if tempNotAppliable == len(i):
-                globalRulePrecisionList.append(1)
-            else:
-                globalRulePrecisionList.append(tempCorrectClassified / ((tempCorrectClassified +tempFalseClassified)+ epsilon))
-            print(len(i))
-            print("..")
-            print(tempCorrectClassified)
-            print(tempFalseClassified)
-            print(tempNotAppliable)
+        if tempNotAppliable == len(i):
+            globalRulePrecisionList.append(1)
+        else:
+            globalRulePrecisionList.append(tempCorrectClassified / ((tempCorrectClassified +tempFalseClassified)+ epsilon))
+
             
-            # what even is global support?
-            globalRuleSupportList.append((tempCorrectClassified + tempFalseClassified)/ ((len(i) -tempNotAppliable) + epsilon) )
+        # what even is global support? how many are aplicable
+        globalRuleSupportList.append((tempCorrectClassified + tempFalseClassified)/ (tempCorrectClassified +tempFalseClassified +tempNotAppliable) + epsilon) 
         
-        return globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules
+        return globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules, newPredictionComparisonList
     
     def accuracyOfAppliableRules(X):
 
@@ -805,7 +802,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions):#, dirP
 
     #predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)   
     
-    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules = rulePrecisionAndSupport (predictionComparisonList, 0.9, rules_list, labelList_rules)
+    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules,predictionComparisonList  = rulePrecisionAndSupport (predictionComparisonList, 0.9, rules_list, labelList_rules)
     #globalRulePrecisionList, globalRuleSupportList, rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
     globalCoverage = getGlobalCoverage(predictionComparisonList) # before
     #print(rulePrecisionListPerRule)

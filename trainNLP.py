@@ -129,7 +129,7 @@ if __name__ == '__main__':
     #SETUP
 
     size_train_batch = 64
-    size_test_batch =5 # 3h apriori
+    size_test_batch = 15 # 3h apriori
     n_batches = 2
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
@@ -190,7 +190,7 @@ if __name__ == '__main__':
     plotResults.plotGradientMagnitude(dataPath, "GradientMagnitudePerFeature3","test", perFeature=True)
     
     print("total_gradientsList")
-    plotResults.plotTotalGradientMagnitude(total_gradientsList,dataPath, "total_gradientsList","test")
+    plotResults.plotTotalGradientMagnitude(total_gradientsList,dataPath, "total_gradientsList","test") # save in data-npz
 
     figAcc, axsAcc = plt.subplots(nrows=1, ncols=1)
 
@@ -223,14 +223,16 @@ if __name__ == '__main__':
         tempTrainedModelPrediction_Test = model.predict(X_test.to(device))
         trainedModelPrediction_Test_overIterations.append(tempTrainedModelPrediction_Test)
 
-    datasetType = "categorical"
+    datasetType = "NLP"
     featureNames = []
     #for i in range(len(data["testGradientsPerSamplePerFeature"][-1])): #vocab_size
     gradsTemp = data["testGradientsPerSamplePerFeature"]
+    print(np.shape(gradsTemp))
     for i in range(len(gradsTemp[1][-1])):
 
         featureNames.append(str(i))
-
+        #print(featureNames)
+    #print.print()
     featureNames = cega_utils.calculateAndSaveOHE_Rules(X_test, featureNames,trainedModelPrediction_Test_overIterations[-1], data["testGradientsPerSamplePerFeature_iteration"], datasetType,debug= False, vocab=vocab) #OHEresults
 
 
@@ -314,7 +316,9 @@ if __name__ == '__main__':
         rules_list_overIterations.append(rules_list)
         labelList_rules_overIterations.append(labelList_rules)
         rulePrecisionList_overIterations.append(rulePrecisionList)
+
         predictionComparisonList_overIterations.append(predictionComparisonList)
+
         rulesComplexityList_overIterations.append(rulesComplexityList)
         globalCoverageList_overIterations.append(globalCoverage)
         ruleSupportList_overIterations.append(ruleSupportList)
@@ -379,8 +383,8 @@ if __name__ == '__main__':
     mostRecentResultPaths_discriminative = pathToDiscriminative_rules + (resultPaths_dicriminative_rules[-1])
 
     data = utils.loadData(mostRecentResultPaths_discriminative)
-
-    trackedRules_OHE = cega_utils.trackRulesList(data["rules_list_overIterations"])
+    temp_rules_list_overIterations = data["rules_list_overIterations"]
+    trackedRules_OHE = cega_utils.trackRulesList(temp_rules_list_overIterations)
     
     utils.appendToNPZ(pathToNPZ, "trackedRules_OHE", trackedRules_OHE)
 
