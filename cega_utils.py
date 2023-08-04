@@ -739,8 +739,12 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         if tempNotAppliable == len(i):
             globalRulePrecisionList.append(1)
         else:
-            globalRulePrecisionList.append(tempCorrectClassified / ((tempCorrectClassified +tempFalseClassified)+ epsilon))
+            print(tempCorrectClassified)
+            print(tempFalseClassified)
+            print(tempNotAppliable)
 
+            globalRulePrecisionList.append(tempCorrectClassified / ((tempCorrectClassified +tempFalseClassified)+ epsilon))
+            print(globalRulePrecisionList)
             
         # what even is global support? how many are aplicable
         globalRuleSupportList.append((tempCorrectClassified + tempFalseClassified)/ (tempCorrectClassified +tempFalseClassified +tempNotAppliable) + epsilon) 
@@ -818,9 +822,9 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
         #predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)   
     
-        globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules,predictionComparisonList  = rulePrecisionAndSupport (predictionComparisonList, 0.9, rules_list, labelList_rules, datasetType)
+    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules,predictionComparisonList  = rulePrecisionAndSupport (predictionComparisonList, 0.9, rules_list, labelList_rules, datasetType)
         #globalRulePrecisionList, globalRuleSupportList, rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
-        globalCoverage = getGlobalCoverage(predictionComparisonList) # before
+    globalCoverage = getGlobalCoverage(predictionComparisonList) # before
 
 
     #print(rulePrecisionListPerRule)
