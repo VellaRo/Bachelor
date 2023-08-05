@@ -26,9 +26,7 @@ def smooth_grad(input, n_samples, stdev_spread ,model,device):
                 #input_embedded = model.embed_input(input)
                 try: 
                     input = model.embed_input(input)
-                    print("embed for NLP")
                 except:
-                    print("not NLP")
                     pass
                 if input.is_cuda:
 
@@ -205,9 +203,11 @@ def appendToNPZ(NPZPath, name, newData):
 
     returns None
     """    
-    data = np.load(NPZPath, allow_pickle=True)
-    data = dict(data)
-    data[str(name)] = newData
+    with open(NPZPath, 'rb') as f:
+
+        data = np.load(NPZPath, allow_pickle=True)
+        data = dict(data)
+        data[str(name)] = newData
 
     np.savez(NPZPath,**data )
 

@@ -14,6 +14,7 @@ import time
 from torchtext.data.utils import get_tokenizer 
 from datasetsNLP import _get_vocab
 import numpy as np
+import torch
 def loadOHE_Rules(iterationNumber):
     """
     """
@@ -188,7 +189,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         os.makedirs(output_directory)
 
     if datasetType == "numerical":
-
+        print("numerical")
         for feature in data_df.columns.to_list(): # for NLP this must be the whole vocab 
             if feature in intervals_dict:
                 intervals = intervals_dict[feature]
@@ -477,7 +478,6 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         y_List.extend(lables.detach())
     
     def extractNlpRules_df(rules_DF):
-
         rulesList =rules_DF["itemset"].to_list()
         rulesList = [set(frozenset) for frozenset in rulesList]
 
@@ -639,8 +639,10 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         #print("----")
         #print(len(rules_list))
         
+        print(len(rules_list))
         COPY_RuleList = rules_list.copy()
         COPY_LabelList_rules =labelList_rules.copy()
+
         for indx,i in enumerate(predictionComparisonList_transposed): #
 
             #print("len(predictionComparisonList_transposed)")
@@ -715,10 +717,9 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         
         ######################################
         # FIX fix prediction comparison list for GLOBAL support and precision
-        print("FIX fix prediction comparison list for GLOBAL support and precision")
+        print("change precision to accuracy (ONLY NAME)")
         globalRulePrecisionList = [] 
         globalRuleSupportList = [] 
-
         if datasetType == "NLP":
 
             newPredictionComparisonList, _TestRulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
@@ -731,13 +732,21 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         tempCorrectClassified = 0
         tempFalseClassified = 0
         tempNotAppliable = 0
+        print(np.shape(newPredictionComparisonList))
+
+        i = []
+        
         for i in newPredictionComparisonList_transposed: 
             tempCorrectClassified +=  list(i).count(1)
             tempFalseClassified =   list(i).count(0)
             tempNotAppliable =   list(i).count(-1)
+        
+        #if i == None:
+            
 
         if tempNotAppliable == len(i):
             globalRulePrecisionList.append(1)
+        
         else:
             print(tempCorrectClassified)
             print(tempFalseClassified)
@@ -746,8 +755,8 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
             globalRulePrecisionList.append(tempCorrectClassified / ((tempCorrectClassified +tempFalseClassified)+ epsilon))
             print(globalRulePrecisionList)
             
-        # what even is global support? how many are aplicable
-        globalRuleSupportList.append((tempCorrectClassified + tempFalseClassified)/ (tempCorrectClassified +tempFalseClassified +tempNotAppliable) + epsilon) 
+            # what even is global support? how many are aplicable
+            globalRuleSupportList.append((tempCorrectClassified + tempFalseClassified)/ (tempCorrectClassified +tempFalseClassified +tempNotAppliable) + epsilon) 
         
         return globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules, newPredictionComparisonList
     
@@ -806,15 +815,14 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
 
     
     
-    rules_list, labelList_rules, raw_rules = extractNlpRules_df(rules_DF)
+    
 
     #rules_list =rules_list[0:10]
     #labelList_rules =labelList_rules[0:10]
 
     #rules_list, labelList_rules, raw_rules= extractRules_df(rules_DF)
     if datasetType == "NLP":
-
-
+        rules_list, labelList_rules, raw_rules = extractNlpRules_df(rules_DF)
         predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
     else:
         rules_list, labelList_rules, raw_rules = extractRules_df(rules_DF)
@@ -930,6 +938,127 @@ def trackRulesList(rules_list_overIterations):
     trackedRules_OHE = one_hot_matrix
     return trackedRules_OHE
 
+def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string, test_set , datasetType,vocab=None ):
+
+    # get predictionsOver iterations
+    # filter out any special models
+    r = re.compile("^[0-9]*$")
+    modelsDirFiltered = list(filter(r.match, os.listdir(modelsDirPath))) # remove any special models
+
+    
+    trainedModelPrediction_Test_overIterations = []
+    for modelNumber,filename in enumerate(np.sort(list(eval(i) for i in modelsDirFiltered))): #(os.listdir(modelsDirPath)))): # iterations time 
+        model.load_state_dict(torch.load(modelsDirPath + "/" +str(filename)))
+        model.eval()
+        tempTrainedModelPrediction_Test = model.predict(X_test.to(device))
+        trainedModelPrediction_Test_overIterations.append(tempTrainedModelPrediction_Test)
+
+    featureNames = []
+    #for i in range(len(data["testGradientsPerSamplePerFeature"][-1])): #vocab_size
+    gradsTemp = data["testGradientsPerSamplePerFeature"]
+    print(np.shape(gradsTemp))
+    for i in range(len(gradsTemp[1][-1])):
+    
+        featureNames.append(str(i))
+        #print(featureNames)
+    #print.print()
+    featureNames = calculateAndSaveOHE_Rules(X_test, featureNames,trainedModelPrediction_Test_overIterations[-1], data["testGradientsPerSamplePerFeature_iteration"], datasetType,debug= False, vocab=vocab) #OHEresults
+
+
+    import warnings
+    warnings.filterwarnings('ignore')
+    #     frequent_itemsets = apriori(basket_sets.astype('bool'), min_support=0.07, use_colnames=True) https://stackoverflow.com/questions/74114745/how-to-fix-deprecationwarning-dataframes-with-non-bool-types-result-in-worse-c
+    debug = False
+
+
+    pos_label = 0
+    neg_label = 1#'0'
+
+    featureDict = {feature: index  for index, feature in enumerate(featureNames)} #{feature: int(feature)  for feature in featureNames}#{feature: index  for index, feature in enumerate(featureNames)}
+
+
+
+    discriminative_rules_overIterations = []
+    characteristic_rules_overIterations = []
+    rules_list_overIterations   = []
+    labelList_rules_overIterations = []
+    rulePrecisionList_overIterations =[]
+    predictionComparisonList_overIterations = []
+    rulesComplexityList_overIterations = []
+    globalCoverageList_overIterations = []    
+    ruleSupportList_overIterations = []
+    numberOfGeneratedRules_overIterations = []
+    jaccardSimilarity_overIterations = []
+    cosineSimilarity_overIterations = []
+    diceSimilarity_overIterations = []
+    overlapSimilarity_overIterations = []
+    raw_rules_overIterations = []
+    numberOfGeneratedRulesRAW_overIterations =[]
+    rulePrecisionListPerRule_overIterations = []
+
+    tempRules_list = None
+    
+    from tqdm import tqdm
+    for i in tqdm(range(len(os.listdir("./OHEresults/")))):
+        ohe_df = loadOHE_Rules(i)
+
+        all_rules, pos_rules , neg_rules =  runApriori(ohe_df,len(X_test), pos_label ,neg_label)
+        discriminative_rules = getDiscriminativeRules(all_rules, pos_label, neg_label )
+        characteristic_rules = getCharasteristicRules(pos_rules, pos_label, neg_rules,neg_label )
+
+        resultName = "discriminative_rules"
+
+        rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportList,   numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule  = calculateRulesMetrics(discriminative_rules, featureDict, test_set, trainedModelPrediction_Test_overIterations[i], datasetType)
+        discriminative_rules_overIterations.append(discriminative_rules)
+        characteristic_rules_overIterations.append(characteristic_rules) 
+
+
+        rules_list_overIterations.append(rules_list)
+        labelList_rules_overIterations.append(labelList_rules)
+        rulePrecisionList_overIterations.append(rulePrecisionList)
+
+        predictionComparisonList_overIterations.append(predictionComparisonList)
+
+        rulesComplexityList_overIterations.append(rulesComplexityList)
+        globalCoverageList_overIterations.append(globalCoverage)
+        ruleSupportList_overIterations.append(ruleSupportList)
+        numberOfGeneratedRules_overIterations.append(numberOfGeneratedRules)
+        raw_rules_overIterations.append(raw_rules)
+        numberOfGeneratedRulesRAW_overIterations.append(len(raw_rules))
+        rulePrecisionListPerRule_overIterations.append(rulePrecisionListPerRule)
+
+        if tempRules_list is not None:
+            print("not Jaccard")
+            jaccardSimilarity_overIterations.append(jaccard_similarity(rules_list , tempRules_list))
+            cosineSimilarity_overIterations.append(cosine_similarity(rules_list , tempRules_list))
+            diceSimilarity_overIterations.append(dice_similarity(rules_list , tempRules_list))
+            overlapSimilarity_overIterations.append(overlap_coefficient(rules_list , tempRules_list))
+            #jaccardSimilarity_overIterations.append(cosine_similarity(rules_list , tempRules_list))
+
+        tempRules_list = rules_list
+
+    if debug:
+        pathToNPZ =  dirPath + f"DEBUG.npz"
+    else:    
+        pathToNPZ =  dirPath +"NLP_Results/rulesResults/" f"{resultName}/_{date_time_string}.npz"
+
+    np.savez(pathToNPZ ,rules_list_overIterations = rules_list_overIterations) 
+    utils.appendToNPZ(pathToNPZ, "labelList_rules_overIterations", labelList_rules_overIterations)
+    utils.appendToNPZ(pathToNPZ, "rulePrecisionList_overIterations", rulePrecisionList_overIterations)
+    utils.appendToNPZ(pathToNPZ, "predictionComparisonList_overIterations", predictionComparisonList_overIterations)
+    utils.appendToNPZ(pathToNPZ, "rulesComplexityList_overIterations", rulesComplexityList_overIterations)
+    utils.appendToNPZ(pathToNPZ, "globalCoverageList_overIterations", globalCoverageList_overIterations)
+    utils.appendToNPZ(pathToNPZ, "ruleSupportList_overIterations", ruleSupportList_overIterations)
+    utils.appendToNPZ(pathToNPZ, "numberOfGeneratedRules_overIterations", numberOfGeneratedRules_overIterations)
+    utils.appendToNPZ(pathToNPZ, "jaccardSimilarity_overIterations", jaccardSimilarity_overIterations)
+    utils.appendToNPZ(pathToNPZ, "cosineSimilarity_overIterations", cosineSimilarity_overIterations)
+    utils.appendToNPZ(pathToNPZ, "overlapSimilarity_overIterations", overlapSimilarity_overIterations)
+    utils.appendToNPZ(pathToNPZ, "diceSimilarity_overIterations", diceSimilarity_overIterations)
+    utils.appendToNPZ(pathToNPZ, "raw_rules_overIterations", raw_rules_overIterations)
+    utils.appendToNPZ(pathToNPZ, "numberOfGeneratedRulesRAW_overIterations", numberOfGeneratedRulesRAW_overIterations) 
+    utils.appendToNPZ(pathToNPZ, "rulePrecisionListPerRule_overIterations", rulePrecisionListPerRule_overIterations)
+
+    return pathToNPZ
 ###TODO:
 #  
 #for 3 : need to asses "positive influence" *** 

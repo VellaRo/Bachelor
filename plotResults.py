@@ -473,7 +473,7 @@ def plotWeightTrace(dirPath, plotName, set):
 
 #CLEANED # also do with set ...? 
 
-def plotTotalGradientMagnitude(total_gradientsList,dirPath, plotName, set):
+def plotTotalGradientMagnitude(total_gradientsList,dirPath, plotName):#, set):
     print("plotting: total gradient magnitude Averaged over number of grads in parameters")
     figGM, axsGM = plt.subplots(nrows=1, ncols=1)
     axsGM.plot(total_gradientsList)
@@ -545,3 +545,134 @@ def plotGradientMagnitude(dirPath, plotName, set, perFeature):
         pickle.dump(figGM, open(str(dirPath) + str(plotName), 'wb'))
 
     return None
+
+def plotRulesResults(data):
+    
+    def calculate_mean_of_lists(list_of_lists):
+        means = []
+        for sublist in list_of_lists:
+            if len(sublist) == 0:
+                means.append(-1)
+            else:
+                sublist_mean = np.mean(sublist)
+                means.append(sublist_mean)
+        return means
+
+
+    pathToRulesResults = "./NLP_Results/rulesResults/"
+    print("pathToRulesResults  " + pathToRulesResults)
+    fig1, axs1 = plt.subplots(nrows=1, ncols=1)
+    axs1.plot(calculate_mean_of_lists(data["rulePrecisionList_overIterations"]))
+    axs1.set_title("rulePrecisionList_overIterations")
+    axs1.set_xlabel("iteration")
+    axs1.set_ylabel("precision")
+    fig1.savefig(str(pathToRulesResults) + "rulePrecisionList_overIterations")    
+    pickle.dump(fig1, open(pathToRulesResults + "rulePrecisionList_overIterations", 'wb'))
+    
+    fig2, axs2 = plt.subplots(nrows=1, ncols=1)
+    axs2.plot(calculate_mean_of_lists(data["ruleSupportList_overIterations"]))
+    axs2.set_title("ruleSupportList_overIterations")
+    axs2.set_xlabel("iteration")
+    axs2.set_ylabel("support")
+    fig2.savefig(str(pathToRulesResults) + "ruleSupportList_overIterations")    
+    pickle.dump(fig2, open(pathToRulesResults + "ruleSupportList_overIterations", 'wb'))
+    
+    fig3, axs3 = plt.subplots(nrows=1, ncols=1)
+    axs3.plot(calculate_mean_of_lists(data["rulesComplexityList_overIterations"]))
+    axs3.set_title("rulesComplexityList_overIterations")
+    axs3.set_xlabel("iteration")
+    axs3.set_ylabel("complexity")
+    fig3.savefig(str(pathToRulesResults) + "rulesComplexityList_overIterations")    
+    pickle.dump(fig3, open(pathToRulesResults + "rulesComplexityList_overIterations", 'wb'))
+    
+    fig4, axs4 = plt.subplots(nrows=1, ncols=1)
+    axs4.plot(data["globalCoverageList_overIterations"])
+    axs4.set_title("globalCoverageList_overIterations")
+    axs4.set_xlabel("iteration")
+    axs4.set_ylabel("coverage")
+    fig4.savefig(str(pathToRulesResults) + "globalCoverageList_overIterations")    
+    pickle.dump(fig4, open(pathToRulesResults + "globalCoverageList_overIterations", 'wb'))
+    
+    fig5, axs5 = plt.subplots(nrows=1, ncols=1)
+    axs5.plot(data["numberOfGeneratedRules_overIterations"])
+    axs5.set_title("numberOfGeneratedRules_overIterations")
+    axs5.set_xlabel("iteration")
+    axs5.set_ylabel("numGeneratedRules")
+    fig5.savefig(str(pathToRulesResults) + "numberOfGeneratedRules_overIterations")    
+    pickle.dump(fig5, open(pathToRulesResults + "numberOfGeneratedRules_overIterations", 'wb'))
+    
+    fig6, axs6 = plt.subplots(nrows=1, ncols=1)
+    axs6.plot(data["jaccardSimilarity_overIterations"])
+    fig6.savefig(str(pathToRulesResults) + "jaccardSimilarity_overIterations") 
+    axs6.set_title("jaccardSimilarity_overIterations")
+    axs6.set_xlabel("iteration")
+    axs6.set_ylabel("similarity")
+    pickle.dump(fig6, open(pathToRulesResults + "jaccardSimilarity_overIterations", 'wb'))
+    
+    fig7, axs7 = plt.subplots(nrows=1, ncols=1)
+    axs7.plot(data["cosineSimilarity_overIterations"])
+    axs7.set_title("cosineSimilarity_overIterations")
+    axs7.set_xlabel("iteration")
+    axs7.set_ylabel("similarity")
+    fig7.savefig(str(pathToRulesResults) + "cosineSimilarity_overIterations")    
+    pickle.dump(fig7, open(pathToRulesResults + "cosineSimilarity_overIterations", 'wb'))
+    
+    fig8, axs8 = plt.subplots(nrows=1, ncols=1)
+    axs8.plot(data["diceSimilarity_overIterations"])
+    axs8.set_title("diceSimilarity_overIterations")
+    axs8.set_xlabel("iteration")
+    axs8.set_ylabel("similarity")
+    fig8.savefig(str(pathToRulesResults) + "diceSimilarity_overIterations")    
+    pickle.dump(fig8, open(pathToRulesResults + "diceSimilarity_overIterations", 'wb'))
+    
+    fig9, axs9 = plt.subplots(nrows=1, ncols=1)
+    axs9.plot(data["overlapSimilarity_overIterations"])
+    axs9.set_title("overlapSimilarity_overIterations")
+    axs9.set_xlabel("iteration")
+    axs9.set_ylabel("similarity")
+    fig9.savefig(str(pathToRulesResults) + "overlapSimilarity_overIterations")    
+    pickle.dump(fig9, open(pathToRulesResults + "overlapSimilarity_overIterations", 'wb'))
+    
+    fig10, axs10 = plt.subplots(nrows=1, ncols=1)
+    axs10.plot(data["numberOfGeneratedRulesRAW_overIterations"])
+    axs10.set_title("numberOfGeneratedRulesRAW_overIterations")
+    axs10.set_xlabel("iteration")
+    axs10.set_ylabel("numberOfGeneratedRulesRAW_overIterations")
+    fig10.savefig(str(pathToRulesResults) + "numberOfGeneratedRulesRAW_overIterations")    
+    pickle.dump(fig10, open(pathToRulesResults + "numberOfGeneratedRulesRAW_overIterations", 'wb'))
+
+    fig11, axs11 = plt.subplots(nrows=1, ncols=1)
+    axs11.plot(calculate_mean_of_lists(data["rulePrecisionListPerRule_overIterations"])) 
+    axs11.set_title("rulePrecisionListPerRule_overIterations")
+    axs11.set_xlabel("iteration")
+    axs11.set_ylabel("rulePrecisionListPerRule_overIterations")
+    fig11.savefig(str(pathToRulesResults) + "rulePrecisionListPerRule_overIterations")    
+    pickle.dump(fig1, open(pathToRulesResults + "rulePrecisionListPerRule_overIterations", 'wb'))
+
+def plotTrainingResults(data, dataPath):
+    
+    print("plotting trainingResults...")
+    print("cosine_similarity")
+    plotCosineSimilarity(dataPath, "cosine_simialarity", set="test")
+    print("percentageWeightsSignDifference3")
+    plotWeightSignDifferences(dataPath, "percentageWeightsSignDifference3" , "test")
+    print("weightsMagnitude3")
+    plotWeightMagnitude(dataPath, "weightsMagnitude3","test")
+    print("L2Distance3")
+    plotL2Distance(dataPath, "L2Distance3","test")
+    print("weightTrace3")
+    plotWeightTrace(dataPath, "weightTrace3","test")    
+    print("averageGradientMagnitude3")
+    plotGradientMagnitude(dataPath, "averageGradientMagnitude3","test", perFeature=False)
+    print("GradientMagnitudePerFeature3")
+    plotGradientMagnitude(dataPath, "GradientMagnitudePerFeature3","test", perFeature=True)
+    print("total_gradientsList")
+
+    plotTotalGradientMagnitude(data["Total_gradientsList_iteration"],dataPath, "Total_gradientsList_iteration")#,"test") # save in data-npz   
+    figAcc, axsAcc = plt.subplots(nrows=1, ncols=1)
+    axsAcc.set_title("testAccuracyPerIteration")
+    axsAcc.set_xlabel("iteration")
+    axsAcc.set_ylabel("accuracy")
+    axsAcc.plot(data["testAccPerIterationList"])
+    figAcc.savefig(dataPath + "testAccuracyPerIteration")
+    pickle.dump(figAcc, open(dataPath + "testAccuracyPerIteration", 'wb'))

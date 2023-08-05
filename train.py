@@ -46,6 +46,9 @@ def train(trainloader,random_indices_train, testloader,random_indices_test, mode
     os.mkdir(modelsdirPath)
     epoch_counter = 0
     iterationCounter = 0
+
+    total_gradientsList = []
+
     for epoch in range(num_epochs):
         running_corrects = 0
 
@@ -67,11 +70,19 @@ def train(trainloader,random_indices_train, testloader,random_indices_test, mode
             
             outputs = model(inputs)
             loss = loss_function(outputs, labels)
-
             _, preds = torch.max(outputs, 1)
             running_corrects += torch.sum(preds == labels.data)
             loss.backward()
+            total_gradients = 0.0   
+            # no softmax
+            for param in model.parameters():                
+                if param.grad is not None:
+                    # print(param.grad.numel())
+                    #print(param.grad)
 
+                    total_gradients += (torch.abs(param.grad).sum() / param.grad.numel())
+                    #print(total_gradients)
+            total_gradientsList.append(total_gradients.cpu())
             # save model
             torch.save(model.state_dict(), modelsdirPath +"/"+str(iterationCounter))
             iterationCounter += 1
@@ -157,4 +168,4 @@ def train(trainloader,random_indices_train, testloader,random_indices_test, mode
     shutil.copy(modelsdirPath +"/"+str(iterationCounter -1), modelsdirPath +"/finalModel") # rename macht probleme ???
 
     print("NOTE: THESE SAVED MODELS ARE BEEING OVERWRITTEN ON NEXT RUN")
-    #return grads#,grads_eval, grads_0, grads_epoch, grads_epoch_0, training_loss_epoch, training_acc# weights_batch, weights_epoch, intitial_weights#, final_weights
+    return total_gradientsList #,grads_eval, grads_0, grads_epoch, grads_epoch_0, training_loss_epoch, training_acc# weights_batch, weights_epoch, intitial_weights#, final_weights
