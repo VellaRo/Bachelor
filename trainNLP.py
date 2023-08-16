@@ -137,8 +137,8 @@ if __name__ == '__main__':
     #SETUP
 
     size_train_batch = 64
-    size_test_batch = 30 # 3h apriori
-    n_batches = 10
+    size_test_batch = 100 # 3h apriori
+    n_batches = 100
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -245,4 +245,7 @@ if __name__ == '__main__':
     ax2.tick_params(axis='y', labelcolor=color)
 
     fig.tight_layout()  # otherwise the right y-label is slightly clipped
+    
+    fig.savefig(str(dirPath) + str("AccLoss"))
+    pickle.dump(fig, open(str(dirPath) + str("AccLoss"), 'wb'))
     plt.show()

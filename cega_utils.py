@@ -642,6 +642,11 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         print(len(rules_list))
         COPY_RuleList = rules_list.copy()
         COPY_LabelList_rules =labelList_rules.copy()
+        
+        #workingCOPY_LabelList_rules = []
+        #workingCOPY_RuleList = []
+        ### 
+
 
         for indx,i in enumerate(predictionComparisonList_transposed): #
 
@@ -658,22 +663,59 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
             accuracyOfAppliableRules = (ruleTempCorrectClassified / ((ruleTempCorrectClassified + ruleTempFalseClassified) +epsilon))
             #print("NEEED TO APPEND accuracy FOR PLOT")
 
-            if accuracyOfAppliableRules < precicionThreshold:#rulePrecisionListPerRule[indx] < precicionThreshold:
+            ## might not need that just do it with binary remove and filter over coverage |  
+            #if accuracyOfAppliableRules < precicionThreshold:#rulePrecisionListPerRule[indx] < precicionThreshold:
+                
                 #print(accuracyOfAppliableRules)
                 #print("+")
             
-                workingCOPY_RuleList = COPY_RuleList.copy()
-                workingCOPY_LabelList_rules =COPY_LabelList_rules.copy()
+            workingCOPY_RuleList = COPY_RuleList.copy()
+            workingCOPY_LabelList_rules =COPY_LabelList_rules.copy()
                 
                 #tempRuleValue = workingCOPY_RuleList[i]
-                workingCOPY_RuleList[indx] = "remove" 
-                workingCOPY_RuleList = list(filter(lambda a: a != "remove",workingCOPY_RuleList ))
+            #    workingCOPY_RuleList[indx] = "remove" 
                 
                # tempLabelValue = workingCOPY_LabelList_rules[i]
-                workingCOPY_LabelList_rules[indx] = "remove"
-                workingCOPY_LabelList_rules = list(filter(lambda a: a != "remove", workingCOPY_LabelList_rules))
+            #    workingCOPY_LabelList_rules[indx] = "remove"
+            #else:
+            #    workingCOPY_RuleList = COPY_RuleList.copy()
+            #    workingCOPY_LabelList_rules = COPY_LabelList_rules.copy()
 
+            #workingCOPY_RuleList = list(filter(lambda a: a != "remove",workingCOPY_RuleList ))
+            #workingCOPY_LabelList_rules = list(filter(lambda a: a != "remove", workingCOPY_LabelList_rules))
+
+            ## END might not need that just do it with binary remove and filter over coverage  
+                
 # apply rules on data
+                
+            #sorted_indexes = sorted(range(len(predictionComparisonList_transposed[i])), key=lambda i: predictionComparisonList_transposed[i])
+            sorted_indexes = sorted(range(len(i)), key=lambda i: i)
+            #sorted_indexes = sorted(range(len(data)), key=lambda i: data[i])
+            for i in [0.05 ,0.1,0.5,0.9]:
+                #print(i)
+                # Calculate the number of elements to keep
+                num_elements_to_keep = int(len(predictionComparisonList) * i)
+                # Get the sorted indexes to keep
+                sorted_indexes_to_keep = sorted_indexes[:num_elements_to_keep]
+                # Create the pruned data using the sorted indexes
+                
+                pruned_Lables = [workingCOPY_LabelList_rules[j] for j in sorted_indexes_to_keep]
+                pruned_Rules = [workingCOPY_RuleList[j] for j in sorted_indexes_to_keep]
+
+                TestPredictionComparisonList, TestRulesComplexityList = applyNlpRulesOnData(X_List,predictions, pruned_Rules, pruned_Lables, featureDict)
+                coverageTEST = getGlobalCoverage(TestPredictionComparisonList)
+                print("---")
+                print(coverageTEST)
+                if coverageTEST >= 0.95:
+                    print("ok: cov   " + str(i))
+                    print("Original data:", len(workingCOPY_RuleList))
+                    workingCOPY_LabelList_rules = pruned_Lables
+                    workingCOPY_RuleList = pruned_Rules
+                    print("Pruned data:", len(pruned_Rules))
+                    break
+                else:
+                    if i == 0.9:
+                        print("didnt filter cause coverage to low")
 
                 #TestPredictionComparisonList, TestRulesComplexityList = applyNlpRulesOnData(X_List,predictions, workingCOPY_RuleList, workingCOPY_LabelList_rules, featureDict)
                 #test = getGlobalCoverage(TestPredictionComparisonList)
@@ -706,14 +748,12 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         #rules_list[indx] = "remove"
         #labelList_rules[indx] = "remove"
 
-
-      
         #print(len(rulePrecisionListPerRule)) len 1069 [ 0.3, 0.5 ,... 0.2,..]
 
         # danach gibt es iteration mal 1069 [.. , 0.5 , ..] # das ist die precision jeder einzelnen anwendbarer Rule ( countCorrect / len(appliable))
 
-        rules_list = list(filter(lambda a: a != "remove", rules_list))
-        labelList_rules = list(filter(lambda a: a != "remove", labelList_rules))
+        rules_list = workingCOPY_RuleList# list(filter(lambda a: a != "remove", workingCOPY_RuleList)) # RulesList
+        labelList_rules = workingCOPY_LabelList_rules #list(filter(lambda a: a != "remove", workingCOPY_LabelList_rules)) # LabelList_Rules
         
         ######################################
         # FIX fix prediction comparison list for GLOBAL support and precision
@@ -760,6 +800,31 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         
         return globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules, newPredictionComparisonList
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     def accuracyOfAppliableRules(X):
 
         for i in X:
@@ -826,7 +891,6 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
     else:
         rules_list, labelList_rules, raw_rules = extractRules_df(rules_DF)
-
         predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
         #predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)   
     

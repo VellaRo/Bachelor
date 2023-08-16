@@ -226,3 +226,22 @@ def loadData(pathToNPZ):
     #data = np.load(dirPath + 'data.npz' , allow_pickle=True)
     data = np.load(pathToNPZ, allow_pickle=True)
     return data    
+
+def binData(data , n):
+    binnedData = []
+    indicesList = []
+    for i in range(0,len(data),n):
+        print(i)
+        print(np.average(data[i:i+n]))
+        if i+n > len(data):
+            averageBin = np.average(data[i:-1])
+            indicesList.append(len(data))
+        else:
+            averageBin = np.average(data[i:i+n])
+            indicesList.append(i)
+        
+        binnedData.append(averageBin)
+        
+        #indicesList.append(i)
+
+    return binnedData,indicesList

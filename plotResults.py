@@ -309,8 +309,13 @@ def plotCosineSimilarity(dirPath, plotName, set):
         cosine_similarity_toFinalList= data["testCosine_similarity_toFinalList"]
 
 
-    axs.plot(range(len(cosine_similarity_toInitialList)),cosine_similarity_toInitialList)
-    axs.plot(range(len(cosine_similarity_toFinalList)),cosine_similarity_toFinalList )
+    axs.set_title("Cosine_similarity of the weights")
+    axs.set_xlabel("itreations")
+    axs.set_ylabel("cosine similarity")
+    axs.plot(range(len(cosine_similarity_toInitialList)),cosine_similarity_toInitialList, label ="toInitial")
+    axs.plot(range(len(cosine_similarity_toFinalList)),cosine_similarity_toFinalList, label ="toFinal" )
+    axs.legend()
+
     fig.savefig(str(dirPath) + str(plotName))
     pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
 
@@ -347,9 +352,13 @@ def plotWeightSignDifferences(dirPath, plotName, set):
 
     fig, axs = plt.subplots(nrows=1, ncols=1)
 
-    axs.plot(percentageWeightSignDifferences_toInitialList) 
-    axs.plot(percentageWeightSignDifferences_toFinalList) 
-    
+    axs.set_title("percentage of weightsign differences")
+    axs.set_xlabel("itreations")
+    axs.set_ylabel("percentageWeightSignDifferences")
+    axs.plot(percentageWeightSignDifferences_toInitialList, label ="toInitial") 
+    axs.plot(percentageWeightSignDifferences_toFinalList, label ="toFinal") 
+    axs.legend()
+
     fig.savefig(str(dirPath) + str(plotName))    
     pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
 
@@ -384,8 +393,11 @@ def plotWeightMagnitude(dirPath, plotName, set):
 
     
     fig, axs = plt.subplots(nrows=1, ncols=1)
+    axs.set_title("Weight Magnitude over iterations")
+    axs.set_xlabel("itreations")
+    axs.set_ylabel("Weight Magnitude")
+    axs.legend()
     axs.plot(absoluteIterationWeightsList)
-
     fig.savefig(str(dirPath) + str(plotName))    
     pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
     
@@ -421,11 +433,15 @@ def plotL2Distance(dirPath, plotName, set):
 
 
     fig, axs = plt.subplots(nrows=1, ncols=1)
-
-    axs.plot(l2Dist_toInitialList) 
-    axs.set
-    axs.plot(l2Dist_toFinalList)
     
+    axs.set_title("l2Distance between weights")
+    axs.set_xlabel("itreations")
+    axs.set_ylabel("l2Distance")
+    axs.plot(l2Dist_toInitialList, label="toInital") 
+    #axs.set
+    axs.plot(l2Dist_toFinalList,label="toFinal")
+    axs.legend()
+
     fig.savefig(str(dirPath) + str(plotName))    
     pickle.dump(fig, open(str(dirPath) + str(plotName), 'wb'))
 
@@ -557,8 +573,7 @@ def plotRulesResults(data):
                 sublist_mean = np.mean(sublist)
                 means.append(sublist_mean)
         return means
-
-
+    
     pathToRulesResults = "./NLP_Results/rulesResults/"
     print("pathToRulesResults  " + pathToRulesResults)
     fig1, axs1 = plt.subplots(nrows=1, ncols=1)
@@ -669,10 +684,36 @@ def plotTrainingResults(data, dataPath):
     print("total_gradientsList")
 
     plotTotalGradientMagnitude(data["Total_gradientsList_iteration"],dataPath, "Total_gradientsList_iteration")#,"test") # save in data-npz   
-    figAcc, axsAcc = plt.subplots(nrows=1, ncols=1)
-    axsAcc.set_title("testAccuracyPerIteration")
-    axsAcc.set_xlabel("iteration")
-    axsAcc.set_ylabel("accuracy")
-    axsAcc.plot(data["testAccPerIterationList"])
-    figAcc.savefig(dataPath + "testAccuracyPerIteration")
-    pickle.dump(figAcc, open(dataPath + "testAccuracyPerIteration", 'wb'))
+    #figTG, axsTG = plt.subplots(nrows=1, ncols=1)
+    #axsTG.set_title("testAccuracyPerIteration")
+    #axsTG.set_xlabel("iteration")
+    #axsTG.set_ylabel("accuracy")
+    #axsTG.plot(data["testAccPerIterationList"])
+    #figTG.savefig(dataPath + "testAccuracyPerIteration")
+    #pickle.dump(figTG, open(dataPath + "testAccuracyPerIteration", 'wb'))
+
+
+
+    #plotTotalGradientMagnitudeBinned(data["Total_gradientsList_iteration"],dataPath, "Total_gradientsList_iteration")#,"test") # save in data-npz   
+    
+    
+    figBinnedGrad, axsBinnedGrad = plt.subplots(nrows=1, ncols=1)
+    axsBinnedGrad.set_title("binnedGradients")
+    axsBinnedGrad.set_xlabel("iteration")
+    axsBinnedGrad.set_ylabel("gradients")
+    #axshist.hist(data["Total_gradientsList_iteration"], bins=15)
+
+    binnedTotal_gradientsList_iteration1,indicesList1 = utils.binData(data["Total_gradientsList_iteration"], 1)
+    binnedTotal_gradientsList_iteration2,indicesList2 = utils.binData(data["Total_gradientsList_iteration"], 2)
+    binnedTotal_gradientsList_iteration3,indicesList3 = utils.binData(data["Total_gradientsList_iteration"], 3)
+    binnedTotal_gradientsList_iteration5,indicesList5 = utils.binData(data["Total_gradientsList_iteration"], 5)
+
+
+
+    axsBinnedGrad.plot(indicesList1, binnedTotal_gradientsList_iteration1, label="1" )
+    axsBinnedGrad.plot(indicesList2,binnedTotal_gradientsList_iteration2,label="2")
+    axsBinnedGrad.plot(indicesList3, binnedTotal_gradientsList_iteration3,label="3")
+    axsBinnedGrad.plot(indicesList5 ,binnedTotal_gradientsList_iteration5, label="5")
+    axsBinnedGrad.legend()
+    figBinnedGrad.savefig(dataPath + "BinnedGrad")
+    pickle.dump(figBinnedGrad, open(dataPath + "BinnedGrad", 'wb'))
