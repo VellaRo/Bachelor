@@ -623,7 +623,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
     
     #globalCoverage = globalCoverage(predictionList)
 
-    def rulePrecisionAndSupport(predictionComparisonList, precicionThreshold, rules_list, labelList_rules, datasetType): 
+    def __rulePrecisionAndSupport(predictionComparisonList, precicionThreshold, rules_list, labelList_rules, datasetType): 
         # recision of an applicable rule on test instances(precision)
         # AND how many instances does a rule cover (Support)
         import sys
@@ -632,6 +632,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         predictionComparisonList_transposed =  np.array(predictionComparisonList).transpose()
 
         rulePrecisionListPerRule = []
+        ruleSupportListPerRule =[]
         #print(len(predictionComparisonList_transposed))
         #print(np.shape(predictionComparisonList_transposed))
         #print(predictionComparisonList[:3])
@@ -647,9 +648,10 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         #workingCOPY_RuleList = []
         ### 
 
+        workingCOPY_RuleList = COPY_RuleList.copy()
+        workingCOPY_LabelList_rules =COPY_LabelList_rules.copy()
 
         for indx,i in enumerate(predictionComparisonList_transposed): #
-
             #print("len(predictionComparisonList_transposed)")
  
 #            print(len(predictionComparisonList_transposed))    
@@ -661,6 +663,8 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
 #            print(ruleTempFalseClassified)
 #            print(ruleTempNotAppliable)
             accuracyOfAppliableRules = (ruleTempCorrectClassified / ((ruleTempCorrectClassified + ruleTempFalseClassified) +epsilon))
+            supportOfRule = (ruleTempCorrectClassified + ruleTempFalseClassified)/ ((ruleTempCorrectClassified +ruleTempFalseClassified +ruleTempNotAppliable) + epsilon) 
+
             #print("NEEED TO APPEND accuracy FOR PLOT")
 
             ## might not need that just do it with binary remove and filter over coverage |  
@@ -668,10 +672,14 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
                 
                 #print(accuracyOfAppliableRules)
                 #print("+")
-            
-            workingCOPY_RuleList = COPY_RuleList.copy()
-            workingCOPY_LabelList_rules =COPY_LabelList_rules.copy()
-                
+            if accuracyOfAppliableRules * supportOfRule >= 0.5:
+                rulePrecisionListPerRule.append(accuracyOfAppliableRules)
+                ruleSupportListPerRule.append(supportOfRule)
+        print("len(rulePrecisionListPerRule)")
+        print(len(rulePrecisionListPerRule))
+        print(len(ruleSupportListPerRule))    
+
+
                 #tempRuleValue = workingCOPY_RuleList[i]
             #    workingCOPY_RuleList[indx] = "remove" 
                 
@@ -687,61 +695,75 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
             ## END might not need that just do it with binary remove and filter over coverage  
                 
 # apply rules on data
-                
+        ### DEBUG 
+        """
+
+
+
+
+
+
+
             #sorted_indexes = sorted(range(len(predictionComparisonList_transposed[i])), key=lambda i: predictionComparisonList_transposed[i])
-            sorted_indexes = sorted(range(len(i)), key=lambda i: i)
+        sorted_indexes = sorted(range(len(i)), key=lambda i: i)
+
             #sorted_indexes = sorted(range(len(data)), key=lambda i: data[i])
-            for i in [0.05 ,0.1,0.5,0.9]:
-                #print(i)
-                # Calculate the number of elements to keep
-                num_elements_to_keep = int(len(predictionComparisonList) * i)
-                # Get the sorted indexes to keep
-                sorted_indexes_to_keep = sorted_indexes[:num_elements_to_keep]
-                # Create the pruned data using the sorted indexes
-                
-                pruned_Lables = [workingCOPY_LabelList_rules[j] for j in sorted_indexes_to_keep]
-                pruned_Rules = [workingCOPY_RuleList[j] for j in sorted_indexes_to_keep]
-
-                TestPredictionComparisonList, TestRulesComplexityList = applyNlpRulesOnData(X_List,predictions, pruned_Rules, pruned_Lables, featureDict)
-                coverageTEST = getGlobalCoverage(TestPredictionComparisonList)
+        for j in [0.05 ,0.1,0.5,0.9]:
+            print(j)
+            # Calculate the number of elements to keep
+            #print(len(predictionComparisonList) * j)
+            print(len(predictionComparisonList_transposed))
+            print(j)
+            print(len(predictionComparisonList_transposed) * j)
+            print("---")
+            num_elements_to_keep = int(len(predictionComparisonList_transposed) * j)
+            print("num_elements_to_keep")
+            print(num_elements_to_keep)
+            # Get the sorted indexes to keep
+            sorted_indexes_to_keep = sorted_indexes[:num_elements_to_keep]
+            # Create the pruned data using the sorted indexes
+            
+            pruned_Lables = [workingCOPY_LabelList_rules[k] for k in sorted_indexes_to_keep]
+            pruned_Rules = [workingCOPY_RuleList[k] for k in sorted_indexes_to_keep]
+            TestpredictionComparisonList_transposed, TestRulesComplexityList = applyNlpRulesOnData(X_List,predictions, pruned_Rules, pruned_Lables, featureDict)
+            coverageTEST = getGlobalCoverage(TestpredictionComparisonList_transposed)
+            print("---")
+            print(coverageTEST)
+            
+            print("Original data:", len(workingCOPY_RuleList))
+            print("Pruned data:", len(pruned_Rules))
+            if coverageTEST >= 0.85:
+                print("ok: cov   " + str(j))
                 print("---")
-                print(coverageTEST)
-                if coverageTEST >= 0.95:
-                    print("ok: cov   " + str(i))
-                    print("Original data:", len(workingCOPY_RuleList))
-                    workingCOPY_LabelList_rules = pruned_Lables
-                    workingCOPY_RuleList = pruned_Rules
-                    print("Pruned data:", len(pruned_Rules))
-                    break
-                else:
-                    if i == 0.9:
-                        print("didnt filter cause coverage to low")
-
-                #TestPredictionComparisonList, TestRulesComplexityList = applyNlpRulesOnData(X_List,predictions, workingCOPY_RuleList, workingCOPY_LabelList_rules, featureDict)
-                #test = getGlobalCoverage(TestPredictionComparisonList)
-                #print(test)
-                #if  test >= 0.9:    
-                #    print(test)
-                #    print("coverage")
-
-                    #tempCOPY_RuleList[i] = -5
-                #    rules_list[indx] = "remove"
-
-                    #filteredRulesList = COPY_RuleList # back to original
-                    
-                #    labelList_rules[indx] = "remove"
-                    #tempCOPY_LabelList_rules[i] = -5
-                    #filteredRulesLableList = COPY_LabelList_rules
-                #else:
-                #    pass
-
-                    #pass
-                    #filteredRuleList ist schon gemacht worden
-
-                #rules_list = list(filter(lambda a: a != -5, rules_list))
-                #labelList_rules = list(filter(lambda a: a != -5, labelList_rules))
+                print("Pruned data:", len(pruned_Rules))
+                print("---")
+                workingCOPY_LabelList_rules = pruned_Lables
+                workingCOPY_RuleList = pruned_Rules
+                break
             else:
-                rulePrecisionListPerRule.append(accuracyOfAppliableRules)
+                if j == 0.9:
+                    print("didnt filter cause coverage to low")
+            #TestPredictionComparisonList, TestRulesComplexityList = applyNlpRulesOnData(X_List,predictions, workingCOPY_RuleList, workingCOPY_LabelList_rules, featureDict)
+            #test = getGlobalCoverage(TestPredictionComparisonList)
+            #print(test)
+            #if  test >= 0.9:    
+            #    print(test)
+            #    print("coverage")
+                #tempCOPY_RuleList[i] = -5
+            #    rules_list[indx] = "remove"
+                #filteredRulesList = COPY_RuleList # back to original
+                
+            #    labelList_rules[indx] = "remove"
+                #tempCOPY_LabelList_rules[i] = -5
+                #filteredRulesLableList = COPY_LabelList_rules
+            #else:
+            #    pass
+                #pass
+                #filteredRuleList ist schon gemacht worden
+            #rules_list = list(filter(lambda a: a != -5, rules_list))
+            #labelList_rules = list(filter(lambda a: a != -5, labelList_rules))
+            #else:
+            #    rulePrecisionListPerRule.append(accuracyOfAppliableRules)
                 #print(str(accuracyOfAppliableRules) +"+")
                 #pass
                 #print("-")
@@ -756,12 +778,11 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         labelList_rules = workingCOPY_LabelList_rules #list(filter(lambda a: a != "remove", workingCOPY_LabelList_rules)) # LabelList_Rules
         
         ######################################
-        # FIX fix prediction comparison list for GLOBAL support and precision
         print("change precision to accuracy (ONLY NAME)")
         globalRulePrecisionList = [] 
         globalRuleSupportList = [] 
         if datasetType == "NLP":
-
+newPredictionComparisonList
             newPredictionComparisonList, _TestRulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
         else:
             newPredictionComparisonList, _TestRulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
@@ -786,6 +807,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
 
         if tempNotAppliable == len(i):
             globalRulePrecisionList.append(1)
+            globalRuleSupportList.append(0)
         
         else:
             print(tempCorrectClassified)
@@ -797,12 +819,51 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
             
             # what even is global support? how many are aplicable
             globalRuleSupportList.append((tempCorrectClassified + tempFalseClassified)/ (tempCorrectClassified +tempFalseClassified +tempNotAppliable) + epsilon) 
-        
-        return globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules, newPredictionComparisonList
+        print("len(globalRuleSupportList)")
+        print(len(globalRuleSupportList))
+        print(len(globalRulePrecisionList))
+        """
+        ### DEBUG  END
+        globalRulePrecisionList =[]
+        return globalRulePrecisionList, ruleSupportListPerRule ,rulePrecisionListPerRule , rules_list , labelList_rules, #newPredictionComparisonList
+    
+        #return globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules, newPredictionComparisonList
     
 
 
+    def rulePrecisionAndSupport(predictionComparisonList, rules_list, labelList_rules): 
+        # recision of an applicable rule on test instances(precision)
+        # AND how many instances does a rule cover (Support)
+        import sys
 
+        epsilon = sys.float_info.epsilon
+        predictionComparisonList_transposed =  np.array(predictionComparisonList).transpose()
+
+        rulePrecisionListPerRule = []
+        ruleSupportListPerRule =[]
+        newRulesList = []
+        newLabelList = []
+        for indx,i in enumerate(predictionComparisonList_transposed): #
+
+            ruleTempCorrectClassified = list(i).count(1)
+            ruleTempFalseClassified =   list(i).count(0)
+            ruleTempNotAppliable =   list(i).count(-1)
+
+            accuracyOfAppliableRules = (ruleTempCorrectClassified / ((ruleTempCorrectClassified + ruleTempFalseClassified) +epsilon))
+            supportOfRule = (ruleTempCorrectClassified + ruleTempFalseClassified)/ ((ruleTempCorrectClassified +ruleTempFalseClassified +ruleTempNotAppliable) + epsilon) 
+
+
+            if accuracyOfAppliableRules * supportOfRule >= 0.5:
+                rulePrecisionListPerRule.append(accuracyOfAppliableRules)
+                ruleSupportListPerRule.append(supportOfRule)
+                newRulesList.append(rules_list[indx])
+                newLabelList.append(labelList_rules[indx])
+
+        print("len(rulePrecisionListPerRule)")
+        print(len(rulePrecisionListPerRule))
+        print(len(ruleSupportListPerRule))    
+
+        return ruleSupportListPerRule ,rulePrecisionListPerRule , newRulesList , newLabelList, #newPredictionComparisonList
 
 
 
@@ -894,7 +955,13 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
         #predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)   
     
-    globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules,predictionComparisonList  = rulePrecisionAndSupport (predictionComparisonList, 0.9, rules_list, labelList_rules, datasetType)
+    # globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules,predictionComparisonList  = rulePrecisionAndSupport (predictionComparisonList, 0.9, rules_list, labelList_rules, datasetType)
+    ruleSupportListPerRule ,rulePrecisionListPerRule , newRulesList , newLabelList  = rulePrecisionAndSupport(predictionComparisonList, rules_list, labelList_rules)
+    if datasetType == "NLP":
+
+        predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, newRulesList, newLabelList, featureDict)
+    else:
+        predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, newRulesList, newLabelList, featureDict)
         #globalRulePrecisionList, globalRuleSupportList, rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
     globalCoverage = getGlobalCoverage(predictionComparisonList) # before
 
@@ -916,11 +983,12 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
 
     #print(globalCoverage)
     #rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
-    numberOfGeneratedRules = (len(rules_list))
+    numberOfGeneratedRules = (len(newRulesList))
 
     #print.pes
-    return rules_list, labelList_rules, globalRulePrecisionList, predictionComparisonList, rulesComplexityList , globalCoverage,  globalRuleSupportList,   numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule
-
+    #return rules_list, labelList_rules, globalRulePrecisionList, predictionComparisonList, rulesComplexityList , globalCoverage,  globalRuleSupportList,   numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule
+    return newRulesList, newLabelList, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportListPerRule, numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule
+     
     ## Get the current date and time
     #now = datetime.now()
 #
@@ -1072,20 +1140,20 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
 
         resultName = "discriminative_rules"
 
-        rules_list, labelList_rules, rulePrecisionList, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportList,   numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule  = calculateRulesMetrics(discriminative_rules, featureDict, test_set, trainedModelPrediction_Test_overIterations[i], datasetType)
+        rules_list, labelList_rules, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportListPerRule, numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule = calculateRulesMetrics(discriminative_rules, featureDict, test_set, trainedModelPrediction_Test_overIterations[i], datasetType)
         discriminative_rules_overIterations.append(discriminative_rules)
         characteristic_rules_overIterations.append(characteristic_rules) 
 
 
         rules_list_overIterations.append(rules_list)
         labelList_rules_overIterations.append(labelList_rules)
-        rulePrecisionList_overIterations.append(rulePrecisionList)
+        rulePrecisionList_overIterations.append(rulePrecisionListPerRule)
 
         predictionComparisonList_overIterations.append(predictionComparisonList)
 
         rulesComplexityList_overIterations.append(rulesComplexityList)
         globalCoverageList_overIterations.append(globalCoverage)
-        ruleSupportList_overIterations.append(ruleSupportList)
+        ruleSupportList_overIterations.append(ruleSupportListPerRule)
         numberOfGeneratedRules_overIterations.append(numberOfGeneratedRules)
         raw_rules_overIterations.append(raw_rules)
         numberOfGeneratedRulesRAW_overIterations.append(len(raw_rules))

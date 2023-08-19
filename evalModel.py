@@ -180,7 +180,7 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
                         break
                 gradientList_iteration.append(grad)# 11,154,
         
-                print(np.shape(gradientList_iteration))
+                #print(np.shape(gradientList_iteration))
                 #get weights of model at iteration
                 #if name=="train":
                 #iterationWeightsF = utils.getWeights(finalModel)
@@ -287,7 +287,7 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
 
         ### GRADIENT_MAGNITUDE
         if True:#name == "train" or name== "eval": 
-            print(np.shape(gradientList))
+            #print(np.shape(gradientList))
             if NLP== True:
                 unpackedGradiends =utils.unpackingGradients((len(grad[-1]) -1), gradientList)
                 

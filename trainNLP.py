@@ -136,9 +136,9 @@ if __name__ == '__main__':
     
     #SETUP
 
-    size_train_batch = 64
-    size_test_batch = 100 # 3h apriori
-    n_batches = 100
+    size_train_batch = 16#64
+    size_test_batch = 20    # 3h apriori
+    n_batches = 20    
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -158,8 +158,6 @@ if __name__ == '__main__':
 
     
     _t_start = time()
-    
-
     
     model, loss, test_accuracies , total_gradientsList= \
         train_loop(model, optimizer, loss_fun, train_set, (X_test, Y_test),
@@ -235,17 +233,30 @@ if __name__ == '__main__':
     ax1.set_ylabel('test accuracy', color=color)
     ax1.plot(test_accuracies,  color=color)
     ax1.tick_params(axis='y', labelcolor=color)
+    utils.appendToNPZ(pathToNPZ, "test_accuracies", test_accuracies)
 
-    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+    fig2, ax2 = plt.subplots()  # instantiate a second axes that shares the same x-axis
 
     color = 'tab:orange'
     ax2.set_ylabel('losses', color=color)  # we already handled the x-label with ax1
     ax2.set_ylim(min(0, min(loss)), max(loss))
     ax2.plot(loss, color=color)
     ax2.tick_params(axis='y', labelcolor=color)
+    ax2.set_xlabel('#batches')
+    utils.appendToNPZ(pathToNPZ, "loss", loss)
 
     fig.tight_layout()  # otherwise the right y-label is slightly clipped
     
-    fig.savefig(str(dirPath) + str("AccLoss"))
-    pickle.dump(fig, open(str(dirPath) + str("AccLoss"), 'wb'))
+
+    if datasetType == "NLP":
+        dataPath= dirPath+ "NLP_Results/Trainingresults/"
+    else:
+        dataPath= dirPath+ "Results/Trainingresults/"
+    
+    fig.savefig(str(dataPath) + str("Acc"))
+    pickle.dump(fig, open(str(dataPath) + str("Acc"), 'wb'))
+    fig2.tight_layout()  # otherwise the right y-label is slightly clipped
+    
+    fig2.savefig(str(dataPath) + str("Loss"))
+    pickle.dump(fig2, open(str(dataPath) + str("Loss"), 'wb'))
     plt.show()
