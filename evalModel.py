@@ -261,6 +261,7 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
                 ## per iteration
                 acc= running_corrects_iteration.item() /len(y)
                 accPerIterationList.append(acc) 
+                print(acc)
                 lossPerIterationList.append(np.mean(tempLoss_iteration))
                 ## per epoch
                 if counter == int(len(modelsDirFiltered)/ num_epochs):

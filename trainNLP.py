@@ -85,10 +85,12 @@ def train_loop(model, optim, loss_fn, tr_data: DataLoader, te_data: tuple, infer
         for i, (text, labels) in enumerate(tr_data, 0):
 
             #break
+            #trainÁcc = validate(inference_fn, model, *tr_data)
             acc = validate(inference_fn, model, *te_data)
             accs.append(acc)
             if i % 100 == 0:
                 print(f"test acc @ batch {i+_epochs*i_max}/{n_batches_max}: {acc:.4f}")
+                #print("train" + str(trainÁcc))
             text = text.to(device)
             labels = labels.to(device)
             out = model(text)
@@ -128,7 +130,6 @@ def train_loop(model, optim, loss_fn, tr_data: DataLoader, te_data: tuple, infer
     ##
     acc_val.append(validate(inference_fn, model, *te_data))
     print("accuracies over test set")
-    print(acc_val)
     return model, losses, accs , total_gradientsList
 
 
@@ -136,9 +137,9 @@ if __name__ == '__main__':
     
     #SETUP
 
-    size_train_batch = 16#64
-    size_test_batch = 20    # 3h apriori
-    n_batches = 20    
+    size_train_batch = 64#64
+    size_test_batch = 5    # 3h apriori
+    n_batches = 5
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -214,9 +215,13 @@ if __name__ == '__main__':
 
     data = utils.loadData(mostRecentResultPaths_discriminative)
     temp_rules_list_overIterations = data["rules_list_overIterations"]
-    trackedRules_OHE = cega_utils.trackRulesList(temp_rules_list_overIterations)
+    trackedRules_OHE , precsicionDict = cega_utils.trackRulesList(temp_rules_list_overIterations, data["rulePrecisionListPerRule_overIterations"])
     utils.appendToNPZ(pathToNPZ, "trackedRules_OHE", trackedRules_OHE)
+    utils.appendToNPZ(pathToNPZ, "precsicionDict", precsicionDict)
     
+    trackedRules_OHE_NOTFILTERED , precsicionDict_NOTFILTERED = cega_utils.trackRulesList(temp_rules_list_overIterations, data["rulePrecisionListPerRule_overIterations"])
+    utils.appendToNPZ(pathToNPZ, "trackedRules_OHE_NOTFILTERED", trackedRules_OHE_NOTFILTERED)
+    utils.appendToNPZ(pathToNPZ, "precsicionDict_NOTFILTERED", precsicionDict_NOTFILTERED)
 
     plotResults.plotRulesResults(data)
 

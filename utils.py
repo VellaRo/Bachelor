@@ -228,6 +228,7 @@ def loadData(pathToNPZ):
     return data    
 
 def binData(data , n):
+    #print("THIS IS WINDOW DATA!!")
     binnedData = []
     indicesList = []
     for i in range(0,len(data),n):
