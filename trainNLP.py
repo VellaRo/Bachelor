@@ -88,7 +88,7 @@ def train_loop(model, optim, loss_fn, tr_data: DataLoader, te_data: tuple, infer
             #trainÁcc = validate(inference_fn, model, *tr_data)
             acc = validate(inference_fn, model, *te_data)
             accs.append(acc)
-            if i % 100 == 0:
+            if i % 10 == 0:
                 print(f"test acc @ batch {i+_epochs*i_max}/{n_batches_max}: {acc:.4f}")
                 #print("train" + str(trainÁcc))
             text = text.to(device)
@@ -215,11 +215,24 @@ if __name__ == '__main__':
 
     data = utils.loadData(mostRecentResultPaths_discriminative)
     temp_rules_list_overIterations = data["rules_list_overIterations"]
+    #print(len(temp_rules_list_overIterations))
+    #print(len(data["rulePrecisionListPerRule_overIterations"]))
+    #print("--")
+    print("aaa")
+    print(np.shape(temp_rules_list_overIterations))
     trackedRules_OHE , precsicionDict = cega_utils.trackRulesList(temp_rules_list_overIterations, data["rulePrecisionListPerRule_overIterations"])
     utils.appendToNPZ(pathToNPZ, "trackedRules_OHE", trackedRules_OHE)
     utils.appendToNPZ(pathToNPZ, "precsicionDict", precsicionDict)
     
-    trackedRules_OHE_NOTFILTERED , precsicionDict_NOTFILTERED = cega_utils.trackRulesList(temp_rules_list_overIterations, data["rulePrecisionListPerRule_overIterations"])
+    temp_rules_list_overIterations_RAW = data["rules_list_overIterations_NOTFILTERD"]
+    print("bbb")
+    print(np.shape(temp_rules_list_overIterations_RAW))
+
+    #print("len(data[rulePrecisionListPerRule_overIterations_NOTFILTERED])")
+    #print(len(data["rulePrecisionListPerRule_overIterations_NOTFILTERED"]))
+    #print(len(temp_rules_list_overIterations_RAW))
+    
+    trackedRules_OHE_NOTFILTERED , precsicionDict_NOTFILTERED = cega_utils.trackRulesList(temp_rules_list_overIterations_RAW, data["rulePrecisionListPerRule_overIterations_NOTFILTERED"])
     utils.appendToNPZ(pathToNPZ, "trackedRules_OHE_NOTFILTERED", trackedRules_OHE_NOTFILTERED)
     utils.appendToNPZ(pathToNPZ, "precsicionDict_NOTFILTERED", precsicionDict_NOTFILTERED)
 

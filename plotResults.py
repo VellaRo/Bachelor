@@ -697,10 +697,10 @@ def plotTrainingResults(data, dataPath):
     #plotTotalGradientMagnitudeBinned(data["Total_gradientsList_iteration"],dataPath, "Total_gradientsList_iteration")#,"test") # save in data-npz   
     
     
-    figBinnedGrad, axsBinnedGrad = plt.subplots(nrows=1, ncols=1)
-    axsBinnedGrad.set_title("binnedGradients")
-    axsBinnedGrad.set_xlabel("iteration")
-    axsBinnedGrad.set_ylabel("gradients")
+    figWindowedGradients, axsWindowedGradients = plt.subplots(nrows=1, ncols=1)
+    axsWindowedGradients.set_title("windowedGradients")
+    axsWindowedGradients.set_xlabel("iteration")
+    axsWindowedGradients.set_ylabel("gradients")
     #axshist.hist(data["Total_gradientsList_iteration"], bins=15)
 
     binnedTotal_gradientsList_iteration1,indicesList1 = utils.binData(data["Total_gradientsList_iteration"], 1)
@@ -710,10 +710,10 @@ def plotTrainingResults(data, dataPath):
 
 
 
-    axsBinnedGrad.plot(indicesList1, binnedTotal_gradientsList_iteration1, label="1" )
-    axsBinnedGrad.plot(indicesList2,binnedTotal_gradientsList_iteration2,label="2")
-    axsBinnedGrad.plot(indicesList3, binnedTotal_gradientsList_iteration3,label="3")
-    axsBinnedGrad.plot(indicesList5 ,binnedTotal_gradientsList_iteration5, label="5")
-    axsBinnedGrad.legend()
-    figBinnedGrad.savefig(dataPath + "BinnedGrad")
-    pickle.dump(figBinnedGrad, open(dataPath + "BinnedGrad", 'wb'))
+    axsWindowedGradients.plot(indicesList1, binnedTotal_gradientsList_iteration1, label="1" )
+    axsWindowedGradients.plot(indicesList2,binnedTotal_gradientsList_iteration2,label="2")
+    axsWindowedGradients.plot(indicesList3, binnedTotal_gradientsList_iteration3,label="3")
+    axsWindowedGradients.plot(indicesList5 ,binnedTotal_gradientsList_iteration5, label="5")
+    axsWindowedGradients.legend()
+    figWindowedGradients.savefig(dataPath + "WindowedGradients")
+    pickle.dump(figWindowedGradients, open(dataPath + "WindowedGradients", 'wb'))

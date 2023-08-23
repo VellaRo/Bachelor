@@ -649,7 +649,17 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
             supportOfRule = (ruleTempCorrectClassified + ruleTempFalseClassified)/ ((ruleTempCorrectClassified +ruleTempFalseClassified +ruleTempNotAppliable) + epsilon) 
 
             import math
-            if accuracyOfAppliableRules * math.sqrt(supportOfRule) >= 0.0:#0.5:
+            print("acc")
+            print(accuracyOfAppliableRules)
+            
+            print("criterion:")
+            print(accuracyOfAppliableRules *math.sqrt(supportOfRule))
+            print("supportOfRule")
+            print(supportOfRule)
+            if accuracyOfAppliableRules >= 0.6  : #* math.sqrt(supportOfRule) >= 0.5:#0.5:
+            #if accuracyOfAppliableRules  * math.sqrt(supportOfRule) >= 0.5 and accuracyOfAppliableRules > 0.5 :#0.5:
+
+                
                 rulePrecisionListPerRule.append(accuracyOfAppliableRules)
                 ruleSupportListPerRule.append(supportOfRule)
                 newRulesList.append(rules_list[indx])
@@ -674,14 +684,14 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
     #rules_list, labelList_rules, raw_rules= extractRules_df(rules_DF)
     if datasetType == "NLP":
         rules_list, labelList_rules, raw_rules = extractNlpRules_df(rules_DF)
-        predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
+        predictionComparisonList_NOTFILTERED, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
     else:
         rules_list, labelList_rules, raw_rules = extractRules_df(rules_DF)
-        predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
+        predictionComparisonList_NOTFILTERED, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
         #predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)   
     
     # globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules,predictionComparisonList  = rulePrecisionAndSupport (predictionComparisonList, 0.9, rules_list, labelList_rules, datasetType)
-    ruleSupportListPerRule ,rulePrecisionListPerRule , newRulesList , newLabelList, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED   = rulePrecisionAndSupport(predictionComparisonList, rules_list, labelList_rules)
+    ruleSupportListPerRule ,rulePrecisionListPerRule , newRulesList , newLabelList, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED   = rulePrecisionAndSupport(predictionComparisonList_NOTFILTERED, rules_list, labelList_rules)
     if datasetType == "NLP":
 
         predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, newRulesList, newLabelList, featureDict)
@@ -689,7 +699,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, newRulesList, newLabelList, featureDict)
         #globalRulePrecisionList, globalRuleSupportList, rulePrecisionListPerRule = rulePrecisionAndSupport(predictionComparisonList)
     globalCoverage = getGlobalCoverage(predictionComparisonList) # before
-
+    globalCoverage_NOTFILTERED = getGlobalCoverage(predictionComparisonList_NOTFILTERED)
 
     #print(rulePrecisionListPerRule)
     #print(len(rulePrecisionListPerRule))
@@ -712,7 +722,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
 
     #print.pes
     #return rules_list, labelList_rules, globalRulePrecisionList, predictionComparisonList, rulesComplexityList , globalCoverage,  globalRuleSupportList,   numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule
-    return newRulesList, newLabelList, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportListPerRule, numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED
+    return newRulesList, newLabelList, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportListPerRule, numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED , rules_list, labelList_rules, predictionComparisonList_NOTFILTERED , globalCoverage_NOTFILTERED
      
     ## Get the current date and time
     #now = datetime.now()
@@ -770,7 +780,7 @@ def trackRulesList(rules_list_overIterations, preciscionList):
         for s in rule:
             # Convert the set to a tuple and add it to the result set
             unique_rules.add(tuple(s))
-    #print(unique_rules)
+    #print(unique_rules)unique_rules
     item_to_index = {item: index for index, item in enumerate(unique_rules)}
 
     num_uniqueRules = len(unique_rules)
@@ -787,14 +797,15 @@ def trackRulesList(rules_list_overIterations, preciscionList):
             #print(type(rule))
             index = item_to_index[tuple(rule)]
             rule_encoded[index] = 1
-            print("rule_encoded[index]") 
-            print(rule_encoded[index])
             if rule_encoded[index] == 1:
-                print("index")
-                print(index)
+                #print("as")
+                #print(len(precsicionDict))
+                #print(len(preciscionList))
+                #print(len(preciscionList[i]))
+                #print("ßßß")
+
                 precsicionDict[index] = preciscionList[i][counter]
-                print("counter")
-                print(counter)
+
                 counter +=1
         one_hot_matrix.append(rule_encoded)
 
@@ -865,6 +876,12 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
     rulePrecisionListPerRule_overIterations = []
     rulePrecisionListPerRule_overIterations_NOTFILTERED =[]
     ruleSupportList_overIterations_NOTFILTERED = []
+
+    rules_list_overIterations_NOTFILTERD = []
+    labelList_rules_overIterations_NOTFILTERED = []
+    predictionComparisonList_overIterations_NOTFILTERED = []
+    globalCoverage_overIterations_NOTFILTERED = []
+
     tempRules_list = None
     
     from tqdm import tqdm
@@ -877,7 +894,7 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
 
         resultName = "discriminative_rules"
 
-        rules_list, labelList_rules, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportListPerRule, numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED= calculateRulesMetrics(discriminative_rules, featureDict, test_set, trainedModelPrediction_Test_overIterations[i], datasetType)
+        rules_list, labelList_rules, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportListPerRule, numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED , rules_list_NOTFILTERD, labelList_rules_NOTFILTERED,  predictionComparisonList_NOTFILTERED , globalCoverage_NOTFILTERED= calculateRulesMetrics(discriminative_rules, featureDict, test_set, trainedModelPrediction_Test_overIterations[i], datasetType)
         discriminative_rules_overIterations.append(discriminative_rules)
         characteristic_rules_overIterations.append(characteristic_rules) 
 
@@ -898,6 +915,10 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
         rulePrecisionListPerRule_overIterations_NOTFILTERED.append(rulePrecisionListPerRule_NOTFILTERED)
         ruleSupportList_overIterations_NOTFILTERED.append(ruleSupportListPerRule_NOTFILTERED)
 
+        rules_list_overIterations_NOTFILTERD.append(rules_list_NOTFILTERD)
+        labelList_rules_overIterations_NOTFILTERED.append(labelList_rules_NOTFILTERED)
+        predictionComparisonList_overIterations_NOTFILTERED.append(predictionComparisonList_NOTFILTERED)
+        globalCoverage_overIterations_NOTFILTERED.append(globalCoverage_NOTFILTERED)
 
         if tempRules_list is not None:
             #print("not Jaccard")
@@ -931,6 +952,16 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
     utils.appendToNPZ(pathToNPZ, "rulePrecisionListPerRule_overIterations", rulePrecisionListPerRule_overIterations)
     utils.appendToNPZ(pathToNPZ, "rulePrecisionListPerRule_overIterations_NOTFILTERED", rulePrecisionListPerRule_overIterations_NOTFILTERED)
     utils.appendToNPZ(pathToNPZ, "ruleSupportList_overIterations_NOTFILTERED", ruleSupportList_overIterations_NOTFILTERED)
+
+    utils.appendToNPZ(pathToNPZ, "rules_list_overIterations_NOTFILTERD", rules_list_overIterations_NOTFILTERD)
+    utils.appendToNPZ(pathToNPZ, "labelList_rules_overIterations_NOTFILTERED", labelList_rules_overIterations_NOTFILTERED)
+    
+    utils.appendToNPZ(pathToNPZ, "predictionComparisonList_overIterations_NOTFILTERED", predictionComparisonList_overIterations_NOTFILTERED)
+    utils.appendToNPZ(pathToNPZ, "globalCoverage_overIterations_NOTFILTERED", globalCoverage_overIterations_NOTFILTERED)
+    
+    predictionComparisonList_overIterations_NOTFILTERED = []
+    globalCoverage_overIterations_NOTFILTERED = []
+    #rules_list_overIterations_NOTFILTERD
 
     #rulePrecisionListPerRule_overIterations_NOTFILTERED =[]
     #ruleSupportList_overIterations_NOTFILTERED = []

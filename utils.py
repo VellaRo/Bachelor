@@ -232,8 +232,8 @@ def binData(data , n):
     binnedData = []
     indicesList = []
     for i in range(0,len(data),n):
-        print(i)
-        print(np.average(data[i:i+n]))
+        #print(i)
+        #print(np.average(data[i:i+n]))
         if i+n > len(data):
             averageBin = np.average(data[i:-1])
             indicesList.append(len(data))

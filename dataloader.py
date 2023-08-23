@@ -129,10 +129,10 @@ numerical
     sampler_train =OrderedListSampler(random_indices_train)
     #trainloader = torch.utils.data.DataLoader(trainset, shuffle=False, batch_sampler=train_sampler , num_workers=2)# shuffle false
     trainloader = torch.utils.data.DataLoader(trainset, shuffle=False, batch_size= batch_size , num_workers=2, sampler= sampler_train)
-    print("train:shuffel = False")
+    print("train:shuffel = True")
     #evalset = list(zip(X_eval , y_eval))      
     #evalloader =  torch.utils.data.DataLoader(evalset, shuffle=False, batch_sampler=eval_sampler , num_workers=2)
-    print("eval:shuffel = False")
+    print("eval:shuffel = True")
     
     testset = list(zip(X_test , y_test))
     #testloader = torch.utils.data.DataLoader(testset,shuffle=False, batch_sampler=test_sampler , num_workers=2)
