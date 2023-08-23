@@ -133,6 +133,7 @@ def train_loop(model, optim, loss_fn, tr_data: DataLoader, te_data: tuple, infer
     return model, losses, accs , total_gradientsList
 
 
+
 if __name__ == '__main__':
     
     #SETUP
