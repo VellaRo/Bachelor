@@ -464,7 +464,7 @@ def getCharasteristicRules(pos_rules, pos_label, neg_rules,neg_label ):
     return  chr_rules
 
                                                             #TODO: predictions to predictionsList over iteration
-def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, datasetType):#, dirPath , debug = False):
+def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, datasetType, tempTrainedModelPrediction_Test):#, dirPath , debug = False):
     """
     
     featureDict example: featureDict= {'Pregnancies':0, 'Glucose':1, 'BloodPressure':2, 'SkinThickness':3, 'Insulin':4,
@@ -623,7 +623,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
     
     #globalCoverage = globalCoverage(predictionList)
 
-    def rulePrecisionAndSupport(predictionComparisonList, rules_list, labelList_rules): 
+    def rulePrecisionAndSupport(predictionComparisonList, rules_list, labelList_rules, tempTrainedModelPrediction_Test): 
         # recision of an applicable rule on test instances(precision)
         # AND how many instances does a rule cover (Support)
         import sys
@@ -639,6 +639,13 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
 
         rulePrecisionListPerRule_NOTFILTERED =[]
         ruleSupportListPerRule_NOTFILTERED =[]
+        
+        corectnessList_ALL_NOTFILTERED = []
+        corectnessList_AplicablRules_NOTFILTERED =[]
+
+        corectnessList_ALL = []
+        corectnessList_AplicablRules =[]
+        
         for indx,i in enumerate(predictionComparisonList_transposed): #
 
             ruleTempCorrectClassified = list(i).count(1)
@@ -647,31 +654,78 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
 
             accuracyOfAppliableRules = (ruleTempCorrectClassified / ((ruleTempCorrectClassified + ruleTempFalseClassified) +epsilon))
             supportOfRule = (ruleTempCorrectClassified + ruleTempFalseClassified)/ ((ruleTempCorrectClassified +ruleTempFalseClassified +ruleTempNotAppliable) + epsilon) 
+            
 
             import math
-            print("acc")
-            print(accuracyOfAppliableRules)
+            #print("acc")
+            #print(accuracyOfAppliableRules)
             
-            print("criterion:")
-            print(accuracyOfAppliableRules *math.sqrt(supportOfRule))
-            print("supportOfRule")
-            print(supportOfRule)
-            if accuracyOfAppliableRules >= 0.6  : #* math.sqrt(supportOfRule) >= 0.5:#0.5:
-            #if accuracyOfAppliableRules  * math.sqrt(supportOfRule) >= 0.5 and accuracyOfAppliableRules > 0.5 :#0.5:
+            #print("criterion:")
+            #print(accuracyOfAppliableRules *math.sqrt(supportOfRule))
+            #print("supportOfRule")
+            #print(supportOfRule)
+            #if accuracyOfAppliableRules >= 0.6  : #* math.sqrt(supportOfRule) >= 0.5:#0.5:
+            #if accuracyOfAppliableRules >= 0.8  : too high 
+            #if accuracyOfAppliableRules >= 0.7:  #TOO HIGH:
+            #if supportOfRule >= 5 /250:
+            #if supportOfRule >= 10 /250:
+            
+     
 
-                
+
+            corectnessCounter_ALL = 0
+            corectnessCounter_AplicableRules = 0
+            for j in range(len(tempTrainedModelPrediction_Test)):
+
+                if tempTrainedModelPrediction_Test[j] == labelList_rules[j]:
+                    corectnessCounter_ALL +=1
+                if tempTrainedModelPrediction_Test[j] == labelList_rules[j] and  predictionComparisonList_transposed[indx][j] != -1:
+                    corectnessCounter_AplicableRules += 1
+            corectness_ALL = corectnessCounter_ALL / len(tempTrainedModelPrediction_Test)
+            corectness_AplicablRules =corectnessCounter_AplicableRules / (ruleTempCorrectClassified + ruleTempFalseClassified + epsilon)
+
+            FILTERCONDTION = corectness_AplicablRules >= 0.5
+            if FILTERCONDTION:
+
+            #if accuracyOfAppliableRules  * math.sqrt(supportOfRule) >= 0.5 and accuracyOfAppliableRules > 0.5 :#0.5:
                 rulePrecisionListPerRule.append(accuracyOfAppliableRules)
                 ruleSupportListPerRule.append(supportOfRule)
                 newRulesList.append(rules_list[indx])
                 newLabelList.append(labelList_rules[indx])
 
+            #if FILTERCONDTION:        
+                corectnessList_ALL.append(corectnessCounter_ALL / len(tempTrainedModelPrediction_Test)) # pro rule
+                corectnessList_AplicablRules.append(corectnessCounter_AplicableRules / (ruleTempCorrectClassified + ruleTempFalseClassified + epsilon)) # pro rule
+            
+            corectnessList_ALL_NOTFILTERED.append(corectnessCounter_ALL / len(tempTrainedModelPrediction_Test)) # pro rule
+            corectnessList_AplicablRules_NOTFILTERED.append(corectnessCounter_AplicableRules / (ruleTempCorrectClassified + ruleTempFalseClassified + epsilon)) # pro rule
+            
             rulePrecisionListPerRule_NOTFILTERED.append(accuracyOfAppliableRules)
             ruleSupportListPerRule_NOTFILTERED.append(supportOfRule)
-        print("len(rulePrecisionListPerRule)")
-        print(len(rulePrecisionListPerRule))
-        print(len(ruleSupportListPerRule))    
 
-        return ruleSupportListPerRule ,rulePrecisionListPerRule , newRulesList , newLabelList, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED  #newPredictionComparisonList
+        #for indx, i in enumerate(labelList_rules):
+        #    corectnessCounter_ALL = 0
+        #    corectnessCounter_AplicableRules = 0
+        #    
+        #    for j in range(len(tempTrainedModelPrediction_Test)):
+#
+        #        if tempTrainedModelPrediction_Test[j] == labelList_rules[j]:
+        #            corectnessCounter_ALL +=1
+        #        if tempTrainedModelPrediction_Test[j] == labelList_rules[j] and     [indx][j] != -1:
+        #            corectnessCounter_AplicableRules += 1
+        #    if FILTERCONDTION:        
+        #        corectnessList_ALL.append(corectnessCounter_ALL / len(tempTrainedModelPrediction_Test)) # pro rule
+        #        corectnessList_AplicablRules.append(corectnessCounter_AplicableRules / (ruleTempCorrectClassified + ruleTempFalseClassified + epsilon)) # pro rule
+        #    
+        #    corectnessList_ALL_NOTFILTERED.append(corectnessCounter_ALL / len(tempTrainedModelPrediction_Test)) # pro rule
+        #    corectnessList_AplicablRules_NOTFILTERED.append(corectnessCounter_AplicableRules / (ruleTempCorrectClassified + ruleTempFalseClassified + epsilon)) # pro rule
+
+
+        #print("len(rulePrecisionListPerRule)")
+        #print(len(rulePrecisionListPerRule))
+        #print(len(ruleSupportListPerRule))    
+
+        return ruleSupportListPerRule ,rulePrecisionListPerRule , newRulesList , newLabelList, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED,corectnessList_ALL, corectnessList_AplicablRules, corectnessList_ALL_NOTFILTERED, corectnessList_AplicablRules_NOTFILTERED  #newPredictionComparisonList
 
 
     
@@ -691,7 +745,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
         #predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)   
     
     # globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules,predictionComparisonList  = rulePrecisionAndSupport (predictionComparisonList, 0.9, rules_list, labelList_rules, datasetType)
-    ruleSupportListPerRule ,rulePrecisionListPerRule , newRulesList , newLabelList, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED   = rulePrecisionAndSupport(predictionComparisonList_NOTFILTERED, rules_list, labelList_rules)
+    ruleSupportListPerRule ,rulePrecisionListPerRule , newRulesList , newLabelList, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED,corectnessList_ALL, corectnessList_AplicablRules,corectnessList_ALL_NOTFILTERED, corectnessList_AplicablRules_NOTFILTERED   = rulePrecisionAndSupport(predictionComparisonList_NOTFILTERED, rules_list, labelList_rules, tempTrainedModelPrediction_Test)
     if datasetType == "NLP":
 
         predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, newRulesList, newLabelList, featureDict)
@@ -701,28 +755,12 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
     globalCoverage = getGlobalCoverage(predictionComparisonList) # before
     globalCoverage_NOTFILTERED = getGlobalCoverage(predictionComparisonList_NOTFILTERED)
 
-    #print(rulePrecisionListPerRule)
-    #print(len(rulePrecisionListPerRule))
-    #print(globalCoverage)
-    #print("----")
-    #rules_list, labelList_rules = filterPrecision(1.0, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
-    #print("after Filter")
-    #predictionComparisonList, rulesComplexityList = applyNlpRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
-    #and filter
-    #globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules = rulePrecisionAndSupport (predictionComparisonList, 0.9, rules_list, labelList_rules,rulePrecisionListPerRule)
-    #globalCoverage = getGlobalCoverage(predictionComparisonList) # after:4
-    #print(rulePrecisionListPerRule)
-    #print(len(rulePrecisionListPerRule))
-    
-    #filteredRulesList,filteredRulesLableList = filterPrecision(0.9, rules_list, labelList_rules,rulePrecisionListPerRule, predictionComparisonList)
 
-    #print(globalCoverage)
-    #rulePrecisionList, ruleSupportList = rulePrecisionAndSupport(predictionComparisonList)
     numberOfGeneratedRules = (len(newRulesList))
 
     #print.pes
     #return rules_list, labelList_rules, globalRulePrecisionList, predictionComparisonList, rulesComplexityList , globalCoverage,  globalRuleSupportList,   numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule
-    return newRulesList, newLabelList, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportListPerRule, numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED , rules_list, labelList_rules, predictionComparisonList_NOTFILTERED , globalCoverage_NOTFILTERED
+    return newRulesList, newLabelList, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportListPerRule, numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED , rules_list, labelList_rules, predictionComparisonList_NOTFILTERED , globalCoverage_NOTFILTERED, corectnessList_ALL, corectnessList_AplicablRules,corectnessList_ALL_NOTFILTERED, corectnessList_AplicablRules_NOTFILTERED
      
     ## Get the current date and time
     #now = datetime.now()
@@ -750,7 +788,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
     #   + if not fix for NLP 
     
 
-def trackRulesList(rules_list_overIterations, preciscionList):
+def trackRulesList(rules_list_overIterations, preciscionList, corectnessList):
     """
         rules list   -> 
         [[1 1 1 0 0]
@@ -782,29 +820,28 @@ def trackRulesList(rules_list_overIterations, preciscionList):
             unique_rules.add(tuple(s))
     #print(unique_rules)unique_rules
     item_to_index = {item: index for index, item in enumerate(unique_rules)}
-
+    #print("----")
+    #print("---pls---")
+    #print(item_to_index)
+    #print("----")
     num_uniqueRules = len(unique_rules)
 
     one_hot_matrix = []
     precsicionDict = [None] * num_uniqueRules 
+    corectnessDict = [None] * num_uniqueRules 
+
     for i,rules in enumerate(rules_list_overIterations): # rulesSet for each iteration 
-        #print(type(rules))
-        #print(rules)
+
         rule_encoded = [0] * num_uniqueRules
         counter = 0
         for rule in rules:
-            #print(rule)
-            #print(type(rule))
+
             index = item_to_index[tuple(rule)]
             rule_encoded[index] = 1
             if rule_encoded[index] == 1:
-                #print("as")
-                #print(len(precsicionDict))
-                #print(len(preciscionList))
-                #print(len(preciscionList[i]))
-                #print("ßßß")
-
                 precsicionDict[index] = preciscionList[i][counter]
+ 
+                corectnessDict[index] = corectnessList[i][counter]
 
                 counter +=1
         one_hot_matrix.append(rule_encoded)
@@ -815,7 +852,7 @@ def trackRulesList(rules_list_overIterations, preciscionList):
     print(precsicionDict)
 
     trackedRules_OHE = one_hot_matrix
-    return trackedRules_OHE , precsicionDict
+    return trackedRules_OHE , precsicionDict , corectnessDict, item_to_index
 
 def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string, test_set , datasetType,vocab=None ):
 
@@ -881,6 +918,11 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
     labelList_rules_overIterations_NOTFILTERED = []
     predictionComparisonList_overIterations_NOTFILTERED = []
     globalCoverage_overIterations_NOTFILTERED = []
+    corectnessList_ALL_overIterations =[] 
+    corectnessList_AplicablRules_overIterations =[]
+
+    corectnessList_ALL_NOTFILTERED_overIterations = []
+    corectnessList_AplicablRules_NOTFILTERED_overIterations = []
 
     tempRules_list = None
     
@@ -894,7 +936,7 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
 
         resultName = "discriminative_rules"
 
-        rules_list, labelList_rules, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportListPerRule, numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED , rules_list_NOTFILTERD, labelList_rules_NOTFILTERED,  predictionComparisonList_NOTFILTERED , globalCoverage_NOTFILTERED= calculateRulesMetrics(discriminative_rules, featureDict, test_set, trainedModelPrediction_Test_overIterations[i], datasetType)
+        rules_list, labelList_rules, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportListPerRule, numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED , rules_list_NOTFILTERD, labelList_rules_NOTFILTERED,  predictionComparisonList_NOTFILTERED , globalCoverage_NOTFILTERED, corectnessList_ALL, corectnessList_AplicablRules ,corectnessList_ALL_NOTFILTERED, corectnessList_AplicablRules_NOTFILTERED= calculateRulesMetrics(discriminative_rules, featureDict, test_set, trainedModelPrediction_Test_overIterations[i], datasetType, tempTrainedModelPrediction_Test)
         discriminative_rules_overIterations.append(discriminative_rules)
         characteristic_rules_overIterations.append(characteristic_rules) 
 
@@ -919,7 +961,12 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
         labelList_rules_overIterations_NOTFILTERED.append(labelList_rules_NOTFILTERED)
         predictionComparisonList_overIterations_NOTFILTERED.append(predictionComparisonList_NOTFILTERED)
         globalCoverage_overIterations_NOTFILTERED.append(globalCoverage_NOTFILTERED)
-
+        corectnessList_ALL_overIterations.append(corectnessList_ALL) 
+        corectnessList_AplicablRules_overIterations.append(corectnessList_AplicablRules)
+        
+        corectnessList_ALL_NOTFILTERED_overIterations.append(corectnessList_ALL_NOTFILTERED)
+        corectnessList_AplicablRules_NOTFILTERED_overIterations.append(corectnessList_AplicablRules_NOTFILTERED)
+    
         if tempRules_list is not None:
             #print("not Jaccard")
             jaccardSimilarity_overIterations.append(jaccard_similarity(rules_list , tempRules_list))
@@ -932,10 +979,11 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
 
     if debug:
         pathToNPZ =  dirPath + f"DEBUG.npz"
+        print("ßßßaaaa")
     else:    
         pathToNPZ =  dirPath +"NLP_Results/rulesResults/" f"{resultName}/_{date_time_string}.npz"
-
-    np.savez(pathToNPZ ,rules_list_overIterations = rules_list_overIterations) 
+        print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" + str(pathToNPZ))
+    np.savez(pathToNPZ ,rules_list_overIterations = rules_list_overIterations,) 
     utils.appendToNPZ(pathToNPZ, "labelList_rules_overIterations", labelList_rules_overIterations)
     utils.appendToNPZ(pathToNPZ, "rulePrecisionList_overIterations", rulePrecisionList_overIterations)
     utils.appendToNPZ(pathToNPZ, "predictionComparisonList_overIterations", predictionComparisonList_overIterations)
@@ -953,14 +1001,22 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
     utils.appendToNPZ(pathToNPZ, "rulePrecisionListPerRule_overIterations_NOTFILTERED", rulePrecisionListPerRule_overIterations_NOTFILTERED)
     utils.appendToNPZ(pathToNPZ, "ruleSupportList_overIterations_NOTFILTERED", ruleSupportList_overIterations_NOTFILTERED)
 
+    #np.savez(pathToNPZ +str(rules_list),rules_list_overIterations = rules_list_overIterations,) 
+
     utils.appendToNPZ(pathToNPZ, "rules_list_overIterations_NOTFILTERD", rules_list_overIterations_NOTFILTERD)
     utils.appendToNPZ(pathToNPZ, "labelList_rules_overIterations_NOTFILTERED", labelList_rules_overIterations_NOTFILTERED)
     
     utils.appendToNPZ(pathToNPZ, "predictionComparisonList_overIterations_NOTFILTERED", predictionComparisonList_overIterations_NOTFILTERED)
     utils.appendToNPZ(pathToNPZ, "globalCoverage_overIterations_NOTFILTERED", globalCoverage_overIterations_NOTFILTERED)
     
-    predictionComparisonList_overIterations_NOTFILTERED = []
-    globalCoverage_overIterations_NOTFILTERED = []
+    utils.appendToNPZ(pathToNPZ, "corectnessList_ALL_overIterations", corectnessList_ALL_overIterations)
+    utils.appendToNPZ(pathToNPZ, "corectnessList_AplicablRules_overIterations", corectnessList_AplicablRules_overIterations)
+    
+    utils.appendToNPZ(pathToNPZ, "corectnessList_ALL_NOTFILTERED_overIterations", corectnessList_ALL_NOTFILTERED_overIterations)
+    utils.appendToNPZ(pathToNPZ, "corectnessList_AplicablRules_NOTFILTERED_overIterations", corectnessList_AplicablRules_NOTFILTERED_overIterations)
+
+
+
     #rules_list_overIterations_NOTFILTERD
 
     #rulePrecisionListPerRule_overIterations_NOTFILTERED =[]

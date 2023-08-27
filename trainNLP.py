@@ -139,8 +139,8 @@ if __name__ == '__main__':
     #SETUP
 
     size_train_batch = 64#64
-    size_test_batch = 5    # 3h apriori
-    n_batches = 5
+    size_test_batch = 250  # 3h apriori
+    n_batches = 250
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -215,27 +215,30 @@ if __name__ == '__main__':
     mostRecentResultPaths_discriminative = pathToDiscriminative_rules + (resultPaths_dicriminative_rules[-1])
 
     data = utils.loadData(mostRecentResultPaths_discriminative)
+    #data.close()
+    
+    temp_rules_list_overIterations_RAW = data["rules_list_overIterations_NOTFILTERD"]   
+    rulePrecision = data["rulePrecisionListPerRule_overIterations_NOTFILTERED"] 
+    correctness = data["corectnessList_AplicablRules_NOTFILTERED_overIterations"]
+    trackedRules_OHE_NOTFILTERED , precsicionDict_NOTFILTERED, correctnessDict_NOTFILTERED, item_to_index_NOTFILTERD = cega_utils.trackRulesList(temp_rules_list_overIterations_RAW, rulePrecision , correctness)
+
+  
+
+
     temp_rules_list_overIterations = data["rules_list_overIterations"]
-    #print(len(temp_rules_list_overIterations))
-    #print(len(data["rulePrecisionListPerRule_overIterations"]))
-    #print("--")
-    print("aaa")
-    print(np.shape(temp_rules_list_overIterations))
-    trackedRules_OHE , precsicionDict = cega_utils.trackRulesList(temp_rules_list_overIterations, data["rulePrecisionListPerRule_overIterations"])
+    trackedRules_OHE , precsicionDict, correctnessDict, item_to_index = cega_utils.trackRulesList(temp_rules_list_overIterations, data["rulePrecisionListPerRule_overIterations"], data["corectnessList_AplicablRules_overIterations"])
+
     utils.appendToNPZ(pathToNPZ, "trackedRules_OHE", trackedRules_OHE)
     utils.appendToNPZ(pathToNPZ, "precsicionDict", precsicionDict)
+    utils.appendToNPZ(pathToNPZ, "correctnessDict", correctnessDict)
+    utils.appendToNPZ(pathToNPZ, "item_to_index", item_to_index)
     
-    temp_rules_list_overIterations_RAW = data["rules_list_overIterations_NOTFILTERD"]
-    print("bbb")
-    print(np.shape(temp_rules_list_overIterations_RAW))
-
-    #print("len(data[rulePrecisionListPerRule_overIterations_NOTFILTERED])")
-    #print(len(data["rulePrecisionListPerRule_overIterations_NOTFILTERED"]))
-    #print(len(temp_rules_list_overIterations_RAW))
-    
-    trackedRules_OHE_NOTFILTERED , precsicionDict_NOTFILTERED = cega_utils.trackRulesList(temp_rules_list_overIterations_RAW, data["rulePrecisionListPerRule_overIterations_NOTFILTERED"])
     utils.appendToNPZ(pathToNPZ, "trackedRules_OHE_NOTFILTERED", trackedRules_OHE_NOTFILTERED)
     utils.appendToNPZ(pathToNPZ, "precsicionDict_NOTFILTERED", precsicionDict_NOTFILTERED)
+    utils.appendToNPZ(pathToNPZ, "correctnessDict_NOTFILTERED", correctnessDict_NOTFILTERED)
+    utils.appendToNPZ(pathToNPZ, "item_to_index_NOTFILTERD", item_to_index_NOTFILTERD)
+      
+    
 
     plotResults.plotRulesResults(data)
 
