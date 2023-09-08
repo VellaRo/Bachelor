@@ -159,7 +159,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
     summed_values = {}
     num_features = data.shape[1]
 
-    shap_threshold = 0 # 0 0.0001
+    shap_threshold = 0.001 # 0
     num_cores = cpu_count()
 
     if datasetType == "NLP": #"numerical":
@@ -242,7 +242,7 @@ def calculateAndSaveOHE_Rules(data, featureNames,trainedModelPrediction_Test, gr
         gradsPerIteration  = grads[i]
         output_filename = f'{output_directory}{output_base_filename}_{iterationCounter}.pkl'
         
-        print(i)
+        #print(i)
         with open(output_filename, 'wb') as f:
             ohe_df = CEGA(gradsPerIteration)#,trainedModelPrediction_TestPerIteration)
             pickle.dump(ohe_df, f)
@@ -285,7 +285,7 @@ def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add 
 
 
                                             # 10/ len(pred)10/testDataLength*5
-    freq_items1 = apriori(ohe_df, min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True) #[array[0.5, frozenset]]
+    freq_items1 = apriori(ohe_df, min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True)# max len 3 
 
     #all_rules = myAssociationRules.association_rules(freq_items1, metric="confidence", min_threshold=0.0 ,support_only=True) # 0.7 support_only=False
 
@@ -303,28 +303,29 @@ def runApriori(ohe_df,testDataLength, pos_label ,neg_label): # min thrshold add 
     #freq_items = gely.gely(ohe_df.values, thresholdGely1)#remove_copmlete_transactions=False) 
     #freq_items = gelyOutputToDF(freq_items)
 
-    all_rules = myAssociationRules.association_rules(freq_items1, metric="confidence", min_threshold=0.0 ,support_only=False) # 0.7 support_only=False
+    all_rules = myAssociationRules.association_rules(freq_items1, metric="confidence", min_threshold=0.7 ,support_only=False) # 0.7 support_only=False
     
                               # 10/ len(pred)10/testDataLength*5
     freq_items1 = apriori(ohe_df.loc[ohe_df[pos_label] == 1], min_support=(0.00000000000000001), use_colnames=True, max_len=3 , low_memory=True) # max len 3
     #freq_items = gely.gely(ohe_df.loc[ohe_df[pos_label] == 1].values, thresholdGely2 )#,remove_copmlete_transactions=False) 
     #freq_items = gelyOutputToDF(freq_items)
 
-    pos_rules = myAssociationRules.association_rules(freq_items1, metric="confidence", min_threshold=0.0, support_only=False) # 0.6 support_only=False
+    pos_rules = myAssociationRules.association_rules(freq_items1, metric="confidence", min_threshold=0.6, support_only=False) # 0.6 support_only=False
     #freq_items = gely.gely(ohe_df.loc[ohe_df[neg_label] == 1].values, thresholdGely3)#,remove_copmlete_transactions=False) 
     #freq_items = gelyOutputToDF(freq_items)
                                                                     # 10/ len(pred)10/testDataLength*5
     freq_items1 = apriori(ohe_df.loc[ohe_df[neg_label] == 1], min_support=(0.00000000000000001), use_colnames=True, max_len=3, low_memory=True) # max len 3 
-    neg_rules = myAssociationRules.association_rules(freq_items1, metric="confidence", min_threshold=0.0 , support_only=False) # 0.6 support_only=False
+    neg_rules = myAssociationRules.association_rules(freq_items1, metric="confidence", min_threshold=0.6 , support_only=False) # 0.6 support_only=False
     #np.savez("./test.npz",all_rules , )
     #utils.appendToNPZ("./test.npz")
+    
     return all_rules, pos_rules , neg_rules # pickle this ?
 
 def getDiscriminativeRules(all_rules, pos_label, neg_label ):
 
     def filterPosRules(all_rules, pos_label):
         positive = all_rules[all_rules['consequents'] == {pos_label}]
-        positive = positive[positive['confidence'] >= 0.1] # confidence == 1
+        positive = positive[positive['confidence'] >= 0.7] # confidence == 1
         positive = positive.sort_values(['confidence', 'support'], ascending=[False, False])
 
         seen = set()
@@ -348,7 +349,7 @@ def getDiscriminativeRules(all_rules, pos_label, neg_label ):
 
     def filterNegRules(all_rules, neg_label):
         negative = all_rules[all_rules['consequents'] == {neg_label}]
-        negative = negative[negative['confidence'] >= 0.1] # confidence == 1
+        negative = negative[negative['confidence'] >= 0.7] # confidence == 1
 
         negative = negative.sort_values(['confidence', 'support'], ascending=[False, False])
 
@@ -474,9 +475,10 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
     X_List = []
     y_List = [] 
     for inputs, lables in dataloader:
+
         X_List.extend(inputs.detach())
         y_List.extend(lables.detach())
-    
+
     def extractNlpRules_df(rules_DF):
         rulesList =rules_DF["itemset"].to_list()
         rulesList = [set(frozenset) for frozenset in rulesList]
@@ -630,7 +632,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
 
         epsilon = sys.float_info.epsilon
         predictionComparisonList_transposed =  np.array(predictionComparisonList).transpose()
-
+        #print(np.shape(predictionComparisonList))
         rulePrecisionListPerRule = []
 
         ruleSupportListPerRule =[]
@@ -653,8 +655,9 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
             ruleTempNotAppliable =   list(i).count(-1)
 
             accuracyOfAppliableRules = (ruleTempCorrectClassified / ((ruleTempCorrectClassified + ruleTempFalseClassified) +epsilon))
+            #supportOfRule = (ruleTempCorrectClassified )/ ((ruleTempCorrectClassified +ruleTempFalseClassified +ruleTempNotAppliable) + epsilon) 
             supportOfRule = (ruleTempCorrectClassified + ruleTempFalseClassified)/ ((ruleTempCorrectClassified +ruleTempFalseClassified +ruleTempNotAppliable) + epsilon) 
-            
+
 
             import math
             #print("acc")
@@ -676,15 +679,21 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
             corectnessCounter_ALL = 0
             corectnessCounter_AplicableRules = 0
             for j in range(len(tempTrainedModelPrediction_Test)):
-
-                if tempTrainedModelPrediction_Test[j] == labelList_rules[j]:
+                #print("---")
+                #print(len(tempTrainedModelPrediction_Test))
+                #print(j)
+                #print(len(y_List))
+                #print(len(predictionComparisonList_transposed))
+                #print(indx)
+                #print.asassa
+                if tempTrainedModelPrediction_Test[j] == y_List[j]:
                     corectnessCounter_ALL +=1
-                if tempTrainedModelPrediction_Test[j] == labelList_rules[j] and  predictionComparisonList_transposed[indx][j] != -1:
+                if tempTrainedModelPrediction_Test[j] == y_List[j] and  predictionComparisonList_transposed[indx][j] != -1:
                     corectnessCounter_AplicableRules += 1
             corectness_ALL = corectnessCounter_ALL / len(tempTrainedModelPrediction_Test)
             corectness_AplicablRules =corectnessCounter_AplicableRules / (ruleTempCorrectClassified + ruleTempFalseClassified + epsilon)
 
-            FILTERCONDTION = corectness_AplicablRules >= 0.5
+            FILTERCONDTION =  accuracyOfAppliableRules >= 0.5 #supportOfRule + accuracyOfAppliableRules >=1 #True# <corectness_AplicablRules >= 0.5
             if FILTERCONDTION:
 
             #if accuracyOfAppliableRules  * math.sqrt(supportOfRule) >= 0.5 and accuracyOfAppliableRules > 0.5 :#0.5:
@@ -742,6 +751,9 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
     else:
         rules_list, labelList_rules, raw_rules = extractRules_df(rules_DF)
         predictionComparisonList_NOTFILTERED, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)
+    #print(rules_list)
+    #print(labelList_rules)
+    #print.aas
         #predictionComparisonList, rulesComplexityList = applyRulesOnData(X_List,predictions, rules_list, labelList_rules, featureDict)   
     
     # globalRulePrecisionList, globalRuleSupportList ,rulePrecisionListPerRule , rules_list , labelList_rules,predictionComparisonList  = rulePrecisionAndSupport (predictionComparisonList, 0.9, rules_list, labelList_rules, datasetType)
@@ -757,7 +769,10 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
 
 
     numberOfGeneratedRules = (len(newRulesList))
+    rules_list_NOTFILTERED = (len(rules_list))
 
+    print(numberOfGeneratedRules)
+    print(len(rules_list))
     #print.pes
     #return rules_list, labelList_rules, globalRulePrecisionList, predictionComparisonList, rulesComplexityList , globalCoverage,  globalRuleSupportList,   numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule
     return newRulesList, newLabelList, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportListPerRule, numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED , rules_list, labelList_rules, predictionComparisonList_NOTFILTERED , globalCoverage_NOTFILTERED, corectnessList_ALL, corectnessList_AplicablRules,corectnessList_ALL_NOTFILTERED, corectnessList_AplicablRules_NOTFILTERED
@@ -788,7 +803,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
     #   + if not fix for NLP 
     
 
-def trackRulesList(rules_list_overIterations, preciscionList, corectnessList):
+def trackRulesList(rules_list_overIterations, labelList):
     """
         rules list   -> 
         [[1 1 1 0 0]
@@ -801,16 +816,6 @@ def trackRulesList(rules_list_overIterations, preciscionList, corectnessList):
     
     rulesTemp = [rules for rules in rules_list_overIterations]
     
-    #print(rulesTemp)
-    #print(type(rulesTemp))  
-    
-    #for i in rulesTemp:
-    #    print(i)
-    #unique_rules = set().union(*[set.union(*lst) for lst in rulesTemp])
-    #unique_rules = (set(rule) for rule in rulesTemp)
-        #item for rule in 
-    #print(unique_rules)
-    # Initialize an empty set to store the tuples
     unique_rules = set()
 
     # Iterate through each element in the nested lists
@@ -820,15 +825,19 @@ def trackRulesList(rules_list_overIterations, preciscionList, corectnessList):
             unique_rules.add(tuple(s))
     #print(unique_rules)unique_rules
     item_to_index = {item: index for index, item in enumerate(unique_rules)}
-    #print("----")
-    #print("---pls---")
-    #print(item_to_index)
-    #print("----")
+    #for i in labelList:
+    #    for j in i:
+            
+    #index_to_label = {item: index for index, item in enumerate(labelList)}
+
+
     num_uniqueRules = len(unique_rules)
 
     one_hot_matrix = []
-    precsicionDict = [None] * num_uniqueRules 
-    corectnessDict = [None] * num_uniqueRules 
+    labelList_matrix = []
+    #precsicionDict = [None] * num_uniqueRules 
+    #corectnessDict = [None] * num_uniqueRules 
+    lable_encoded = [None] * num_uniqueRules
 
     for i,rules in enumerate(rules_list_overIterations): # rulesSet for each iteration 
 
@@ -839,20 +848,29 @@ def trackRulesList(rules_list_overIterations, preciscionList, corectnessList):
             index = item_to_index[tuple(rule)]
             rule_encoded[index] = 1
             if rule_encoded[index] == 1:
-                precsicionDict[index] = preciscionList[i][counter]
+                #precsicionDict[index] = preciscionList[i][counter]
  
-                corectnessDict[index] = corectnessList[i][counter]
+                #corectnessDict[index] = corectnessList[i][counter]
+                #print(len(labelList))
+                #print(len(labelList[i]))
+                #print(len(rules))
+                #print(counter)
+                #print(index)
+                #print(len(lable_encoded))
+
+                lable_encoded[index] = labelList[i][counter]
 
                 counter +=1
         one_hot_matrix.append(rule_encoded)
-
+        #labelList_matrix.append(lable_encoded)
     one_hot_matrix = np.array(one_hot_matrix)
 
     print(one_hot_matrix)
-    print(precsicionDict)
+    print(lable_encoded)
+    #print(precsicionDict)
 
     trackedRules_OHE = one_hot_matrix
-    return trackedRules_OHE , precsicionDict , corectnessDict, item_to_index
+    return trackedRules_OHE, item_to_index,lable_encoded #, precsicionDict , corectnessDict, item_to_index
 
 def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string, test_set , datasetType,vocab=None ):
 
@@ -872,7 +890,6 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
     featureNames = []
     #for i in range(len(data["testGradientsPerSamplePerFeature"][-1])): #vocab_size
     gradsTemp = data["testGradientsPerSamplePerFeature"]
-    print(np.shape(gradsTemp))
     for i in range(len(gradsTemp[1][-1])):
     
         featureNames.append(str(i))
@@ -932,11 +949,16 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
 
         all_rules, pos_rules , neg_rules =  runApriori(ohe_df,len(X_test), pos_label ,neg_label)
         discriminative_rules = getDiscriminativeRules(all_rules, pos_label, neg_label )
+        print("--------------")
+        print(np.mean(discriminative_rules["confidence"]))
+        print(np.mean(discriminative_rules["support"]))
+        print("--------------")
         characteristic_rules = getCharasteristicRules(pos_rules, pos_label, neg_rules,neg_label )
 
         resultName = "discriminative_rules"
 
         rules_list, labelList_rules, predictionComparisonList, rulesComplexityList , globalCoverage,  ruleSupportListPerRule, numberOfGeneratedRules, raw_rules, rulePrecisionListPerRule, rulePrecisionListPerRule_NOTFILTERED ,ruleSupportListPerRule_NOTFILTERED , rules_list_NOTFILTERD, labelList_rules_NOTFILTERED,  predictionComparisonList_NOTFILTERED , globalCoverage_NOTFILTERED, corectnessList_ALL, corectnessList_AplicablRules ,corectnessList_ALL_NOTFILTERED, corectnessList_AplicablRules_NOTFILTERED= calculateRulesMetrics(discriminative_rules, featureDict, test_set, trainedModelPrediction_Test_overIterations[i], datasetType, tempTrainedModelPrediction_Test)
+
         discriminative_rules_overIterations.append(discriminative_rules)
         characteristic_rules_overIterations.append(characteristic_rules) 
 
@@ -959,6 +981,8 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
 
         rules_list_overIterations_NOTFILTERD.append(rules_list_NOTFILTERD)
         labelList_rules_overIterations_NOTFILTERED.append(labelList_rules_NOTFILTERED)
+        print("--")
+        print( np.shape(predictionComparisonList_NOTFILTERED))
         predictionComparisonList_overIterations_NOTFILTERED.append(predictionComparisonList_NOTFILTERED)
         globalCoverage_overIterations_NOTFILTERED.append(globalCoverage_NOTFILTERED)
         corectnessList_ALL_overIterations.append(corectnessList_ALL) 
@@ -979,10 +1003,12 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
 
     if debug:
         pathToNPZ =  dirPath + f"DEBUG.npz"
-        print("ßßßaaaa")
     else:    
-        pathToNPZ =  dirPath +"NLP_Results/rulesResults/" f"{resultName}/_{date_time_string}.npz"
-        print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" + str(pathToNPZ))
+        if datasetType == "NLP":
+        
+            pathToNPZ =  dirPath +"NLP_Results/rulesResults/" f"{resultName}/_{date_time_string}.npz"
+        else: 
+            pathToNPZ =  dirPath +"Results/rulesResults/" f"{resultName}/_{date_time_string}.npz"
     np.savez(pathToNPZ ,rules_list_overIterations = rules_list_overIterations,) 
     utils.appendToNPZ(pathToNPZ, "labelList_rules_overIterations", labelList_rules_overIterations)
     utils.appendToNPZ(pathToNPZ, "rulePrecisionList_overIterations", rulePrecisionList_overIterations)
@@ -1005,7 +1031,10 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
 
     utils.appendToNPZ(pathToNPZ, "rules_list_overIterations_NOTFILTERD", rules_list_overIterations_NOTFILTERD)
     utils.appendToNPZ(pathToNPZ, "labelList_rules_overIterations_NOTFILTERED", labelList_rules_overIterations_NOTFILTERED)
-    
+    #print("----------------------------------")
+    #print( np.shape(predictionComparisonList_overIterations_NOTFILTERED))
+    #print( np.shape(predictionComparisonList_overIterations_NOTFILTERED[0]))
+
     utils.appendToNPZ(pathToNPZ, "predictionComparisonList_overIterations_NOTFILTERED", predictionComparisonList_overIterations_NOTFILTERED)
     utils.appendToNPZ(pathToNPZ, "globalCoverage_overIterations_NOTFILTERED", globalCoverage_overIterations_NOTFILTERED)
     
@@ -1014,6 +1043,16 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
     
     utils.appendToNPZ(pathToNPZ, "corectnessList_ALL_NOTFILTERED_overIterations", corectnessList_ALL_NOTFILTERED_overIterations)
     utils.appendToNPZ(pathToNPZ, "corectnessList_AplicablRules_NOTFILTERED_overIterations", corectnessList_AplicablRules_NOTFILTERED_overIterations)
+
+    utils.appendToNPZ(pathToNPZ, "ModelPrediction_Test_overIterations", trainedModelPrediction_Test_overIterations)
+    X_List = []
+    y_List = [] 
+    for inputs, lables in test_set:
+        X_List.extend(inputs.detach())
+        y_List.extend(lables.detach())
+    utils.appendToNPZ(pathToNPZ, "X_List", X_List)
+    utils.appendToNPZ(pathToNPZ, "featureDict", featureDict)
+
 
 
 

@@ -218,25 +218,28 @@ if __name__ == '__main__':
     #data.close()
     
     temp_rules_list_overIterations_RAW = data["rules_list_overIterations_NOTFILTERD"]   
-    rulePrecision = data["rulePrecisionListPerRule_overIterations_NOTFILTERED"] 
-    correctness = data["corectnessList_AplicablRules_NOTFILTERED_overIterations"]
-    trackedRules_OHE_NOTFILTERED , precsicionDict_NOTFILTERED, correctnessDict_NOTFILTERED, item_to_index_NOTFILTERD = cega_utils.trackRulesList(temp_rules_list_overIterations_RAW, rulePrecision , correctness)
+    #rulePrecision = data["rulePrecisionListPerRule_overIterations_NOTFILTERED"] 
+    #correctness = data["corectnessList_AplicablRules_NOTFILTERED_overIterations"]
+    trackedRules_OHE_NOTFILTERED,  item_to_index_NOTFILTERED , labelList_matrix_NOTFILTERED = cega_utils.trackRulesList(temp_rules_list_overIterations_RAW, data["labelList_rules_overIterations_NOTFILTERED"])#(temp_rules_list_overIterations_RAW)
 
   
 
 
     temp_rules_list_overIterations = data["rules_list_overIterations"]
-    trackedRules_OHE , precsicionDict, correctnessDict, item_to_index = cega_utils.trackRulesList(temp_rules_list_overIterations, data["rulePrecisionListPerRule_overIterations"], data["corectnessList_AplicablRules_overIterations"])
+    trackedRules_OHE,  item_to_index, labelList_matrix  = cega_utils.trackRulesList(temp_rules_list_overIterations, data["labelList_rules_overIterations"])
 
     utils.appendToNPZ(pathToNPZ, "trackedRules_OHE", trackedRules_OHE)
-    utils.appendToNPZ(pathToNPZ, "precsicionDict", precsicionDict)
-    utils.appendToNPZ(pathToNPZ, "correctnessDict", correctnessDict)
+    #utils.appendToNPZ(pathToNPZ, "precsicionDict", precsicionDict)
+    #utils.appendToNPZ(pathToNPZ, "correctnessDict", correctnessDict)
     utils.appendToNPZ(pathToNPZ, "item_to_index", item_to_index)
     
     utils.appendToNPZ(pathToNPZ, "trackedRules_OHE_NOTFILTERED", trackedRules_OHE_NOTFILTERED)
-    utils.appendToNPZ(pathToNPZ, "precsicionDict_NOTFILTERED", precsicionDict_NOTFILTERED)
-    utils.appendToNPZ(pathToNPZ, "correctnessDict_NOTFILTERED", correctnessDict_NOTFILTERED)
-    utils.appendToNPZ(pathToNPZ, "item_to_index_NOTFILTERD", item_to_index_NOTFILTERD)
+    #utils.appendToNPZ(pathToNPZ, "precsicionDict_NOTFILTERED", precsicionDict_NOTFILTERED)
+    #utils.appendToNPZ(pathToNPZ, "correctnessDict_NOTFILTERED", correctnessDict_NOTFILTERED)
+    utils.appendToNPZ(pathToNPZ, "item_to_index_NOTFILTERD", item_to_index_NOTFILTERED)
+
+    utils.appendToNPZ(pathToNPZ, "labelList_matrix_NOTFILTERED", labelList_matrix_NOTFILTERED)
+    utils.appendToNPZ(pathToNPZ, "labelList_matrix", labelList_matrix)
       
     
 

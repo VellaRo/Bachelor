@@ -31,7 +31,6 @@ def smooth_grad(input, n_samples, stdev_spread ,model,device):
                 if input.is_cuda:
 
                     input = input.detach().cpu()
-                #print(input)
                 # Convert the tensor to a NumPy array
                 
                 ## embed input
@@ -44,7 +43,6 @@ def smooth_grad(input, n_samples, stdev_spread ,model,device):
                 stdev = stdev_spread * (torch.max(input) - torch.min(input))
 
                 total_gradients = torch.zeros_like(input.data,device=device)
-                #print((total_gradients.device))
                 for i in range(n_samples):
 
                     # Create a batch of inputs with added Gaussian noise
@@ -103,7 +101,6 @@ def calculatePredictions(model ,X, X_train , device):
     with torch.no_grad():
         for i,data in enumerate(X_test):
             y_pred = model(data)
-            print(type(y_pred))
             test_predictions.append(y_pred.argmax().item())
 
         for i,data in enumerate(X_train):
@@ -232,8 +229,7 @@ def binData(data , n):
     binnedData = []
     indicesList = []
     for i in range(0,len(data),n):
-        #print(i)
-        #print(np.average(data[i:i+n]))
+
         if i+n > len(data):
             averageBin = np.average(data[i:-1])
             indicesList.append(len(data))
@@ -246,3 +242,31 @@ def binData(data , n):
         #indicesList.append(i)
 
     return binnedData,indicesList
+
+
+def generate_windowed_values(arr, window_size):
+    """
+    Generate windowed values from an array.
+
+    Parameters:
+    arr (array-like): The input array.
+    window_size (int): The size of the window.
+
+    Returns:
+    list of arrays: A list of windowed values.
+    """
+    windowed_values = []
+    for i in range(len(arr) - window_size + 1):
+        window = arr[i:i+window_size]
+        windowed_values.append(np.mean(window))
+    return windowed_values
+
+def calculate_mean_of_lists(list_of_lists):
+        means = []
+        for sublist in list_of_lists:
+            if len(sublist) == 0:
+                means.append(-1)
+            else:
+                sublist_mean = np.mean(sublist)
+                means.append(sublist_mean)
+        return means

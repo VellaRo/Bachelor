@@ -602,6 +602,8 @@ def plotRulesResults(data):
     
     fig4, axs4 = plt.subplots(nrows=1, ncols=1)
     axs4.plot(data["globalCoverageList_overIterations"])
+    axs4.plot(data["globalCoverage_overIterations_NOTFILTERED"])
+
     axs4.set_title("globalCoverageList_overIterations")
     axs4.set_xlabel("iteration")
     axs4.set_ylabel("coverage")
@@ -662,13 +664,15 @@ def plotRulesResults(data):
     axs11.set_xlabel("iteration")
     axs11.set_ylabel("rulePrecisionListPerRule_overIterations")
     fig11.savefig(str(pathToRulesResults) + "rulePrecisionListPerRule_overIterations")    
-    pickle.dump(fig1, open(pathToRulesResults + "rulePrecisionListPerRule_overIterations", 'wb'))
+    pickle.dump(fig11, open(pathToRulesResults + "rulePrecisionListPerRule_overIterations", 'wb'))
+
+    #plotNumRuleComparison(data)
 
 def plotTrainingResults(data, dataPath):
     
     print("plotting trainingResults...")
-    print("cosine_similarity")
-    plotCosineSimilarity(dataPath, "cosine_simialarity", set="test")
+    #print("cosine_similarity")
+    #plotCosineSimilarity(dataPath, "cosine_simialarity", set="test")
     print("percentageWeightsSignDifference3")
     plotWeightSignDifferences(dataPath, "percentageWeightsSignDifference3" , "test")
     print("weightsMagnitude3")
@@ -704,16 +708,32 @@ def plotTrainingResults(data, dataPath):
     #axshist.hist(data["Total_gradientsList_iteration"], bins=15)
 
     binnedTotal_gradientsList_iteration1,indicesList1 = utils.binData(data["Total_gradientsList_iteration"], 1)
-    binnedTotal_gradientsList_iteration2,indicesList2 = utils.binData(data["Total_gradientsList_iteration"], 2)
-    binnedTotal_gradientsList_iteration3,indicesList3 = utils.binData(data["Total_gradientsList_iteration"], 3)
-    binnedTotal_gradientsList_iteration5,indicesList5 = utils.binData(data["Total_gradientsList_iteration"], 5)
+    #binnedTotal_gradientsList_iteration2,indicesList2 = utils.binData(data["Total_gradientsList_iteration"], 2)
+    #binnedTotal_gradientsList_iteration3,indicesList3 = utils.binData(data["Total_gradientsList_iteration"], 3)
+    #binnedTotal_gradientsList_iteration5,indicesList5 = utils.binData(data["Total_gradientsList_iteration"], 5)
+    binnedTotal_gradientsList_iteration5 = utils.generate_windowed_values(data["Total_gradientsList_iteration"], 5)
+    #binnedTotal_gradientsList_iteration20,indicesList20 = utils.binData(data["Total_gradientsList_iteration"], 20)
+    binnedTotal_gradientsList_iteration20 = utils.generate_windowed_values(data["Total_gradientsList_iteration"], 20)
+    binnedTotal_gradientsList_iteration50 = utils.generate_windowed_values(data["Total_gradientsList_iteration"], 50)
 
 
 
+
+
+
+    axsWindowedGradients.grid(True)
+    axsWindowedGradients.grid(which = "major", linewidth = 1)
+    axsWindowedGradients.grid(which = "minor", linewidth = 0.2)
     axsWindowedGradients.plot(indicesList1, binnedTotal_gradientsList_iteration1, label="1" )
-    axsWindowedGradients.plot(indicesList2,binnedTotal_gradientsList_iteration2,label="2")
-    axsWindowedGradients.plot(indicesList3, binnedTotal_gradientsList_iteration3,label="3")
-    axsWindowedGradients.plot(indicesList5 ,binnedTotal_gradientsList_iteration5, label="5")
+    #axsWindowedGradients.plot(indicesList2,binnedTotal_gradientsList_iteration2,label="2")
+    print(binnedTotal_gradientsList_iteration5)
+    #print.asas
+    
+    axsWindowedGradients.plot(binnedTotal_gradientsList_iteration5, label="5")
+    axsWindowedGradients.plot(binnedTotal_gradientsList_iteration20,label="20")
+    axsWindowedGradients.plot(binnedTotal_gradientsList_iteration50,label="50")
+
+
     axsWindowedGradients.legend()
     figWindowedGradients.savefig(dataPath + "WindowedGradients")
     pickle.dump(figWindowedGradients, open(dataPath + "WindowedGradients", 'wb'))

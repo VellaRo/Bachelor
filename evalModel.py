@@ -156,7 +156,7 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
                     #gradientList.append(grads.cpu())
                     inputs = inputs.to(device)
                     labels = labels.to(device)
-                    n_samples = 2#5
+                    n_samples = 25
                     stdev_spread = 0.2
 
                     #inputs = F.softmax(input, dim=1) # softmax
@@ -261,7 +261,6 @@ def doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_f
                 ## per iteration
                 acc= running_corrects_iteration.item() /len(y)
                 accPerIterationList.append(acc) 
-                print(acc)
                 lossPerIterationList.append(np.mean(tempLoss_iteration))
                 ## per epoch
                 if counter == int(len(modelsDirFiltered)/ num_epochs):

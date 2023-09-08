@@ -280,7 +280,6 @@ def loadAdult(batch_size= 4, test_size =0.2):
     inputFeatures = len(featureNames)
     
     y_DF = data["target"]
-    print(y_DF)
     trainloader , testloader ,X_train , X_test ,  y_train, y_test , random_indices_train, random_indices_test = preProcessingData(X=X_DF, y=y_DF ,batch_size=batch_size, test_size=test_size, datasetType=datasetType)
 
     return trainloader ,random_indices_train, testloader,random_indices_test,X_train , X_test,  y_train , y_test, inputFeatures, outputFeatures, datasetName, featureNames, datasetType
