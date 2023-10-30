@@ -234,7 +234,7 @@ def binData(data , n):
             averageBin = np.average(data[i:-1])
             indicesList.append(len(data))
         else:
-            averageBin = np.average(data[i:i+n])
+            averageBin = np.average(data[i:i+int(n/2)])
             indicesList.append(i)
         
         binnedData.append(averageBin)
@@ -260,6 +260,8 @@ def generate_windowed_values(arr, window_size):
         window = arr[i:i+window_size]
         windowed_values.append(np.mean(window))
     return windowed_values
+
+
 
 def calculate_mean_of_lists(list_of_lists):
         means = []

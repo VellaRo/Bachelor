@@ -216,7 +216,7 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
             print("data does not exist yet need to Filter first")
             #print(vocab_dictionary)
             for i, (label, text) in enumerate(test_iter):#zip(text_batch, label_batch): # vorher train_iter
-                print(i)
+                #print(i)
                 if i == batch_sizes[-1]:
                     break
                 processed_text = tokenizer(text)
@@ -228,13 +228,13 @@ def get_agnews(random_state, batch_sizes=(64, 200), root=DATA_ROOT):
                     if word not in list(vocab_dictionary):
                         count += 1 # muss 1 sein??? 
                         if count == 1:
-                            print("ja u")
+   #                         print("ja u")
                             #print("over 10")   
                             break #2h without
                 #print(count / len(text))
                 #print(count / len(text) <= 0.5)
                 if (count / len(processed_text)) <= 0.0: # errorrate
-                    print("mm")
+    #                print("mm")
                     #print(count / len(processed_text))
 
                 #if count <=49:   

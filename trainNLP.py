@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
     size_train_batch = 64#64
     size_test_batch = 250  # 3h apriori
-    n_batches = 250
+    n_batches =  250
     embedding_dim = 128
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -181,9 +181,13 @@ if __name__ == '__main__':
     # Replace space with underscore
     date_time_string = date_time_string.replace(" ", "_")
     
+    _t_end_training = time()
+
     # evaluate trained model
     print("eval")
     evalModel.doALLeval(model, modelsDirPath,dirPath, loaderList, device,optimizer, loss_fun, num_epochs, nameList, yList, inputFeatures, NLP=True)
+    _t_end_eval = time()
+
 #
 ####################################
 #  
@@ -203,6 +207,8 @@ if __name__ == '__main__':
 #### CEGA ??
  
     pathToNPZ =  cega_utils.runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string, test_set , datasetType,vocab )
+    _t_end_CEGA = time()
+
     rules_data = np.load(pathToNPZ , allow_pickle=True)
 
     pathToDiscriminative_rules = "./NLP_Results/rulesResults/discriminative_rules/"
@@ -246,7 +252,10 @@ if __name__ == '__main__':
     plotResults.plotRulesResults(data)
 
     _t_end = time()
-    print(f"Training finished in {int(_t_end - _t_start)} s")
+    print(f"ALL finished in {int(_t_end - _t_start)} s")
+    print(f"Training finished in {int(_t_end_training - _t_start)} s")
+    print(f"eval finished in {int(_t_end_eval - _t_end_training)} s")
+    print(f"CEGA finished in {int(_t_end_CEGA - _t_end_eval)} s")
 
 
     # https://matplotlib.org/stable/gallery/subplots_axes_and_figures/two_scales.html

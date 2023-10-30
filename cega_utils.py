@@ -657,7 +657,7 @@ def calculateRulesMetrics(rules_DF,featureDict, dataloader, predictions, dataset
             accuracyOfAppliableRules = (ruleTempCorrectClassified / ((ruleTempCorrectClassified + ruleTempFalseClassified) +epsilon))
             #supportOfRule = (ruleTempCorrectClassified )/ ((ruleTempCorrectClassified +ruleTempFalseClassified +ruleTempNotAppliable) + epsilon) 
             supportOfRule = (ruleTempCorrectClassified + ruleTempFalseClassified)/ ((ruleTempCorrectClassified +ruleTempFalseClassified +ruleTempNotAppliable) + epsilon) 
-
+            # as in apriori / associattion rule mining
 
             import math
             #print("acc")
@@ -865,8 +865,8 @@ def trackRulesList(rules_list_overIterations, labelList):
         #labelList_matrix.append(lable_encoded)
     one_hot_matrix = np.array(one_hot_matrix)
 
-    print(one_hot_matrix)
-    print(lable_encoded)
+    #print(one_hot_matrix)
+    #print(lable_encoded)
     #print(precsicionDict)
 
     trackedRules_OHE = one_hot_matrix
@@ -948,7 +948,9 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
         ohe_df = loadOHE_Rules(i)
 
         all_rules, pos_rules , neg_rules =  runApriori(ohe_df,len(X_test), pos_label ,neg_label)
+        
         discriminative_rules = getDiscriminativeRules(all_rules, pos_label, neg_label )
+        
         print("--------------")
         print(np.mean(discriminative_rules["confidence"]))
         print(np.mean(discriminative_rules["support"]))
@@ -981,8 +983,8 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
 
         rules_list_overIterations_NOTFILTERD.append(rules_list_NOTFILTERD)
         labelList_rules_overIterations_NOTFILTERED.append(labelList_rules_NOTFILTERED)
-        print("--")
-        print( np.shape(predictionComparisonList_NOTFILTERED))
+        #print("--")
+        #print( np.shape(predictionComparisonList_NOTFILTERED))
         predictionComparisonList_overIterations_NOTFILTERED.append(predictionComparisonList_NOTFILTERED)
         globalCoverage_overIterations_NOTFILTERED.append(globalCoverage_NOTFILTERED)
         corectnessList_ALL_overIterations.append(corectnessList_ALL) 
@@ -1026,6 +1028,7 @@ def runCEGA(dirPath, modelsDirPath, model, X_test, device, data,date_time_string
     utils.appendToNPZ(pathToNPZ, "rulePrecisionListPerRule_overIterations", rulePrecisionListPerRule_overIterations)
     utils.appendToNPZ(pathToNPZ, "rulePrecisionListPerRule_overIterations_NOTFILTERED", rulePrecisionListPerRule_overIterations_NOTFILTERED)
     utils.appendToNPZ(pathToNPZ, "ruleSupportList_overIterations_NOTFILTERED", ruleSupportList_overIterations_NOTFILTERED)
+    utils.appendToNPZ(pathToNPZ, "discriminative_rules_overIterations", discriminative_rules_overIterations)
 
     #np.savez(pathToNPZ +str(rules_list),rules_list_overIterations = rules_list_overIterations,) 
 

@@ -578,9 +578,11 @@ def plotRulesResults(data):
     print("pathToRulesResults  " + pathToRulesResults)
     fig1, axs1 = plt.subplots(nrows=1, ncols=1)
     axs1.plot(calculate_mean_of_lists(data["rulePrecisionList_overIterations"]))
-    axs1.set_title("rulePrecisionList_overIterations")
+    #axs1.plot(calculate_mean_of_lists(data["rulePrecisionListPerRule_overIterations_NOTFILTERED"]))
+    #axs1.plot(calculate_mean_of_lists(data["rulePrecisionListPerRule_overIterations"]))
+    axs1.set_title("rule fidelity over iterations (filtered 0.5)")
     axs1.set_xlabel("iteration")
-    axs1.set_ylabel("precision")
+    axs1.set_ylabel("fidelity")
     fig1.savefig(str(pathToRulesResults) + "rulePrecisionList_overIterations")    
     pickle.dump(fig1, open(pathToRulesResults + "rulePrecisionList_overIterations", 'wb'))
     
@@ -602,9 +604,9 @@ def plotRulesResults(data):
     
     fig4, axs4 = plt.subplots(nrows=1, ncols=1)
     axs4.plot(data["globalCoverageList_overIterations"])
-    axs4.plot(data["globalCoverage_overIterations_NOTFILTERED"])
+    #axs4.plot(data["globalCoverage_overIterations_NOTFILTERED"])
 
-    axs4.set_title("globalCoverageList_overIterations")
+    axs4.set_title("global coverage over iterations (filtered 0.5)")
     axs4.set_xlabel("iteration")
     axs4.set_ylabel("coverage")
     fig4.savefig(str(pathToRulesResults) + "globalCoverageList_overIterations")    
